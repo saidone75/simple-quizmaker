@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.json.JsonMapper;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -31,7 +32,7 @@ public class QuizService {
     }
 
     @Transactional(readOnly = true)
-    public QuizDto.Response findById(String id) {
+    public QuizDto.Response findById(UUID id) {
         return quizRepository.findById(id)
                 .map(this::toResponse)
                 .orElseThrow(() -> new EntityNotFoundException(String.format(QUIZ_NOT_FOUND_MESSAGE, id)));
@@ -50,7 +51,7 @@ public class QuizService {
     }
 
     @Transactional
-    public QuizDto.Response update(String id, QuizDto.Request request) {
+    public QuizDto.Response update(UUID id, QuizDto.Request request) {
         Quiz quiz = quizRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException(String.format(QUIZ_NOT_FOUND_MESSAGE, id)));
         quiz.setTitle(request.getTitle());
@@ -62,7 +63,7 @@ public class QuizService {
     }
 
     @Transactional
-    public void delete(String id) {
+    public void delete(UUID id) {
         if (!quizRepository.existsById(id)) {
             throw new EntityNotFoundException(String.format(QUIZ_NOT_FOUND_MESSAGE, id));
         }

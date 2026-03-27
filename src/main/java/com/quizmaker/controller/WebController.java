@@ -6,6 +6,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
+import java.util.UUID;
+
 @Controller
 @RequiredArgsConstructor
 public class WebController {
@@ -40,7 +42,7 @@ public class WebController {
 
     // Admin page - modify quiz
     @GetMapping("/admin/quiz/{id}/edit")
-    public String editQuiz(@org.springframework.web.bind.annotation.PathVariable String id, Model model) {
+    public String editQuiz(@org.springframework.web.bind.annotation.PathVariable UUID id, Model model) {
         model.addAttribute("quiz", quizService.findById(id));
         return "admin/quiz-editor";
     }

@@ -12,7 +12,7 @@ set JAVA_OPTS=%JAVA_OPTS% -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,
 :: https://github.com/JetBrains/JetBrainsRuntime/releases
 :: set JAVA_OPTS=%JAVA_OPTS% -XX:HotswapAgent=fatjar
 
-set SPRING_PROFILES_ACTIVE=prod
+set SPRING_PROFILES_ACTIVE=dev
 
 :: use mvn for running application without building it
 mvn spring-boot:run -Dspring-boot.run.jvmArguments="%JAVA_OPTS%" -Dlicense.skip=true

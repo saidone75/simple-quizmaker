@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/quizzes")
@@ -25,7 +26,7 @@ public class QuizApiController {
 
     // PUBLIC: students can read a single quiz
     @GetMapping("/{id}")
-    public ResponseEntity<QuizDto.Response> getById(@PathVariable String id) {
+    public ResponseEntity<QuizDto.Response> getById(@PathVariable UUID id) {
         return ResponseEntity.ok(quizService.findById(id));
     }
 
@@ -38,14 +39,14 @@ public class QuizApiController {
     // PROTECTED: only teacher can modify
     @PutMapping("/{id}")
     public ResponseEntity<QuizDto.Response> update(
-            @PathVariable String id,
+            @PathVariable UUID id,
             @Valid @RequestBody QuizDto.Request request) {
         return ResponseEntity.ok(quizService.update(id, request));
     }
 
     // PROTECTED: only teacher can delete
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable String id) {
+    public ResponseEntity<Void> delete(@PathVariable UUID id) {
         quizService.delete(id);
         return ResponseEntity.noContent().build();
     }
