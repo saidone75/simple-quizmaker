@@ -1,0 +1,135 @@
+# QuizMaker 🦕
+
+App Spring Boot per creare e giocare quiz scolastici, con pannello insegnante protetto e pagina alunni pubblica.
+
+## Stack
+
+- **Spring Boot 3.2** + **Spring Web** + **Spring Security**
+- **Spring Data JPA** + **Liquibase**
+- **H2** (dev) / **PostgreSQL su Supabase** (prod)
+- **Thymeleaf** per le pagine HTML
+- **Lombok** per ridurre il boilerplate
+
+## Struttura
+
+```
+src/
+├── main/
+│   ├── java/com/quizmaker/
+│   │   ├── QuizMakerApplication.java
+│   │   ├── config/
+│   │   │   └── SecurityConfig.java          # Spring Security
+│   │   ├── controller/
+│   │   │   ├── QuizApiController.java       # REST API /api/quizzes
+│   │   │   ├── WebController.java           # Pagine Thymeleaf
+│   │   │   └── GlobalExceptionHandler.java  # Gestione errori
+│   │   ├── dto/
+│   │   │   └── QuizDto.java                 # Request/Response
+│   │   ├── model/
+│   │   │   └── Quiz.java                    # Entity JPA
+│   │   ├── repository/
+│   │   │   └── QuizRepository.java
+│   │   └── service/
+│   │       └── QuizService.java
+│   └── resources/
+│       ├── application.yml                  # Config base
+│       ├── application-dev.yml              # H2 (dev)
+│       ├── application-prod.yml             # Supabase (prod)
+│       ├── db/changelog/                    # Liquibase migrations
+│       ├── static/
+│       │   ├── css/main.css
+│       │   └── js/
+│       │       ├── main.js                  # Utilities condivise
+│       │       ├── quiz-player.js           # Logica gioco alunni
+│       │       └── quiz-editor.js           # Editor quiz admin
+│       └── templates/
+│           ├── student.html                 # Pagina alunni (pubblica)
+│           └── admin/
+│               ├── login.html               # Login insegnante
+│               ├── dashboard.html           # Gestione quiz
+│               └── quiz-editor.html         # Crea/modifica quiz
+```
+
+## Avvio in sviluppo (H2)
+
+```bash
+# Il profilo dev è attivo di default
+mvn spring-boot:run
+
+# Oppure esplicitamente:
+mvn spring-boot:run -Dspring-boot.run.profiles=dev
+```
+
+- App: http://localhost:8080
+- Admin: http://localhost:8080/admin/login
+- H2 Console: http://localhost:8080/h2-console
+  - JDBC URL: `jdbc:h2:mem:quizmakerdb`
+  - Username: `sa` / Password: (vuota)
+
+## Credenziali admin di default
+
+| Username | Password |
+|----------|----------|
+| `admin`  | `changeme` |
+
+⚠️ **Cambia la password prima di andare in produzione!**
+
+Per generare un nuovo hash bcrypt:
+```bash
+# Con Spring CLI o online su https://bcrypt-generator.com
+# Poi aggiorna app.admin.password in application.yml
+```
+
+## Avvio in produzione (Supabase)
+
+```bash
+# Imposta le variabili d'ambiente
+export SUPABASE_DB_URL=jdbc:postgresql://db.XXXXX.supabase.co:5432/postgres
+export SUPABASE_DB_USERNAME=postgres
+export SUPABASE_DB_PASSWORD=la-tua-password
+export ADMIN_USERNAME=admin
+export ADMIN_PASSWORD="{bcrypt}\$2a\$10\$..."
+
+# Build e avvio
+mvn package -DskipTests
+java -jar target/quizmaker-0.0.1-SNAPSHOT.jar --spring.profiles.active=prod
+```
+
+## API REST
+
+| Metodo | URL | Auth | Descrizione |
+|--------|-----|------|-------------|
+| GET    | `/api/quizzes` | No | Lista tutti i quiz |
+| GET    | `/api/quizzes/{id}` | No | Dettaglio quiz |
+| POST   | `/api/quizzes` | Sì | Crea quiz |
+| PUT    | `/api/quizzes/{id}` | Sì | Aggiorna quiz |
+| DELETE | `/api/quizzes/{id}` | Sì | Elimina quiz |
+
+## Pagine Web
+
+| URL | Accesso | Descrizione |
+|-----|---------|-------------|
+| `/` | Pubblico | Pagina alunni |
+| `/admin/login` | Pubblico | Login insegnante |
+| `/admin` | Autenticato | Dashboard admin |
+| `/admin/quiz/new` | Autenticato | Crea nuovo quiz |
+| `/admin/quiz/{id}/edit` | Autenticato | Modifica quiz |
+
+## Liquibase
+
+Le migration sono in `src/main/resources/db/changelog/`.
+Ogni nuovo changeset va aggiunto in un file separato e incluso nel `db.changelog-master.xml`.
+
+```xml
+<!-- Esempio nuovo changeset -->
+<changeSet id="003" author="quizmaker">
+    <comment>Aggiungi colonna...</comment>
+    ...
+</changeSet>
+```
+
+## Test
+
+```bash
+mvn test
+```
