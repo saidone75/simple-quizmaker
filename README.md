@@ -2,54 +2,6 @@
 
 App Spring Boot per creare e giocare quiz scolastici, con pannello insegnante protetto e pagina alunni pubblica.
 
-## Stack
-
-- **Spring Boot 3.2** + **Spring Web** + **Spring Security**
-- **Spring Data JPA** + **Liquibase**
-- **H2** (dev) / **PostgreSQL su Supabase** (prod)
-- **Thymeleaf** per le pagine HTML
-- **Lombok** per ridurre il boilerplate
-
-## Struttura
-
-```
-src/
-├── main/
-│   ├── java/com/quizmaker/
-│   │   ├── QuizMakerApplication.java
-│   │   ├── config/
-│   │   │   └── SecurityConfig.java          # Spring Security
-│   │   ├── controller/
-│   │   │   ├── QuizApiController.java       # REST API /api/quizzes
-│   │   │   ├── WebController.java           # Pagine Thymeleaf
-│   │   │   └── GlobalExceptionHandler.java  # Gestione errori
-│   │   ├── dto/
-│   │   │   └── QuizDto.java                 # Request/Response
-│   │   ├── model/
-│   │   │   └── Quiz.java                    # Entity JPA
-│   │   ├── repository/
-│   │   │   └── QuizRepository.java
-│   │   └── service/
-│   │       └── QuizService.java
-│   └── resources/
-│       ├── application.yml                  # Config base
-│       ├── application-dev.yml              # H2 (dev)
-│       ├── application-prod.yml             # Supabase (prod)
-│       ├── db/changelog/                    # Liquibase migrations
-│       ├── static/
-│       │   ├── css/main.css
-│       │   └── js/
-│       │       ├── main.js                  # Utilities condivise
-│       │       ├── quiz-player.js           # Logica gioco alunni
-│       │       └── quiz-editor.js           # Editor quiz admin
-│       └── templates/
-│           ├── student.html                 # Pagina alunni (pubblica)
-│           └── admin/
-│               ├── login.html               # Login insegnante
-│               ├── dashboard.html           # Gestione quiz
-│               └── quiz-editor.html         # Crea/modifica quiz
-```
-
 ## Avvio in sviluppo (H2)
 
 ```bash
@@ -68,8 +20,8 @@ mvn spring-boot:run -Dspring-boot.run.profiles=dev
 
 ## Credenziali admin di default
 
-| Username | Password |
-|----------|----------|
+| Username | Password   |
+|----------|------------|
 | `admin`  | `changeme` |
 
 ⚠️ **Cambia la password prima di andare in produzione!**
@@ -97,23 +49,23 @@ java -jar target/quizmaker-0.0.1-SNAPSHOT.jar --spring.profiles.active=prod
 
 ## API REST
 
-| Metodo | URL | Auth | Descrizione |
-|--------|-----|------|-------------|
-| GET    | `/api/quizzes` | No | Lista tutti i quiz |
-| GET    | `/api/quizzes/{id}` | No | Dettaglio quiz |
-| POST   | `/api/quizzes` | Sì | Crea quiz |
-| PUT    | `/api/quizzes/{id}` | Sì | Aggiorna quiz |
-| DELETE | `/api/quizzes/{id}` | Sì | Elimina quiz |
+| Metodo | URL                 | Auth | Descrizione         |
+|--------|---------------------|------|---------------------|
+| GET    | `/api/quizzes`      | No   | Lista tutti i quiz  |
+| GET    | `/api/quizzes/{id}` | No   | Dettaglio qu        |
+| POST   | `/api/quizzes`      | Sì   | Crea quiz           |
+| PUT    | `/api/quizzes/{id}` | Sì   | Aggiorna quiz       |
+| DELETE | `/api/quizzes/{id}` | Sì   | Elimina quiz        |
 
 ## Pagine Web
 
-| URL | Accesso | Descrizione |
-|-----|---------|-------------|
-| `/` | Pubblico | Pagina alunni |
-| `/admin/login` | Pubblico | Login insegnante |
-| `/admin` | Autenticato | Dashboard admin |
-| `/admin/quiz/new` | Autenticato | Crea nuovo quiz |
-| `/admin/quiz/{id}/edit` | Autenticato | Modifica quiz |
+| URL                     | Accesso     | Descrizione      |
+|-------------------------|-------------|------------------|
+| `/`                     | Pubblico    | Pagina alunni    |
+| `/admin/login`          | Pubblico    | Login insegnante |
+| `/admin`                | Autenticato | Dashboard admin  |
+| `/admin/quiz/new`       | Autenticato | Crea nuovo quiz  |
+| `/admin/quiz/{id}/edit` | Autenticato | Modifica quiz    |
 
 ## Liquibase
 
