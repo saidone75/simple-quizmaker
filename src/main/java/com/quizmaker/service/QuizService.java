@@ -1,0 +1,78 @@
+package com.quizmaker.service;
+
+import com.quizmaker.dto.QuizDto;
+import com.quizmaker.model.Quiz;
+import com.quizmaker.repository.QuizRepository;
+import jakarta.persistence.EntityNotFoundException;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+
+@Service
+@RequiredArgsConstructor
+@Slf4j
+public class QuizService {
+
+    private final QuizRepository quizRepository;
+
+    @Transactional(readOnly = true)
+    public List<QuizDto.Response> findAll() {
+        return quizRepository.findAllByOrderByCreatedAtDesc()
+                .stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public QuizDto.Response findById(String id) {
+        return quizRepository.findById(id)
+                .map(this::toResponse)
+                .orElseThrow(() -> new EntityNotFoundException("Quiz non trovato con id: " + id));
+    }
+
+    @Transactional
+    public QuizDto.Response create(QuizDto.Request request) {
+        Quiz quiz = Quiz.builder()
+                .title(request.getTitle())
+                .emoji(request.getEmoji())
+                .questions(request.getQuestions())
+                .build();
+        Quiz saved = quizRepository.save(quiz);
+        log.info("Quiz creato: {} ({})", saved.getTitle(), saved.getId());
+        return toResponse(saved);
+    }
+
+    @Transactional
+    public QuizDto.Response update(String id, QuizDto.Request request) {
+        Quiz quiz = quizRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Quiz non trovato con id: " + id));
+        quiz.setTitle(request.getTitle());
+        quiz.setEmoji(request.getEmoji());
+        quiz.setQuestions(request.getQuestions());
+        Quiz saved = quizRepository.save(quiz);
+        log.info("Quiz aggiornato: {} ({})", saved.getTitle(), saved.getId());
+        return toResponse(saved);
+    }
+
+    @Transactional
+    public void delete(String id) {
+        if (!quizRepository.existsById(id)) {
+            throw new EntityNotFoundException("Quiz non trovato con id: " + id);
+        }
+        quizRepository.deleteById(id);
+        log.info("Quiz eliminato: {}", id);
+    }
+
+    private QuizDto.Response toResponse(Quiz quiz) {
+        return QuizDto.Response.builder()
+                .id(quiz.getId())
+                .title(quiz.getTitle())
+                .emoji(quiz.getEmoji())
+                .questions(quiz.getQuestions())
+                .createdAt(quiz.getCreatedAt())
+                .build();
+    }
+}
