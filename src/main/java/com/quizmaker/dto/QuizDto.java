@@ -35,6 +35,8 @@ public class QuizDto {
         private String title;
         private String emoji;
         private String questions; // JSON string
+        private Integer questionsCount;
         private LocalDateTime createdAt;
     }
+
 }

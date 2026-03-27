@@ -6,8 +6,10 @@ import com.quizmaker.repository.QuizRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.util.List;
 
@@ -17,6 +19,8 @@ import java.util.List;
 public class QuizService {
 
     private final QuizRepository quizRepository;
+
+    private static final JsonMapper JSON_MAPPER = new JsonMapper();
 
     @Transactional(readOnly = true)
     public List<QuizDto.Response> findAll() {
@@ -72,6 +76,7 @@ public class QuizService {
                 .title(quiz.getTitle())
                 .emoji(quiz.getEmoji())
                 .questions(quiz.getQuestions())
+                .questionsCount(JSON_MAPPER.readValue(quiz.getQuestions(), List.class).size())
                 .createdAt(quiz.getCreatedAt())
                 .build();
     }
