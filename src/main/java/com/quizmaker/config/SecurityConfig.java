@@ -28,17 +28,17 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) {
         http
                 .authorizeHttpRequests(auth -> auth
-                        // Risorse statiche pubbliche
+                        // Public static resources
                         .requestMatchers("/css/**", "/js/**", "/images/**", "/favicon.ico").permitAll()
-                        // H2 console (solo dev)
+                        // H2 console (dev only)
                         .requestMatchers("/h2-console/**").permitAll()
-                        // Pagina login
+                        // Login page
                         .requestMatchers("/admin/login").permitAll()
-                        // API pubbliche (GET quiz per alunni)
+                        // Public API
                         .requestMatchers(HttpMethod.GET, "/api/quizzes", "/api/quizzes/**").permitAll()
-                        // Pagina alunni
+                        // Students page
                         .requestMatchers("/").permitAll()
-                        // Tutto il resto richiede autenticazione
+                        // Everything else requires authentication
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
@@ -57,12 +57,12 @@ public class SecurityConfig {
                         .deleteCookies("JSESSIONID")
                         .permitAll()
                 )
-                // CSRF: abilita per form Thymeleaf, ma disabilita per API REST chiamate da JS
+                // CSRF: enable for Thymeleaf forms, but disable for REST API calls from JS
                 .csrf(csrf -> csrf
                         .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
                         .ignoringRequestMatchers("/api/**", "/h2-console/**")
                 )
-                // Permetti frame per H2 console in dev
+                // Allow frames for H2 console in dev
                 .headers(headers -> headers
                         .frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin)
                 );

@@ -1,5 +1,5 @@
 ${AnsiColor.RED}
-temp
+QuizMaker
 ${AnsiColor.BRIGHT_BLACK}
 QuizMaker
 ${application.title} v.${application.version}
