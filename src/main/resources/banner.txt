@@ -1,0 +1,10 @@
+${AnsiColor.RED}
+temp
+${AnsiColor.BRIGHT_BLACK}
+QuizMaker
+${application.title} v.${application.version}
+Powered by Spring Boot ${spring-boot.version}
+Active profiles: ${spring.profiles.active}
+Java Version: ${java.version}
+Java Vendor: ${java.vendor}
+${AnsiColor.DEFAULT}
