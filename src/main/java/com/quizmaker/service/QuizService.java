@@ -24,7 +24,7 @@ public class QuizService {
     private final QuizMapper quizMapper;
     private final QuestionMapper questionMapper;
 
-    private static final String QUIZ_NOT_FOUND_MESSAGE = "Quiz non trovato con id: %s";
+    private static final String QUIZ_NOT_FOUND_MESSAGE = "Quiz non found for id: %s";
 
     @Transactional(readOnly = true)
     public List<QuizDto.Response> findAll() {
@@ -43,25 +43,25 @@ public class QuizService {
 
     @Transactional
     public QuizDto.Response create(QuizDto.Request request) {
-        Quiz quiz = Quiz.builder()
+        val quiz = Quiz.builder()
                 .title(request.getTitle())
                 .emoji(request.getEmoji())
                 .questions(request.getQuestions().stream().map(questionMapper::toEntity).toList())
                 .build();
-        Quiz saved = quizRepository.save(quiz);
-        log.info("Quiz creato: {} ({})", saved.getTitle(), saved.getId());
+        val saved = quizRepository.save(quiz);
+        log.info("Quiz created: {} ({})", saved.getTitle(), saved.getId());
         return toResponse(saved);
     }
 
     @Transactional
     public QuizDto.Response update(UUID id, QuizDto.Request request) {
-        Quiz quiz = quizRepository.findById(id)
+        val quiz = quizRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException(String.format(QUIZ_NOT_FOUND_MESSAGE, id)));
         quiz.setTitle(request.getTitle());
         quiz.setEmoji(request.getEmoji());
         quiz.setQuestions(request.getQuestions().stream().map(questionMapper::toEntity).toList());
         Quiz saved = quizRepository.save(quiz);
-        log.info("Quiz aggiornato: {} ({})", saved.getTitle(), saved.getId());
+        log.info("Quiz updated: {} ({})", saved.getTitle(), saved.getId());
         return toResponse(saved);
     }
 
@@ -71,7 +71,7 @@ public class QuizService {
             throw new EntityNotFoundException(String.format(QUIZ_NOT_FOUND_MESSAGE, id));
         }
         quizRepository.deleteById(id);
-        log.info("Quiz eliminato: {}", id);
+        log.info("Quiz deleted: {}", id);
     }
 
     private QuizDto.Response toResponse(Quiz quiz) {
