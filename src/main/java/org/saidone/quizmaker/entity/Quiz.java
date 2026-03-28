@@ -1,4 +1,4 @@
-package com.quizmaker.entity;
+package org.saidone.quizmaker.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;

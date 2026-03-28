@@ -1,6 +1,6 @@
-package com.quizmaker.controller;
+package org.saidone.quizmaker.controller;
 
-import com.quizmaker.service.QuizService;
+import org.saidone.quizmaker.service.QuizService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;

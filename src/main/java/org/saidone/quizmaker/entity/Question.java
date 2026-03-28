@@ -1,11 +1,11 @@
-package com.quizmaker.dto;
+package org.saidone.quizmaker.entity;
 
 import lombok.Data;
 
 import java.util.List;
 
 @Data
-public class QuestionDto {
+public class Question {
     private String text;
     private String emoji;
     private List<String> options;

@@ -1,4 +1,4 @@
-package com.quizmaker.dto;
+package org.saidone.quizmaker.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

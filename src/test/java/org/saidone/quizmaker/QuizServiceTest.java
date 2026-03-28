@@ -1,13 +1,13 @@
-package com.quizmaker;
+package org.saidone.quizmaker;
 
-import com.quizmaker.dto.QuestionDto;
-import com.quizmaker.mapper.QuestionMapper;
-import com.quizmaker.mapper.QuizMapper;
-import com.quizmaker.entity.Question;
-import com.quizmaker.repository.QuizRepository;
-import com.quizmaker.service.QuizService;
-import com.quizmaker.dto.QuizDto;
-import com.quizmaker.entity.Quiz;
+import org.saidone.quizmaker.dto.QuestionDto;
+import org.saidone.quizmaker.mapper.QuestionMapper;
+import org.saidone.quizmaker.mapper.QuizMapper;
+import org.saidone.quizmaker.entity.Question;
+import org.saidone.quizmaker.repository.QuizRepository;
+import org.saidone.quizmaker.service.QuizService;
+import org.saidone.quizmaker.dto.QuizDto;
+import org.saidone.quizmaker.entity.Quiz;
 import lombok.val;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

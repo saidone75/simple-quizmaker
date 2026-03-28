@@ -1,7 +1,7 @@
-package com.quizmaker.controller;
+package org.saidone.quizmaker.controller;
 
-import com.quizmaker.dto.QuizDto;
-import com.quizmaker.service.QuizService;
+import org.saidone.quizmaker.dto.QuizDto;
+import org.saidone.quizmaker.service.QuizService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

@@ -1,10 +1,10 @@
-package com.quizmaker.service;
+package org.saidone.quizmaker.service;
 
-import com.quizmaker.dto.QuizDto;
-import com.quizmaker.entity.Quiz;
-import com.quizmaker.mapper.QuestionMapper;
-import com.quizmaker.mapper.QuizMapper;
-import com.quizmaker.repository.QuizRepository;
+import org.saidone.quizmaker.dto.QuizDto;
+import org.saidone.quizmaker.entity.Quiz;
+import org.saidone.quizmaker.mapper.QuestionMapper;
+import org.saidone.quizmaker.mapper.QuizMapper;
+import org.saidone.quizmaker.repository.QuizRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
