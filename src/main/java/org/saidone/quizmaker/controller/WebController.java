@@ -1,6 +1,6 @@
-package com.quizmaker.controller;
+package org.saidone.quizmaker.controller;
 
-import com.quizmaker.service.QuizService;
+import org.saidone.quizmaker.service.QuizService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +21,7 @@ public class WebController {
     // Students page (default)
     @GetMapping("/")
     public String studentPage(Model model) {
-        val quizzes = quizService.findAll();
+        val quizzes = quizService.findPublished();
         model.addAttribute("quizzes", quizzes);
         try {
             model.addAttribute("quizzesJson", objectMapper.writeValueAsString(quizzes));
@@ -40,7 +40,7 @@ public class WebController {
     // Admin page - dashboard
     @GetMapping("/admin")
     public String adminDashboard(Model model) {
-        model.addAttribute("quizzes", quizService.findAll());
+        model.addAttribute("quizzes", quizService.findAllForAdmin());
         return "admin/dashboard";
     }
 

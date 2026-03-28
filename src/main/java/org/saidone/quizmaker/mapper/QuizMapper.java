@@ -1,7 +1,7 @@
-package com.quizmaker.mapper;
+package org.saidone.quizmaker.mapper;
 
-import com.quizmaker.dto.QuizDto;
-import com.quizmaker.entity.Quiz;
+import org.saidone.quizmaker.dto.QuizDto;
+import org.saidone.quizmaker.entity.Quiz;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 

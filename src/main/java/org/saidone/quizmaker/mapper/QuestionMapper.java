@@ -1,7 +1,7 @@
-package com.quizmaker.mapper;
+package org.saidone.quizmaker.mapper;
 
-import com.quizmaker.dto.QuestionDto;
-import com.quizmaker.entity.Question;
+import org.saidone.quizmaker.dto.QuestionDto;
+import org.saidone.quizmaker.entity.Question;
 import org.mapstruct.Mapper;
 
 @Mapper(componentModel = "spring")

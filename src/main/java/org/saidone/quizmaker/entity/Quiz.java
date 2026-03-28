@@ -1,4 +1,4 @@
-package com.quizmaker.entity;
+package org.saidone.quizmaker.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
@@ -43,6 +43,10 @@ public class Quiz {
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
+
+    @Builder.Default
+    @Column(name = "published", nullable = false)
+    private Boolean published = false;
 
     @PrePersist
     public void prePersist() {

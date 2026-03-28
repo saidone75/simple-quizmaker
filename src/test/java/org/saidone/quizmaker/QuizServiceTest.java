@@ -1,13 +1,13 @@
-package com.quizmaker;
+package org.saidone.quizmaker;
 
-import com.quizmaker.dto.QuestionDto;
-import com.quizmaker.mapper.QuestionMapper;
-import com.quizmaker.mapper.QuizMapper;
-import com.quizmaker.entity.Question;
-import com.quizmaker.repository.QuizRepository;
-import com.quizmaker.service.QuizService;
-import com.quizmaker.dto.QuizDto;
-import com.quizmaker.entity.Quiz;
+import org.saidone.quizmaker.dto.QuestionDto;
+import org.saidone.quizmaker.mapper.QuestionMapper;
+import org.saidone.quizmaker.mapper.QuizMapper;
+import org.saidone.quizmaker.entity.Question;
+import org.saidone.quizmaker.repository.QuizRepository;
+import org.saidone.quizmaker.service.QuizService;
+import org.saidone.quizmaker.dto.QuizDto;
+import org.saidone.quizmaker.entity.Quiz;
 import lombok.val;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -51,12 +51,13 @@ class QuizServiceTest {
                 .id(UUID.randomUUID())
                 .title("Quiz di Test")
                 .emoji("🧪")
+                .published(true)
                 .questions(List.of(question))
                 .build();
     }
 
     @Test
-    void findAll_returnsAllQuizzes() {
+    void findAllForAdmin_returnsAllQuizzes() {
         val response = QuizDto.Response.builder()
                 .id(sampleQuiz.getId())
                 .title(sampleQuiz.getTitle())
@@ -65,9 +66,27 @@ class QuizServiceTest {
                 .build();
         when(quizRepository.findAllByOrderByCreatedAtDesc()).thenReturn(List.of(sampleQuiz));
         when(quizMapper.toResponse(sampleQuiz)).thenReturn(response);
-        List<QuizDto.Response> result = quizService.findAll();
+        List<QuizDto.Response> result = quizService.findAllForAdmin();
         assertThat(result).hasSize(1);
         assertThat(result.get(0).getTitle()).isEqualTo("Quiz di Test");
+    }
+
+    @Test
+    void findPublished_returnsOnlyPublishedQuizzes() {
+        val response = QuizDto.Response.builder()
+                .id(sampleQuiz.getId())
+                .title(sampleQuiz.getTitle())
+                .emoji(sampleQuiz.getEmoji())
+                .published(sampleQuiz.getPublished())
+                .questionsCount(sampleQuiz.getQuestions().size())
+                .build();
+        when(quizRepository.findByPublishedTrueOrderByCreatedAtDesc()).thenReturn(List.of(sampleQuiz));
+        when(quizMapper.toResponse(sampleQuiz)).thenReturn(response);
+
+        List<QuizDto.Response> result = quizService.findPublished();
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getPublished()).isTrue();
     }
 
     @Test
@@ -83,6 +102,23 @@ class QuizServiceTest {
         QuizDto.Response result = quizService.findById(sampleQuiz.getId());
         assertThat(result.getId()).isEqualTo(sampleQuiz.getId());
         assertThat(result.getEmoji()).isEqualTo("🧪");
+    }
+
+    @Test
+    void findPublishedById_returnsOnlyPublishedQuiz() {
+        val response = QuizDto.Response.builder()
+                .id(sampleQuiz.getId())
+                .title(sampleQuiz.getTitle())
+                .emoji(sampleQuiz.getEmoji())
+                .published(sampleQuiz.getPublished())
+                .questionsCount(sampleQuiz.getQuestions().size())
+                .build();
+        when(quizRepository.findByIdAndPublishedTrue(sampleQuiz.getId())).thenReturn(Optional.of(sampleQuiz));
+        when(quizMapper.toResponse(sampleQuiz)).thenReturn(response);
+
+        QuizDto.Response result = quizService.findPublishedById(sampleQuiz.getId());
+
+        assertThat(result.getPublished()).isTrue();
     }
 
     @Test
@@ -119,6 +155,27 @@ class QuizServiceTest {
         when(quizRepository.existsById(sampleQuiz.getId())).thenReturn(true);
         quizService.delete(sampleQuiz.getId());
         verify(quizRepository, times(1)).deleteById(sampleQuiz.getId());
+    }
+
+    @Test
+    void updatePublicationStatus_updatesAndReturnsQuiz() {
+        val response = QuizDto.Response.builder()
+                .id(sampleQuiz.getId())
+                .title(sampleQuiz.getTitle())
+                .emoji(sampleQuiz.getEmoji())
+                .published(false)
+                .questionsCount(sampleQuiz.getQuestions().size())
+                .build();
+
+        when(quizRepository.findById(sampleQuiz.getId())).thenReturn(Optional.of(sampleQuiz));
+        when(quizRepository.save(any(Quiz.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(quizMapper.toResponse(any(Quiz.class))).thenReturn(response);
+
+        QuizDto.Response result = quizService.updatePublicationStatus(sampleQuiz.getId(), false);
+
+        assertThat(result.getPublished()).isFalse();
+        assertThat(sampleQuiz.getPublished()).isFalse();
+        verify(quizRepository, times(1)).save(sampleQuiz);
     }
 
 }

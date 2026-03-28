@@ -1,4 +1,4 @@
-package com.quizmaker.config;
+package org.saidone.quizmaker.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;

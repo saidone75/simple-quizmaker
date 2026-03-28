@@ -1,8 +1,8 @@
-package com.quizmaker.bootstrap;
+package org.saidone.quizmaker.bootstrap;
 
-import com.quizmaker.entity.Question;
-import com.quizmaker.entity.Quiz;
-import com.quizmaker.repository.QuizRepository;
+import org.saidone.quizmaker.entity.Question;
+import org.saidone.quizmaker.entity.Quiz;
+import org.saidone.quizmaker.repository.QuizRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
@@ -33,6 +33,7 @@ public class DevQuizBootstrap implements CommandLineRunner {
                 Quiz.builder()
                         .title(DEMO_QUIZ_TITLE)
                         .emoji("🌌")
+                        .published(true)
                         .questions(List.of(
                                 question(
                                         "Qual è il pianeta più grande del Sistema Solare?",

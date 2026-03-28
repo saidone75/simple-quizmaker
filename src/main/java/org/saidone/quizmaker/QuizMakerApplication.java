@@ -1,4 +1,4 @@
-package com.quizmaker;
+package org.saidone.quizmaker;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

@@ -1,4 +1,4 @@
-package com.quizmaker.dto;
+package org.saidone.quizmaker.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -39,6 +39,15 @@ public class QuizDto {
         private List<QuestionDto> questions;
         private Integer questionsCount;
         private LocalDateTime createdAt;
+        private Boolean published;
+    }
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class PublicationUpdateRequest {
+        @NotNull(message = "Il campo published è obbligatorio")
+        private Boolean published;
     }
 
 }

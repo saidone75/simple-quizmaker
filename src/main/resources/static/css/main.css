@@ -277,6 +277,20 @@ body { font-family: 'Nunito', sans-serif; background: var(--gray-bg); min-height
 .btn-edit-quiz:hover { background: #B5D4F4; }
 .btn-delete-quiz { background: var(--red-light); color: var(--red); }
 .btn-delete-quiz:hover { background: #F7C1C1; }
+.btn-publish-toggle {
+    background: var(--green-light);
+    color: var(--green-text);
+    position: relative;
+    overflow: hidden;
+}
+.btn-publish-toggle:hover { background: #BFE7DA; }
+.btn-publish-toggle input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--green);
+    cursor: pointer;
+}
+.btn-publish-toggle input[type="checkbox"]:disabled { cursor: not-allowed; }
 .manage-empty { text-align: center; padding: 3rem 1rem; color: var(--gray-muted); font-size: 15px; font-weight: 600; }
 .manage-empty span { font-size: 48px; display: block; margin-bottom: 12px; }
 
