@@ -15,7 +15,7 @@ import java.util.UUID;
 public class WebController {
 
     private final QuizService quizService;
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    private final ObjectMapper objectMapper;
 
     // Students page (default)
     @GetMapping("/")
@@ -23,7 +23,7 @@ public class WebController {
         var quizzes = quizService.findAll();
         model.addAttribute("quizzes", quizzes);
         try {
-            model.addAttribute("quizzesJson", OBJECT_MAPPER.writeValueAsString(quizzes));
+            model.addAttribute("quizzesJson", objectMapper.writeValueAsString(quizzes));
         } catch (JsonProcessingException e) {
             model.addAttribute("quizzesJson", "[]");
         }
