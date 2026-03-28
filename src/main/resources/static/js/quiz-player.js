@@ -4,19 +4,22 @@ let playState = { quiz: null, current: 0, score: 0, wrong: 0, answered: false };
 // Called from Thymeleaf student.html via onclick on card
 function startQuizFromCard(el) {
     const id = el.dataset.id;
-    const questionsJson = el.dataset.questions;
     const title = el.querySelector('.quiz-pick-name').textContent;
     const emoji = el.querySelector('.quiz-pick-icon').textContent;
 
-    let questions;
-    try {
-        questions = JSON.parse(questionsJson);
-    } catch(e) {
-        alert('Errore nel caricamento del quiz');
+    const questionsFromPage = window.QUIZ_DATA_BY_ID?.[id]?.questions;
+    if (Array.isArray(questionsFromPage)) {
+        startQuiz({ id, title, emoji, questions: questionsFromPage });
         return;
     }
 
-    startQuiz({ id, title, emoji, questions });
+    const questionsJson = el.dataset.questions;
+    try {
+        const questions = Array.isArray(questionsJson) ? questionsJson : JSON.parse(questionsJson);
+        startQuiz({ id, title, emoji, questions });
+    } catch(e) {
+        alert('Errore nel caricamento del quiz');
+    }
 }
 
 function startQuiz(quiz) {
