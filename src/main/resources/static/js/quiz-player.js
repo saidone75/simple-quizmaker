@@ -2,7 +2,7 @@ const LETTERS = ['A', 'B', 'C', 'D'];
 let playState = { quiz: null, current: 0, score: 0, wrong: 0, answered: false };
 
 // Called from Thymeleaf student.html via onclick on card
-function startQuizFromCard(el) {
+window.startQuizFromCard = function startQuizFromCard(el) {
     const id = el.dataset.id;
     const title = el.querySelector('.quiz-pick-name').textContent;
     const emoji = el.querySelector('.quiz-pick-icon').textContent;
@@ -20,7 +20,7 @@ function startQuizFromCard(el) {
     } catch(e) {
         alert('Errore nel caricamento del quiz');
     }
-}
+};
 
 function startQuiz(quiz) {
     playState = { quiz, current: 0, score: 0, wrong: 0, answered: false };
@@ -28,9 +28,9 @@ function startQuiz(quiz) {
     renderPlay();
 }
 
-function replayQuiz() {
+window.replayQuiz = function replayQuiz() {
     startQuiz(playState.quiz);
-}
+};
 
 function renderPlay() {
     const { quiz, current, score } = playState;
@@ -68,7 +68,7 @@ function renderPlay() {
     `;
 }
 
-function pickAnswer(idx) {
+window.pickAnswer = function pickAnswer(idx) {
     if (playState.answered) return;
     playState.answered = true;
 
@@ -89,13 +89,13 @@ function pickAnswer(idx) {
         fb.innerHTML = `<div class="quiz-feedback wrong">❌ Risposta sbagliata! La risposta corretta era: <strong>${escHtml(correctText)}</strong>${q.feedback ? '. ' + escHtml(q.feedback) : '.'}</div>`;
     }
     document.getElementById('play-next').style.display = 'block';
-}
+};
 
-function nextQuestion() {
+window.nextQuestion = function nextQuestion() {
     playState.current++;
     if (playState.current >= playState.quiz.questions.length) showResult();
     else renderPlay();
-}
+};
 
 function showResult() {
     const { score, wrong, quiz } = playState;
