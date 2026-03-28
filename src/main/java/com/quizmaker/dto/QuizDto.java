@@ -36,10 +36,10 @@ public class QuizDto {
         private UUID id;
         private String title;
         private String emoji;
-        private Boolean published;
         private List<QuestionDto> questions;
         private Integer questionsCount;
         private LocalDateTime createdAt;
+        private Boolean published;
     }
 
     @Data
