@@ -18,6 +18,7 @@ app:
   openai:
     api-key: ${OPENAI_API_KEY:}
     model: ${OPENAI_MODEL:gpt-5.4-mini}
+    max-attachment-chars: ${OPENAI_MAX_ATTACHMENT_CHARS:60000}
 
 logging:
   level:

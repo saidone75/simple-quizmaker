@@ -29,8 +29,11 @@ public class OpenAiQuizGeneratorService {
     @Value("${app.openai.api-key:}")
     private String apiKey;
 
-    @Value("${app.openai.model:gpt-4.1-mini}")
+    @Value("${app.openai.model:gpt-5.4-mini}")
     private String model;
+
+    @Value("${app.openai.max-attachment-chars:30000}")
+    private int maxAttachmentChars;
 
     public QuizDto.Request generateQuiz(QuizGenerationRequestDto request, String attachmentText) {
         if (!StringUtils.hasText(apiKey)) {
@@ -81,7 +84,7 @@ public class OpenAiQuizGeneratorService {
                 request.getNumberOfQuestions(),
                 request.getDifficulty(),
                 request.getTone(),
-                StringUtils.hasText(attachmentText) ? attachmentText.substring(0, Math.min(12000, attachmentText.length())) : "N/A"
+                truncateAttachmentText(attachmentText)
         );
 
         Map<String, Object> responseFormat = Map.of(
@@ -126,6 +129,14 @@ public class OpenAiQuizGeneratorService {
         ));
         payload.put("temperature", 0.7);
         return payload;
+    }
+
+    private String truncateAttachmentText(String attachmentText) {
+        if (!StringUtils.hasText(attachmentText)) {
+            return "N/A";
+        }
+        int effectiveMaxAttachmentChars = maxAttachmentChars > 0 ? maxAttachmentChars : 30000;
+        return attachmentText.substring(0, Math.min(effectiveMaxAttachmentChars, attachmentText.length()));
     }
 
     private void sanitize(QuizDto.Request generated, int maxQuestions) {
