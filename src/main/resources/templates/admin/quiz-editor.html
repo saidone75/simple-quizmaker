@@ -22,8 +22,11 @@
     <div class="teacher-body">
 
 
-        <div class="ai-generator-card">
-            <div class="section-label">Genera quiz con AI</div>
+        <div class="editor-mode-card editor-mode-card-ai">
+            <div class="editor-mode-header">
+                <div class="section-label">Genera quiz con AI</div>
+                <div class="editor-mode-subtitle">Parti da un argomento o da un file e lascia creare all'AI la prima bozza.</div>
+            </div>
             <div class="ai-grid">
                 <div>
                     <label class="q-row-label" for="ai-topic-input">Argomento / testo</label>
@@ -59,20 +62,31 @@
             <div id="ai-generation-msg" class="validation-msg" style="margin-top:8px"></div>
         </div>
 
-        <div class="section-label">Nome del quiz</div>
-        <input type="text" id="quiz-title-input" class="input-field"
-               placeholder="Es: Quiz sulla Preistoria 🦕"
-               th:value="${quiz?.title}"
-               oninput="updateBadge()">
+        <div class="editor-mode-divider" aria-hidden="true">
+            <span>oppure</span>
+        </div>
 
-        <div class="section-label" style="margin-top:1.25rem">Emoji del quiz</div>
-        <input type="text" id="quiz-emoji-input" class="input-field"
-               placeholder="Es: 🦕" maxlength="4" style="width:80px"
-               th:value="${quiz?.emoji}">
+        <div class="editor-mode-card editor-mode-card-manual">
+            <div class="editor-mode-header">
+                <div class="section-label">Crea quiz manualmente</div>
+                <div class="editor-mode-subtitle">Inserisci titolo, emoji e domande personalizzate una per una.</div>
+            </div>
 
-        <div class="section-label" style="margin-top:1.25rem">Domande</div>
-        <div id="questions-list" class="questions-list"></div>
-        <button class="btn-add-question" onclick="addQuestion()">+ Aggiungi domanda</button>
+            <div class="section-label">Nome del quiz</div>
+            <input type="text" id="quiz-title-input" class="input-field"
+                   placeholder="Es: Quiz sulla Preistoria 🦕"
+                   th:value="${quiz?.title}"
+                   oninput="updateBadge()">
+
+            <div class="section-label" style="margin-top:1.25rem">Emoji del quiz</div>
+            <input type="text" id="quiz-emoji-input" class="input-field"
+                   placeholder="Es: 🦕" maxlength="4" style="width:80px"
+                   th:value="${quiz?.emoji}">
+
+            <div class="section-label" style="margin-top:1.25rem">Domande</div>
+            <div id="questions-list" class="questions-list"></div>
+            <button class="btn-add-question" onclick="addQuestion()">+ Aggiungi domanda</button>
+        </div>
 
         <div id="validation-msg" class="validation-msg"></div>
         <button class="btn-start-quiz" id="save-btn" onclick="saveQuiz()">
