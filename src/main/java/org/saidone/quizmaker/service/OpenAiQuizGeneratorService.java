@@ -72,7 +72,7 @@ public class OpenAiQuizGeneratorService {
                 - Evita domande duplicate.
                 - Le risposte devono essere chiare e plausibili.
                 - answer deve sempre puntare a un indice valido
-                - feedback deve contenere una curiosità sulla risposta
+                - feedback deve contenere una curiosità sulla risposta corretta
                 
                 Testo di riferimento allegato (se presente):
                 %s
