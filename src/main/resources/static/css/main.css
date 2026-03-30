@@ -76,6 +76,32 @@ body { font-family: 'Nunito', sans-serif; background: var(--gray-bg); min-height
 }
 .input-field:focus { border-color: var(--green); }
 
+.otp-group {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+.otp-input {
+    width: 56px;
+    height: 58px;
+    border: 1.5px solid var(--gray-border);
+    border-radius: 12px;
+    background: var(--white);
+    text-align: center;
+    font-family: 'Nunito', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.otp-input:focus {
+    border-color: var(--green);
+    box-shadow: 0 0 0 3px rgba(29, 158, 117, 0.18);
+}
+
 
 .ai-generator-card {
     background: var(--white);
