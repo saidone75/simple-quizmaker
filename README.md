@@ -1,6 +1,6 @@
 # QuizMaker 🦕
 
-App Spring Boot per creare e giocare quiz scolastici, con pannello insegnante protetto e pagina alunni pubblica.
+App Spring Boot per creare e giocare quiz scolastici, con pannello insegnante protetto e pagina alunni con login tramite parola chiave.
 
 ## Avvio in sviluppo (H2)
 
@@ -85,3 +85,17 @@ Ogni nuovo changeset va aggiunto in un file separato e incluso nel `db.changelog
 ```bash
 mvn test
 ```
+
+
+## Login studenti
+
+Gli studenti sono salvati nella tabella `students` e accedono da `/` con una parola chiave di 6 caratteri (`login_keyword`).
+Dopo la consegna, il quiz viene bloccato per quello studente; la maestra può sbloccarlo dalla dashboard admin nella tabella risultati.
+La dashboard admin include anche la gestione studenti (creazione nome + generazione automatica codice univoco da 6 caratteri).
+
+In sviluppo sono inseriti due studenti demo:
+
+| Nome | Parola chiave |
+|------|---------------|
+| Mario Rossi | `A1B2C3` |
+| Lucia Bianchi | `D4E5F6` |

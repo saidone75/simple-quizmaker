@@ -25,20 +25,20 @@ public class SecurityConfig {
     private String adminPassword;
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) {
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
-                        // Public static resources
                         .requestMatchers("/css/**", "/js/**", "/images/**", "/favicon.ico").permitAll()
-                        // H2 console (dev only)
                         .requestMatchers("/h2-console/**").permitAll()
-                        // Login page
-                        .requestMatchers("/admin/login").permitAll()
-                        // Public API
+                        .requestMatchers("/admin/login", "/", "/student/login").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/student/logout").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/quizzes", "/api/quizzes/**").permitAll()
-                        // Students page
-                        .requestMatchers("/").permitAll()
-                        // Everything else requires authentication
+                        .requestMatchers(HttpMethod.POST, "/api/quizzes/*/submit").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/quizzes/**", "/api/quizzes/*/unlock/*").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/quizzes/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/quizzes/**").hasRole("ADMIN")
+                        .requestMatchers("/api/students/**").hasRole("ADMIN")
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
@@ -57,12 +57,10 @@ public class SecurityConfig {
                         .deleteCookies("JSESSIONID")
                         .permitAll()
                 )
-                // CSRF: enable for Thymeleaf forms, but disable for REST API calls from JS
                 .csrf(csrf -> csrf
                         .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-                        .ignoringRequestMatchers("/api/**", "/h2-console/**")
+                        .ignoringRequestMatchers("/h2-console/**")
                 )
-                // Allow frames for H2 console in dev
                 .headers(headers -> headers
                         .frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin)
                 );
