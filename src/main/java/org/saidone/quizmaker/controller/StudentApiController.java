@@ -33,4 +33,9 @@ public class StudentApiController {
         studentService.delete(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PostMapping("/{id}/regenerate-password")
+    public ResponseEntity<StudentDto.Response> regeneratePassword(@PathVariable UUID id) {
+        return ResponseEntity.ok(studentService.regenerateLoginKeyword(id));
+    }
 }

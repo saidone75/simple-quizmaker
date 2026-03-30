@@ -94,6 +94,11 @@
                     <td style="padding:10px 12px;border-top:1px solid #eef2f7" th:text="${student.fullName}">Mario Rossi</td>
                     <td style="padding:10px 12px;border-top:1px solid #eef2f7;font-weight:800;letter-spacing:0.08rem" th:text="${student.loginKeyword}">ABC123</td>
                     <td style="padding:10px 12px;border-top:1px solid #eef2f7">
+                        <button class="btn-icon-action btn-edit-quiz"
+                                title="Rigenera parola chiave"
+                                th:data-id="${student.id}"
+                                th:data-name="${student.fullName}"
+                                onclick="regenerateStudentPassword(this.dataset.id, this.dataset.name)">🔐</button>
                         <button class="btn-icon-action btn-delete-quiz"
                                 title="Elimina studente"
                                 th:data-id="${student.id}"
@@ -251,6 +256,28 @@
             hideLoading();
             showToast('Studente eliminato');
             setTimeout(() => location.reload(), 700);
+        } catch (e) {
+            hideLoading();
+            alert('Errore: ' + e.message);
+        }
+    }
+
+    async function regenerateStudentPassword(studentId, studentName) {
+        if (!confirm('Rigenerare la parola chiave per "' + studentName + '"?')) return;
+        showLoading('Rigenerazione password...');
+        try {
+            const res = await fetch('/api/students/' + studentId + '/regenerate-password', {
+                method: 'POST',
+                headers: { [CSRF_HEADER]: CSRF_TOKEN }
+            });
+            if (!res.ok) {
+                const payload = await res.json();
+                throw new Error(payload.message || 'Errore server');
+            }
+            const payload = await res.json();
+            hideLoading();
+            showToast('Nuova parola chiave: ' + payload.loginKeyword);
+            setTimeout(() => location.reload(), 900);
         } catch (e) {
             hideLoading();
             alert('Errore: ' + e.message);

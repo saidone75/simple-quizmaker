@@ -1,6 +1,7 @@
 package org.saidone.quizmaker.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.val;
 import org.saidone.quizmaker.dto.StudentDto;
 import org.saidone.quizmaker.entity.Student;
 import org.saidone.quizmaker.repository.QuizSubmissionRepository;
@@ -33,18 +34,18 @@ public class StudentService {
 
     @Transactional
     public StudentDto.Response create(String fullName) {
-        String cleanedName = fullName == null ? "" : fullName.trim();
+        val cleanedName = fullName == null ? "" : fullName.trim();
         if (cleanedName.isBlank()) {
             throw new IllegalArgumentException("Il nome dello studente è obbligatorio");
         }
 
-        Student student = Student.builder()
+        val student = Student.builder()
                 .id(UUID.randomUUID())
                 .fullName(cleanedName)
                 .loginKeyword(generateUniqueKeyword())
                 .build();
 
-        Student saved = studentRepository.save(student);
+        val saved = studentRepository.save(student);
         return new StudentDto.Response(saved.getId(), saved.getFullName(), saved.getLoginKeyword());
     }
 
@@ -57,9 +58,18 @@ public class StudentService {
         studentRepository.deleteById(studentId);
     }
 
+    @Transactional
+    public StudentDto.Response regenerateLoginKeyword(UUID studentId) {
+        val student = studentRepository.findById(studentId)
+                .orElseThrow(() -> new IllegalArgumentException("Studente non trovato: " + studentId));
+        student.setLoginKeyword(generateUniqueKeyword());
+        val saved = studentRepository.save(student);
+        return new StudentDto.Response(saved.getId(), saved.getFullName(), saved.getLoginKeyword());
+    }
+
     private String generateUniqueKeyword() {
         for (int attempt = 0; attempt < 100; attempt++) {
-            String keyword = randomCode(6).toUpperCase(Locale.ROOT);
+            val keyword = randomAlphanumeric(4);
             if (!studentRepository.existsByLoginKeywordIgnoreCase(keyword)) {
                 return keyword;
             }
@@ -67,9 +77,9 @@ public class StudentService {
         throw new IllegalStateException("Impossibile generare una keyword univoca. Riprova.");
     }
 
-    private String randomCode(int len) {
-        StringBuilder sb = new StringBuilder(len);
-        for (int i = 0; i < len; i++) {
+    public static String randomAlphanumeric(int length) {
+        val sb = new StringBuilder(length);
+        for (int i = 0; i < length; i++) {
             sb.append(CHARS.charAt(RANDOM.nextInt(CHARS.length())));
         }
         return sb.toString();
