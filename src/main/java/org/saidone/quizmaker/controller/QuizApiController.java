@@ -58,6 +58,11 @@ public class QuizApiController {
         return ResponseEntity.noContent().build();
     }
 
+    @PostMapping("/{quizId}/unlock-all")
+    public ResponseEntity<Integer> unlockAllForQuiz(@PathVariable UUID quizId) {
+        return ResponseEntity.ok(quizSubmissionService.unlockAllForQuiz(quizId));
+    }
+
     @PostMapping
     public ResponseEntity<QuizDto.Response> create(@Valid @RequestBody QuizDto.Request request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(quizService.create(request));

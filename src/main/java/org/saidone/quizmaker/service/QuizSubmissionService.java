@@ -85,6 +85,14 @@ public class QuizSubmissionService {
         quizSubmissionRepository.save(submission);
     }
 
+    @Transactional
+    public int unlockAllForQuiz(UUID quizId) {
+        List<QuizSubmission> submissions = quizSubmissionRepository.findByQuizIdAndUnlockedFalse(quizId);
+        submissions.forEach(submission -> submission.setUnlocked(true));
+        quizSubmissionRepository.saveAll(submissions);
+        return submissions.size();
+    }
+
     public record ResultRow(
             UUID studentId,
             String studentName,

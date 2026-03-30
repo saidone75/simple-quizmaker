@@ -609,3 +609,97 @@ input[type="file"].input-field::-webkit-file-upload-button:hover {
         font-size: 17px;
     }
 }
+
+/* ===== RESULTS PAGE ===== */
+.results-groups {
+    display: grid;
+    gap: 14px;
+}
+.result-group-card {
+    background: var(--white);
+    border: 1.5px solid var(--gray-border);
+    border-radius: var(--radius);
+    padding: 14px;
+    box-shadow: var(--shadow);
+}
+.result-group-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+}
+.result-group-header h2 {
+    font-size: 18px;
+    font-weight: 900;
+    color: var(--green-dark);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+.btn-unlock-all,
+.btn-unlock-single {
+    border: none;
+    border-radius: 10px;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+.btn-unlock-all {
+    background: linear-gradient(135deg, #1D9E75, #0F6E56);
+    color: #fff;
+    padding: 10px 14px;
+    font-size: 14px;
+    box-shadow: 0 4px 14px rgba(29,158,117,0.25);
+}
+.btn-unlock-all:hover { transform: translateY(-1px); }
+.btn-unlock-single {
+    background: var(--green-light);
+    color: var(--green-text);
+    padding: 8px 12px;
+    font-size: 13px;
+}
+.btn-unlock-single:hover { background: #BFE7DA; }
+.btn-unlock-single:disabled {
+    background: #ECECEC;
+    color: #838383;
+    cursor: not-allowed;
+}
+.results-table-wrap {
+    overflow: auto;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+}
+.results-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 620px;
+}
+.results-table th {
+    text-align: left;
+    background: #f8fafc;
+    padding: 10px 12px;
+    font-size: 13px;
+}
+.results-table td {
+    padding: 10px 12px;
+    border-top: 1px solid #eef2f7;
+    font-size: 14px;
+}
+.status-pill {
+    font-size: 12px;
+    font-weight: 800;
+    border-radius: 999px;
+    padding: 5px 9px;
+    display: inline-block;
+}
+.status-pill-locked {
+    background: var(--amber-light);
+    color: var(--amber-text);
+}
+.status-pill-unlocked {
+    background: var(--blue-light);
+    color: var(--blue-dark);
+}

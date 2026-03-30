@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -92,7 +94,22 @@ public class WebController {
 
     @GetMapping("/admin/results")
     public String adminResults(Model model) {
-        model.addAttribute("results", quizSubmissionService.findAllResults());
+        List<QuizSubmissionService.ResultRow> results = quizSubmissionService.findAllResults();
+
+        List<QuizResultGroup> groupedResults = results.stream()
+                .collect(java.util.stream.Collectors.groupingBy(
+                        QuizSubmissionService.ResultRow::quizId,
+                        LinkedHashMap::new,
+                        java.util.stream.Collectors.toList()))
+                .entrySet()
+                .stream()
+                .map(entry -> new QuizResultGroup(
+                        entry.getKey(),
+                        entry.getValue().get(0).quizTitle(),
+                        entry.getValue()))
+                .toList();
+
+        model.addAttribute("groupedResults", groupedResults);
         return "admin/results";
     }
 
@@ -107,4 +124,7 @@ public class WebController {
         return "admin/quiz-editor";
     }
 
+
+    private record QuizResultGroup(UUID quizId, String quizTitle, List<QuizSubmissionService.ResultRow> results) {
+    }
 }
