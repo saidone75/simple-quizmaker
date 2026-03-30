@@ -66,15 +66,11 @@ public class StudentService {
 
     private StudentDto.Response saveWithUniqueKeyword(Student student) {
         for (int attempt = 0; attempt < 100; attempt++) {
-            student.setLoginKeyword(randomAlphanumeric(4));
-            if (studentRepository.existsByLoginKeywordIgnoreCase(student.getLoginKeyword())) {
-                continue;
-            }
-            try {
+            val newLoginKeyword = randomAlphanumeric(4);
+            if (!studentRepository.existsByLoginKeyword(newLoginKeyword)) {
+                student.setLoginKeyword(newLoginKeyword);
                 val saved = studentRepository.saveAndFlush(student);
                 return new StudentDto.Response(saved.getId(), saved.getFullName(), saved.getLoginKeyword());
-            } catch (DataIntegrityViolationException e) {
-                // Retry in case of concurrent insert/regenerate with same keyword.
             }
         }
         throw new IllegalStateException("Impossibile generare una keyword univoca. Riprova.");

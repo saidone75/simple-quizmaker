@@ -11,7 +11,7 @@ public interface StudentRepository extends JpaRepository<Student, UUID> {
 
     Optional<Student> findByLoginKeywordIgnoreCase(String loginKeyword);
 
-    boolean existsByLoginKeywordIgnoreCase(String loginKeyword);
+    boolean existsByLoginKeyword(String loginKeyword);
 
     List<Student> findAllByOrderByFullNameAsc();
 }
