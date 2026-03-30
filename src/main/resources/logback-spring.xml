@@ -30,13 +30,13 @@
     </appender>
 
     <springProfile name="dev">
-        <root level="${LOGGING_LEVEL_ROOT:-INFO}">
+        <root level="DEBUG">
             <appender-ref ref="CONSOLE"/>
         </root>
     </springProfile>
 
     <springProfile name="prod">
-        <root level="${LOGGING_LEVEL_ROOT:-INFO}">
+        <root level="INFO">
             <appender-ref ref="FILE"/>
         </root>
     </springProfile>
