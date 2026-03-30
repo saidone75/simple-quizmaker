@@ -45,7 +45,40 @@ function startQuizFromCard(el) {
 
 window.startQuizFromCard = startQuizFromCard;
 
+
+function markQuizCardAsLocked(quizId) {
+    const quizCard = document.querySelector('.quiz-picker .quiz-pick-item[data-id="' + String(quizId) + '"]');
+    if (!quizCard) return;
+
+    quizCard.dataset.locked = 'true';
+    quizCard.classList.add('is-locked');
+
+    let statusLabel = quizCard.querySelector('.quiz-pick-status');
+    if (!statusLabel) {
+        statusLabel = document.createElement('span');
+        statusLabel.className = 'quiz-pick-status';
+        const details = quizCard.querySelector('span');
+        const questionCount = details ? details.querySelector('.quiz-pick-count') : null;
+        if (questionCount) {
+            questionCount.insertAdjacentElement('afterend', statusLabel);
+        } else if (details) {
+            details.appendChild(statusLabel);
+        }
+    }
+    statusLabel.textContent = '🔒 Hai già completato questo quiz';
+}
+
+function refreshLockedQuizCards() {
+    const cards = document.querySelectorAll('.quiz-picker .quiz-pick-item');
+    for (let i = 0; i < cards.length; i++) {
+        const card = cards[i];
+        if ((window.LOCKED_QUIZ_IDS && window.LOCKED_QUIZ_IDS.has(String(card.dataset.id))) || card.dataset.locked === 'true') {
+            markQuizCardAsLocked(card.dataset.id);
+        }
+    }
+}
 function bindQuizPickerCards() {
+    refreshLockedQuizCards();
     const cards = document.querySelectorAll('.quiz-picker .quiz-pick-item');
     for (let i = 0; i < cards.length; i++) {
         const card = cards[i];
@@ -158,6 +191,7 @@ async function showResult() {
         if (window.LOCKED_QUIZ_IDS) {
             window.LOCKED_QUIZ_IDS.add(String(quiz.id));
         }
+        markQuizCardAsLocked(quiz.id);
     } catch (e) {
         alert('Errore: ' + e.message);
         goTo('student');

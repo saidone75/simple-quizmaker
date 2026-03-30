@@ -36,7 +36,7 @@
                 <span>
                     <span class="quiz-pick-name" th:text="${quiz.title}">Titolo</span>
                     <span class="quiz-pick-count" th:text="${quiz.questionsCount} + ' domande'">domande</span>
-                    <span class="quiz-pick-count" th:if="${lockedQuizIds.contains(quiz.id)}">🔒 Già completato</span>
+                    <span class="quiz-pick-status" th:if="${lockedQuizIds.contains(quiz.id)}">🔒 Hai già completato questo quiz</span>
                 </span>
             </div>
         </div>
