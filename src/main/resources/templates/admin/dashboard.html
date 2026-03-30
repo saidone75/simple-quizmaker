@@ -95,10 +95,10 @@
                     <td style="padding:10px 12px;border-top:1px solid #eef2f7;font-weight:800;letter-spacing:0.08rem" th:text="${student.loginKeyword}">ABC123</td>
                     <td style="padding:10px 12px;border-top:1px solid #eef2f7">
                         <div class="student-actions">
-                        <button class="btn-icon-action btn-edit-quiz"
+                        <button class="btn-regenerate-password"
                                 title="Rigenera parola chiave"
                                 th:data-id="${student.id}"
-                                onclick="regenerateStudentPassword(this.dataset.id)">🔐</button>
+                                onclick="regenerateStudentPassword(this.dataset.id)">🔐 Rigenera password</button>
                         <button class="btn-icon-action btn-delete-quiz"
                                 title="Elimina studente"
                                 th:data-id="${student.id}"

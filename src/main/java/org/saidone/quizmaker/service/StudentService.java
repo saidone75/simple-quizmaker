@@ -6,6 +6,7 @@ import org.saidone.quizmaker.dto.StudentDto;
 import org.saidone.quizmaker.entity.Student;
 import org.saidone.quizmaker.repository.QuizSubmissionRepository;
 import org.saidone.quizmaker.repository.StudentRepository;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,11 +43,9 @@ public class StudentService {
         val student = Student.builder()
                 .id(UUID.randomUUID())
                 .fullName(cleanedName)
-                .loginKeyword(generateUniqueKeyword())
                 .build();
 
-        val saved = studentRepository.save(student);
-        return new StudentDto.Response(saved.getId(), saved.getFullName(), saved.getLoginKeyword());
+        return saveWithUniqueKeyword(student);
     }
 
     @Transactional
@@ -62,16 +61,20 @@ public class StudentService {
     public StudentDto.Response regenerateLoginKeyword(UUID studentId) {
         val student = studentRepository.findById(studentId)
                 .orElseThrow(() -> new IllegalArgumentException("Studente non trovato: " + studentId));
-        student.setLoginKeyword(generateUniqueKeyword());
-        val saved = studentRepository.save(student);
-        return new StudentDto.Response(saved.getId(), saved.getFullName(), saved.getLoginKeyword());
+        return saveWithUniqueKeyword(student);
     }
 
-    private String generateUniqueKeyword() {
+    private StudentDto.Response saveWithUniqueKeyword(Student student) {
         for (int attempt = 0; attempt < 100; attempt++) {
-            val keyword = randomAlphanumeric(4);
-            if (!studentRepository.existsByLoginKeywordIgnoreCase(keyword)) {
-                return keyword;
+            student.setLoginKeyword(randomAlphanumeric(4));
+            if (studentRepository.existsByLoginKeywordIgnoreCase(student.getLoginKeyword())) {
+                continue;
+            }
+            try {
+                val saved = studentRepository.saveAndFlush(student);
+                return new StudentDto.Response(saved.getId(), saved.getFullName(), saved.getLoginKeyword());
+            } catch (DataIntegrityViolationException e) {
+                // Retry in case of concurrent insert/regenerate with same keyword.
             }
         }
         throw new IllegalStateException("Impossibile generare una keyword univoca. Riprova.");

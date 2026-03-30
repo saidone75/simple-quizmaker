@@ -409,6 +409,23 @@ input[type="file"].input-field::-webkit-file-upload-button:hover {
     align-items: center;
     gap: 8px;
 }
+.btn-regenerate-password {
+    height: 36px;
+    border-radius: 8px;
+    border: none;
+    padding: 0 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 13px;
+    font-weight: 800;
+    cursor: pointer;
+    background: var(--blue-light);
+    color: var(--blue-dark);
+    transition: all 0.15s;
+}
+.btn-regenerate-password:hover { background: #B5D4F4; }
 .btn-publish-toggle {
     background: var(--green-light);
     color: var(--green-text);
