@@ -1,6 +1,7 @@
 package org.saidone.quizmaker.service;
 
 import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -13,8 +14,6 @@ import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
-import java.util.List;
-import java.util.stream.Stream;
 
 @Slf4j
 @Component
@@ -36,7 +35,7 @@ public class DatabaseBackupScheduler {
     @Scheduled(cron = "${app.db-backup.cron:0 0 2 * * *}")
     public void backupDatabase() {
         try {
-            Path sourceDbPath = resolveSqliteFilePath();
+            val sourceDbPath = resolveSqliteFilePath();
             if (sourceDbPath == null) {
                 return;
             }
@@ -46,16 +45,16 @@ public class DatabaseBackupScheduler {
                 return;
             }
 
-            Path backupDirPath = Path.of(backupDirectory).toAbsolutePath().normalize();
+            val backupDirPath = Path.of(backupDirectory).toAbsolutePath().normalize();
             Files.createDirectories(backupDirPath);
 
-            String sourceFileName = sourceDbPath.getFileName().toString();
-            String baseName = sourceFileName.endsWith(".db")
+            val sourceFileName = sourceDbPath.getFileName().toString();
+            val baseName = sourceFileName.endsWith(".db")
                     ? sourceFileName.substring(0, sourceFileName.length() - 3)
                     : sourceFileName;
 
-            String timestamp = LocalDateTime.now().format(TIMESTAMP_FORMATTER);
-            Path backupFile = backupDirPath.resolve(baseName + "-" + timestamp + ".db");
+            val timestamp = LocalDateTime.now().format(TIMESTAMP_FORMATTER);
+            val backupFile = backupDirPath.resolve(baseName + "-" + timestamp + ".db");
 
             Files.copy(sourceDbPath, backupFile, StandardCopyOption.COPY_ATTRIBUTES, StandardCopyOption.REPLACE_EXISTING);
             log.info("Database backup completed: {}", backupFile);
@@ -72,7 +71,7 @@ public class DatabaseBackupScheduler {
             return null;
         }
 
-        String dbPathString = datasourceUrl.substring(SQLITE_JDBC_PREFIX.length());
+        val dbPathString = datasourceUrl.substring(SQLITE_JDBC_PREFIX.length());
         if (dbPathString.isBlank() || ":memory:".equalsIgnoreCase(dbPathString)) {
             log.debug("Database backup skipped. SQLite datasource is in-memory.");
             return null;
@@ -86,11 +85,11 @@ public class DatabaseBackupScheduler {
             return;
         }
 
-        try (Stream<Path> pathStream = Files.list(backupDirPath)) {
-            List<Path> backups = pathStream
+        try (val pathStream = Files.list(backupDirPath)) {
+            val backups = pathStream
                     .filter(Files::isRegularFile)
                     .filter(path -> {
-                        String filename = path.getFileName().toString();
+                        val filename = path.getFileName().toString();
                         return filename.startsWith(baseName + "-") && filename.endsWith(".db");
                     })
                     .sorted(Comparator.comparing(Path::getFileName).reversed())
