@@ -1,6 +1,5 @@
 package org.saidone.quizmaker.service;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -50,7 +49,7 @@ public class OpenAiQuizGeneratorService {
                 .body(String.class);
 
         try {
-            JsonNode root = objectMapper.readTree(responseBody);
+            val root = objectMapper.readTree(responseBody);
             val rawJson = root.path("choices").path(0).path("message").path("content").asText();
             val generated = objectMapper.readValue(rawJson, QuizDto.Request.class);
             sanitize(generated, request.getNumberOfQuestions());
