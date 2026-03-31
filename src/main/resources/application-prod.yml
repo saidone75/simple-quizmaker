@@ -18,6 +18,3 @@ spring:
       enabled: true
   liquibase:
     enabled: true
-logging:
-  level:
-    root: INFO

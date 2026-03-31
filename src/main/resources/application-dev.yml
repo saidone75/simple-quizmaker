@@ -22,4 +22,3 @@ spring:
 logging:
   level:
     root: DEBUG
-    org.hibernate.SQL: DEBUG
