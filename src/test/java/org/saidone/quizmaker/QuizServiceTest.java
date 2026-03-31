@@ -144,12 +144,12 @@ class QuizServiceTest {
         mappedQuestion.setOptions(List.of("A", "B"));
         mappedQuestion.setAnswer(0);
         when(questionMapper.toEntity(questionDto)).thenReturn(mappedQuestion);
-        QuizDto.Request request = QuizDto.Request.builder()
+        val request = QuizDto.Request.builder()
                 .title("Quiz di Test")
                 .emoji("🧪")
                 .questions(List.of(questionDto))
                 .build();
-        QuizDto.Response result = quizService.create(request);
+        val result = quizService.create(request);
         assertThat(result.getTitle()).isEqualTo("Quiz di Test");
         verify(quizRepository, times(1)).save(any(Quiz.class));
     }
@@ -176,7 +176,7 @@ class QuizServiceTest {
         when(quizRepository.save(any(Quiz.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(quizMapper.toResponse(any(Quiz.class))).thenReturn(response);
 
-        QuizDto.Response result = quizService.updatePublicationStatus(sampleQuiz.getId(), false);
+        val result = quizService.updatePublicationStatus(sampleQuiz.getId(), false);
 
         assertThat(result.getPublished()).isFalse();
         assertThat(sampleQuiz.getPublished()).isFalse();
