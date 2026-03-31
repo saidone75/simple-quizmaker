@@ -78,7 +78,7 @@ public class QuizService {
         quiz.setTitle(request.getTitle());
         quiz.setEmoji(request.getEmoji());
         quiz.setQuestions(request.getQuestions().stream().map(questionMapper::toEntity).toList());
-        Quiz saved = quizRepository.save(quiz);
+        val saved = quizRepository.save(quiz);
         log.info("Quiz updated: {} ({})", saved.getTitle(), saved.getId());
         return toResponse(saved);
     }

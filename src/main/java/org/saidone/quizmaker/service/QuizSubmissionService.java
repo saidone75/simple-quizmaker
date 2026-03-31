@@ -36,7 +36,7 @@ public class QuizSubmissionService {
 
     @Transactional
     public QuizSubmissionDto.Response submit(UUID quizId, Student student, List<Integer> answers) {
-        Quiz quiz = quizRepository.findByIdAndPublishedTrue(quizId)
+        val quiz = quizRepository.findByIdAndPublishedTrue(quizId)
                 .orElseThrow(() -> new EntityNotFoundException("Quiz non trovato: " + quizId));
 
         val existingSubmission = quizSubmissionRepository.findByStudentIdAndQuizId(student.getId(), quizId);
@@ -46,7 +46,7 @@ public class QuizSubmissionService {
 
         int score = calculateScore(quiz, answers);
 
-        QuizSubmission submission = existingSubmission.orElseGet(() -> QuizSubmission.builder()
+        val submission = existingSubmission.orElseGet(() -> QuizSubmission.builder()
                 .student(student)
                 .quiz(quiz)
                 .build());
@@ -79,7 +79,7 @@ public class QuizSubmissionService {
 
     @Transactional
     public void unlockQuizForStudent(UUID studentId, UUID quizId) {
-        QuizSubmission submission = quizSubmissionRepository.findByStudentIdAndQuizId(studentId, quizId)
+        val submission = quizSubmissionRepository.findByStudentIdAndQuizId(studentId, quizId)
                 .orElseThrow(() -> new EntityNotFoundException("Consegna non trovata per studente/quiz"));
         submission.setUnlocked(true);
         quizSubmissionRepository.save(submission);
@@ -87,7 +87,7 @@ public class QuizSubmissionService {
 
     @Transactional
     public int unlockAllForQuiz(UUID quizId) {
-        List<QuizSubmission> submissions = quizSubmissionRepository.findByQuizIdAndUnlockedFalse(quizId);
+        val submissions = quizSubmissionRepository.findByQuizIdAndUnlockedFalse(quizId);
         submissions.forEach(submission -> submission.setUnlocked(true));
         quizSubmissionRepository.saveAll(submissions);
         return submissions.size();
@@ -112,8 +112,8 @@ public class QuizSubmissionService {
         int score = 0;
         int max = Math.min(answers.size(), quiz.getQuestions().size());
         for (int i = 0; i < max; i++) {
-            Integer given = answers.get(i);
-            Integer expected = quiz.getQuestions().get(i).getAnswer();
+            val given = answers.get(i);
+            val expected = quiz.getQuestions().get(i).getAnswer();
             if (Objects.equals(given, expected)) {
                 score++;
             }

@@ -1,6 +1,8 @@
 package org.saidone.quizmaker.service;
 
 import jakarta.servlet.http.HttpSession;
+import lombok.RequiredArgsConstructor;
+import lombok.val;
 import org.saidone.quizmaker.entity.Student;
 import org.saidone.quizmaker.repository.StudentRepository;
 import org.springframework.stereotype.Service;
@@ -8,6 +10,7 @@ import org.springframework.stereotype.Service;
 import java.util.Optional;
 import java.util.UUID;
 
+@RequiredArgsConstructor
 @Service
 public class StudentSessionService {
 
@@ -15,12 +18,8 @@ public class StudentSessionService {
 
     private final StudentRepository studentRepository;
 
-    public StudentSessionService(StudentRepository studentRepository) {
-        this.studentRepository = studentRepository;
-    }
-
     public Optional<Student> getLoggedStudent(HttpSession session) {
-        Object studentId = session.getAttribute(STUDENT_ID_SESSION_KEY);
+        val studentId = session.getAttribute(STUDENT_ID_SESSION_KEY);
         if (studentId == null) {
             return Optional.empty();
         }

@@ -36,8 +36,8 @@
     </springProfile>
 
     <springProfile name="prod">
-        <root level="DEBUG">
-            <appender-ref ref="CONSOLE"/>
+        <root level="INFO">
+            <appender-ref ref="FILE"/>
         </root>
     </springProfile>
 

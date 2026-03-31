@@ -2,6 +2,7 @@ package org.saidone.quizmaker.entity;
 
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
+import lombok.val;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -36,7 +37,7 @@ public class LocalDateTimeColumnConverter implements AttributeConverter<LocalDat
             return null;
         }
 
-        String rawValue = dbData.trim();
+        val rawValue = dbData.trim();
         if (rawValue.chars().allMatch(Character::isDigit)) {
             long epoch = Long.parseLong(rawValue);
             Instant instant = rawValue.length() <= 10
