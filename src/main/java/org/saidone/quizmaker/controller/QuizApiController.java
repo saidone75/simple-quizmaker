@@ -3,6 +3,7 @@ package org.saidone.quizmaker.controller;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.val;
 import org.saidone.quizmaker.dto.QuizDto;
 import org.saidone.quizmaker.dto.QuizGenerationRequestDto;
 import org.saidone.quizmaker.dto.QuizSubmissionDto;
@@ -45,7 +46,7 @@ public class QuizApiController {
             @PathVariable UUID id,
             @Valid @RequestBody QuizSubmissionDto.Request request,
             HttpSession session) {
-        var student = studentSessionService.getLoggedStudent(session)
+        val student = studentSessionService.getLoggedStudent(session)
                 .orElseThrow(() -> new IllegalStateException("Studente non autenticato"));
         return ResponseEntity.ok(quizSubmissionService.submit(id, student, request.getAnswers()));
     }
@@ -92,7 +93,7 @@ public class QuizApiController {
     public ResponseEntity<QuizDto.Request> generateWithAi(
             @Valid @ModelAttribute QuizGenerationRequestDto request,
             @RequestParam(value = "file", required = false) MultipartFile file) {
-        String attachmentText = documentTextExtractorService.extractText(file);
+        val attachmentText = documentTextExtractorService.extractText(file);
         return ResponseEntity.ok(openAiQuizGeneratorService.generateQuiz(request, attachmentText));
     }
 

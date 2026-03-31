@@ -18,8 +18,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Controller
 @RequiredArgsConstructor
@@ -39,7 +39,7 @@ public class WebController {
         }
 
         val quizzes = quizService.findPublished();
-        Set<UUID> lockedQuizIds = quizSubmissionService.findLockedQuizIdsForStudent(maybeStudent.get());
+        val lockedQuizIds = quizSubmissionService.findLockedQuizIdsForStudent(maybeStudent.get());
 
         model.addAttribute("studentName", maybeStudent.get().getFullName());
         model.addAttribute("quizzes", quizzes);
@@ -94,13 +94,13 @@ public class WebController {
 
     @GetMapping("/admin/results")
     public String adminResults(Model model) {
-        List<QuizSubmissionService.ResultRow> results = quizSubmissionService.findAllResults();
+        val results = quizSubmissionService.findAllResults();
 
-        List<QuizResultGroup> groupedResults = results.stream()
-                .collect(java.util.stream.Collectors.groupingBy(
+        val groupedResults = results.stream()
+                .collect(Collectors.groupingBy(
                         QuizSubmissionService.ResultRow::quizId,
                         LinkedHashMap::new,
-                        java.util.stream.Collectors.toList()))
+                        Collectors.toList()))
                 .entrySet()
                 .stream()
                 .map(entry -> new QuizResultGroup(
@@ -123,7 +123,6 @@ public class WebController {
         model.addAttribute("quiz", quizService.findById(id));
         return "admin/quiz-editor";
     }
-
 
     private record QuizResultGroup(UUID quizId, String quizTitle, List<QuizSubmissionService.ResultRow> results) {
     }
