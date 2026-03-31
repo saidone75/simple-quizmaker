@@ -4,6 +4,4 @@ JAVA_OPTS="-Xms64m -Xmx64m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n
 
 export SPRING_PROFILES_ACTIVE=dev
 
-export SUPABASE_DB_PASSWORD=pF7qeAR7oCScXkpMqAHczmMJ93iobaKJ
-
 mvn spring-boot:run -Dspring-boot.run.jvmArguments="$JAVA_OPTS"
