@@ -9,7 +9,7 @@
         <comment>Create students and quiz submissions tables</comment>
 
         <createTable tableName="students">
-            <column name="id" type="UUID">
+            <column name="id" type="${uuid.type}">
                 <constraints nullable="false" primaryKey="true"/>
             </column>
             <column name="full_name" type="TEXT">
@@ -21,16 +21,16 @@
         </createTable>
 
         <createTable tableName="quiz_submissions">
-            <column name="id" type="UUID">
+            <column name="id" type="${uuid.type}">
                 <constraints nullable="false" primaryKey="true"/>
             </column>
-            <column name="student_id" type="UUID">
+            <column name="student_id" type="${uuid.type}">
                 <constraints nullable="false" referencedTableName="students" referencedColumnNames="id" foreignKeyName="fk_quiz_submissions_student"/>
             </column>
-            <column name="quiz_id" type="UUID">
+            <column name="quiz_id" type="${uuid.type}">
                 <constraints nullable="false" referencedTableName="quizzes" referencedColumnNames="id" foreignKeyName="fk_quiz_submissions_quiz"/>
             </column>
-            <column name="answers" type="JSONB">
+            <column name="answers" type="${json.type}">
                 <constraints nullable="false"/>
             </column>
             <column name="score" type="INT">

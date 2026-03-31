@@ -50,6 +50,7 @@ public class QuizSubmission {
     private Boolean unlocked = false;
 
     @CreationTimestamp
+    @Convert(converter = LocalDateTimeColumnConverter.class)
     @Column(name = "submitted_at", nullable = false)
     private LocalDateTime submittedAt;
 
