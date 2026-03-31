@@ -25,10 +25,10 @@
                 <constraints nullable="false" primaryKey="true"/>
             </column>
             <column name="student_id" type="UUID">
-                <constraints nullable="false"/>
+                <constraints nullable="false" referencedTableName="students" referencedColumnNames="id" foreignKeyName="fk_quiz_submissions_student"/>
             </column>
             <column name="quiz_id" type="UUID">
-                <constraints nullable="false"/>
+                <constraints nullable="false" referencedTableName="quizzes" referencedColumnNames="id" foreignKeyName="fk_quiz_submissions_quiz"/>
             </column>
             <column name="answers" type="JSONB">
                 <constraints nullable="false"/>
@@ -46,22 +46,10 @@
                 <constraints nullable="false"/>
             </column>
         </createTable>
-
-        <addForeignKeyConstraint baseTableName="quiz_submissions"
-                                 baseColumnNames="student_id"
-                                 referencedTableName="students"
-                                 referencedColumnNames="id"
-                                 constraintName="fk_quiz_submissions_student"/>
-
-        <addForeignKeyConstraint baseTableName="quiz_submissions"
-                                 baseColumnNames="quiz_id"
-                                 referencedTableName="quizzes"
-                                 referencedColumnNames="id"
-                                 constraintName="fk_quiz_submissions_quiz"/>
-
-        <addUniqueConstraint tableName="quiz_submissions"
-                             columnNames="student_id,quiz_id"
-                             constraintName="uk_submission_student_quiz"/>
+        <createIndex tableName="quiz_submissions" indexName="uk_submission_student_quiz" unique="true">
+            <column name="student_id"/>
+            <column name="quiz_id"/>
+        </createIndex>
 
         <rollback>
             <dropTable tableName="quiz_submissions"/>
