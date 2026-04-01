@@ -102,18 +102,18 @@ public class WebController {
         return "redirect:/";
     }
 
-    @GetMapping("/admin/login")
+    @GetMapping("/teacher/login")
     public String loginPage() {
         return "admin/login";
     }
 
 
-    @GetMapping("/admin/register")
+    @GetMapping("/teacher/register")
     public String registerPage() {
         return "admin/register";
     }
 
-    @PostMapping("/admin/register")
+    @PostMapping("/teacher/register")
     public String registerTeacher(@RequestParam("username") String username,
                                   @RequestParam("password") String password,
                                   @RequestParam("confirmPassword") String confirmPassword,
@@ -126,7 +126,7 @@ public class WebController {
 
         try {
             teacherAuthService.register(username, password);
-            return "redirect:/admin/login?registered=true";
+            return "redirect:/teacher/login?registered=true";
         } catch (IllegalArgumentException ex) {
             model.addAttribute("registerError", ex.getMessage());
             model.addAttribute("username", username);
@@ -134,24 +134,24 @@ public class WebController {
         }
     }
 
-    @GetMapping("/admin")
+    @GetMapping("/teacher")
     public String adminDashboard(Model model) {
         model.addAttribute("quizzes", quizService.findAllForAdmin(teacherAuthService.getCurrentTeacher()));
         return "admin/dashboard";
     }
 
-    @GetMapping("/admin/students")
+    @GetMapping("/teacher/students")
     public String adminStudents(Model model) {
         model.addAttribute("students", studentService.findAll(teacherAuthService.getCurrentTeacher()));
         return "admin/students";
     }
 
-    @GetMapping("/admin/logs")
+    @GetMapping("/teacher/logs")
     public String adminLogs() {
         return "admin/logs";
     }
 
-    @GetMapping("/admin/results")
+    @GetMapping("/teacher/results")
     public String adminResults(Model model) {
         val results = quizSubmissionService.findAllResults(teacherAuthService.getCurrentTeacher());
 
@@ -172,18 +172,18 @@ public class WebController {
         return "admin/results";
     }
 
-    @GetMapping("/admin/quiz/new")
+    @GetMapping("/teacher/quiz/new")
     public String newQuiz() {
         return "admin/quiz-editor";
     }
 
-    @GetMapping("/admin/quiz/{id}/edit")
+    @GetMapping("/teacher/quiz/{id}/edit")
     public String editQuiz(@PathVariable UUID id, Model model) {
         model.addAttribute("quiz", quizService.findByIdForTeacher(id, teacherAuthService.getCurrentTeacher()));
         return "admin/quiz-editor";
     }
 
-    @GetMapping({"/about", "/admin/about"})
+    @GetMapping({"/about", "/teacher/about"})
     public String aboutPage(Model model) {
         val runtime = Runtime.getRuntime();
         model.addAttribute("appVersion", getAppVersion());

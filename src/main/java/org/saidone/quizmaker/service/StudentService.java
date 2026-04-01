@@ -70,11 +70,10 @@ public class StudentService {
 
     @Transactional
     public void delete(UUID studentId, Teacher teacher) {
-        if (!studentRepository.existsByIdAndTeacher(studentId, teacher)) {
-            throw new IllegalArgumentException("Studente non trovato: " + studentId);
-        }
+        val student = studentRepository.findByIdAndTeacher(studentId, teacher)
+                .orElseThrow(() -> new IllegalArgumentException("Studente non trovato: " + studentId));
         quizSubmissionRepository.deleteAllByStudentIdAndStudentTeacher(studentId, teacher);
-        studentRepository.deleteById(studentId);
+        studentRepository.delete(student);
     }
 
     @Transactional

@@ -42,7 +42,7 @@
             ✅ Registrazione completata. Ora puoi accedere.
         </div>
 
-        <form th:action="@{/admin/login}" method="post">
+        <form th:action="@{/teacher/login}" method="post">
             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
 
             <div class="form-group">
@@ -63,7 +63,7 @@
         </form>
 
         <p style="text-align:center;margin-top:1.25rem;">
-            <a th:href="@{/admin/register}" style="font-size:14px;color:var(--brand-purple-dark);font-weight:700;text-decoration:none;">
+            <a th:href="@{/teacher/register}" style="font-size:14px;color:var(--brand-purple-dark);font-weight:700;text-decoration:none;">
                 ✨ Non hai un account? Registrati
             </a>
         </p>

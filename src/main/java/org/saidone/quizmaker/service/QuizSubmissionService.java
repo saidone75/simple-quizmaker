@@ -98,7 +98,7 @@ public class QuizSubmissionService {
 
     @Transactional
     public void unlockQuizForStudent(UUID studentId, UUID quizId, Teacher teacher) {
-        val submission = quizSubmissionRepository.findByStudentIdAndQuizIdAndStudentTeacher(studentId, quizId, teacher)
+        val submission = quizSubmissionRepository.findByStudentIdAndQuizIdAndStudentTeacherAndQuizTeacher(studentId, quizId, teacher, teacher)
                 .orElseThrow(() -> new EntityNotFoundException("Consegna non trovata per studente/quiz"));
         submission.setUnlocked(true);
         quizSubmissionRepository.save(submission);

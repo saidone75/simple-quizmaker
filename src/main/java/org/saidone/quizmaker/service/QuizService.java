@@ -105,11 +105,10 @@ public class QuizService {
 
     @Transactional
     public void delete(UUID id, Teacher teacher) {
-        if (quizRepository.findByIdAndTeacher(id, teacher).isEmpty()) {
-            throw new EntityNotFoundException(String.format(QUIZ_NOT_FOUND_MESSAGE, id));
-        }
+        val quiz = quizRepository.findByIdAndTeacher(id, teacher)
+                .orElseThrow(() -> new EntityNotFoundException(String.format(QUIZ_NOT_FOUND_MESSAGE, id)));
         quizSubmissionRepository.deleteAllByQuizIdAndQuizTeacher(id, teacher);
-        quizRepository.deleteById(id);
+        quizRepository.delete(quiz);
         log.info("Quiz deleted: {}", id);
     }
 
