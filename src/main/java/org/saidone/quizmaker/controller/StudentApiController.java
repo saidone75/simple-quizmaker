@@ -38,4 +38,9 @@ public class StudentApiController {
     public ResponseEntity<StudentDto.Response> regeneratePassword(@PathVariable UUID id) {
         return ResponseEntity.ok(studentService.regenerateLoginKeyword(id));
     }
+
+    @PostMapping("/regenerate-passwords")
+    public ResponseEntity<Integer> regenerateAllPasswords() {
+        return ResponseEntity.ok(studentService.regenerateAllLoginKeywords());
+    }
 }

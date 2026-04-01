@@ -6,13 +6,11 @@ import org.saidone.quizmaker.dto.StudentDto;
 import org.saidone.quizmaker.entity.Student;
 import org.saidone.quizmaker.repository.QuizSubmissionRepository;
 import org.saidone.quizmaker.repository.StudentRepository;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.security.SecureRandom;
 import java.util.List;
-import java.util.Locale;
 import java.util.UUID;
 
 @Service
@@ -62,6 +60,13 @@ public class StudentService {
         val student = studentRepository.findById(studentId)
                 .orElseThrow(() -> new IllegalArgumentException("Studente non trovato: " + studentId));
         return saveWithUniqueKeyword(student);
+    }
+
+    @Transactional
+    public int regenerateAllLoginKeywords() {
+        val students = studentRepository.findAll();
+        students.forEach(this::saveWithUniqueKeyword);
+        return students.size();
     }
 
     private StudentDto.Response saveWithUniqueKeyword(Student student) {
