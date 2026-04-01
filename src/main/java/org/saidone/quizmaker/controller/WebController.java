@@ -83,8 +83,8 @@ public class WebController {
 
     @PostMapping("/student/login")
     public String studentLogin(@RequestParam("keyword") String keyword, HttpSession session, Model model) {
-        if (keyword == null || keyword.trim().length() != 4) {
-            model.addAttribute("loginError", "La parola chiave deve avere 4 caratteri.");
+        if (keyword == null || keyword.trim().length() != 5) {
+            model.addAttribute("loginError", "La parola chiave deve avere 5 caratteri.");
             return "student-login";
         }
 

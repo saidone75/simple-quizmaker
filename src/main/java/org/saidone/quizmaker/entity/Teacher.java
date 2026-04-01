@@ -53,6 +53,9 @@ public class Teacher {
     @Column(name = "password", nullable = false, length = 255)
     private String password;
 
+    @Column(name = "is_admin", nullable = false)
+    private boolean admin;
+
     @CreationTimestamp
     @Convert(converter = LocalDateTimeColumnConverter.class)
     @Column(name = "created_at", nullable = false, updatable = false)

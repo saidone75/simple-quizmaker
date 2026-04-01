@@ -59,7 +59,13 @@ public class DefaultTeacherBootstrap implements CommandLineRunner {
                 .orElseGet(() -> teacherRepository.save(Teacher.builder()
                         .username(adminUsername.trim().toLowerCase())
                         .password(normalizeConfiguredPassword(adminPassword))
+                        .admin(true)
                         .build()));
+
+        if (!defaultTeacher.isAdmin()) {
+            defaultTeacher.setAdmin(true);
+            teacherRepository.save(defaultTeacher);
+        }
 
         val quizzesWithoutTeacher = quizRepository.findAll().stream().filter(q -> q.getTeacher() == null).toList();
         quizzesWithoutTeacher.forEach(q -> q.setTeacher(defaultTeacher));

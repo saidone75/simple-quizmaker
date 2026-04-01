@@ -24,6 +24,7 @@ import org.saidone.quizmaker.entity.Teacher;
 import org.saidone.quizmaker.repository.TeacherRepository;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
@@ -52,7 +53,7 @@ public class TeacherAuthService implements UserDetailsService {
         return new User(
                 teacher.getUsername(),
                 normalizeStoredPassword(teacher.getPassword()),
-                List.of(new SimpleGrantedAuthority("ROLE_ADMIN"))
+                buildAuthorities(teacher)
         );
     }
 
@@ -75,7 +76,18 @@ public class TeacherAuthService implements UserDetailsService {
         return teacherRepository.save(Teacher.builder()
                 .username(normalizedUsername)
                 .password(passwordEncoder.encode(rawPassword))
+                .admin(false)
                 .build());
+    }
+
+    private List<GrantedAuthority> buildAuthorities(Teacher teacher) {
+        if (teacher.isAdmin()) {
+            return List.of(
+                    new SimpleGrantedAuthority("ROLE_TEACHER"),
+                    new SimpleGrantedAuthority("ROLE_ADMIN")
+            );
+        }
+        return List.of(new SimpleGrantedAuthority("ROLE_TEACHER"));
     }
 
     private String normalizeStoredPassword(String encodedPassword) {

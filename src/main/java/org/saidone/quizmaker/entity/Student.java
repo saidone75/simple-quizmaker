@@ -43,7 +43,7 @@ public class Student {
     @Column(name = "full_name", nullable = false)
     private String fullName;
 
-    @Column(name = "login_keyword", nullable = false, unique = true, length = 6)
+    @Column(name = "login_keyword", nullable = false, unique = true, length = 5)
     private String loginKeyword;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)

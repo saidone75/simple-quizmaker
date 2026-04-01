@@ -25,6 +25,7 @@ import org.saidone.quizmaker.entity.Student;
 import org.saidone.quizmaker.entity.Teacher;
 import org.saidone.quizmaker.repository.QuizSubmissionRepository;
 import org.saidone.quizmaker.repository.StudentRepository;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,6 +38,7 @@ import java.util.UUID;
 public class StudentService {
 
     private static final String CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    private static final int LOGIN_KEYWORD_LENGTH = 5;
     private static final SecureRandom RANDOM = new SecureRandom();
 
     private final StudentRepository studentRepository;
@@ -91,11 +93,16 @@ public class StudentService {
 
     private StudentDto.Response saveWithUniqueKeyword(Student student) {
         for (int attempt = 0; attempt < 100; attempt++) {
-            val newLoginKeyword = randomAlphanumeric(4);
-            if (!studentRepository.existsByLoginKeyword(newLoginKeyword)) {
-                student.setLoginKeyword(newLoginKeyword);
+            val newLoginKeyword = randomAlphanumeric(LOGIN_KEYWORD_LENGTH);
+            if (studentRepository.existsByLoginKeyword(newLoginKeyword)) {
+                continue;
+            }
+            student.setLoginKeyword(newLoginKeyword);
+            try {
                 val saved = studentRepository.saveAndFlush(student);
                 return new StudentDto.Response(saved.getId(), saved.getFullName(), saved.getLoginKeyword());
+            } catch (DataIntegrityViolationException ex) {
+                // collisione concorrente su vincolo unique a livello DB: riprova con una nuova keyword
             }
         }
         throw new IllegalStateException("Impossibile generare una keyword univoca. Riprova.");

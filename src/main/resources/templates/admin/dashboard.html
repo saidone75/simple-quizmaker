@@ -103,7 +103,7 @@
             Nessun quiz ancora. Creane uno!
         </div>
 
-        <div class="admin-about-footer">
+        <div class="admin-about-footer" sec:authorize="hasRole('ADMIN')">
             <a th:href="@{/admin/about}" class="admin-about-link">Informazioni di sistema</a>
         </div>
     </div>

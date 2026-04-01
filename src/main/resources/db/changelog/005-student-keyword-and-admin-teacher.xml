@@ -23,16 +23,26 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
 
-    <property name="uuid.type" value="UUID" dbms="h2"/>
-    <property name="uuid.type" value="TEXT" dbms="sqlite"/>
+    <changeSet id="005" author="quizmaker">
+        <comment>Increase student login keyword length and add teacher admin flag</comment>
 
-    <property name="json.type" value="CLOB" dbms="h2"/>
-    <property name="json.type" value="TEXT" dbms="sqlite"/>
+        <modifyDataType tableName="students" columnName="login_keyword" newDataType="VARCHAR(5)"/>
 
-    <include file="001-create-quizzes-table.xml" relativeToChangelogFile="true" />
-    <include file="002-add-published-flag-to-quizzes.xml" relativeToChangelogFile="true" />
-    <include file="003-add-students-and-submissions.xml" relativeToChangelogFile="true" />
-    <include file="004-add-teachers-and-tenancy.xml" relativeToChangelogFile="true" />
-    <include file="005-student-keyword-and-admin-teacher.xml" relativeToChangelogFile="true" />
+        <addColumn tableName="teachers">
+            <column name="is_admin" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+
+        <update tableName="teachers">
+            <column name="is_admin" valueBoolean="true"/>
+            <where>id = '00000000-0000-0000-0000-000000000001'</where>
+        </update>
+
+        <rollback>
+            <dropColumn tableName="teachers" columnName="is_admin"/>
+            <modifyDataType tableName="students" columnName="login_keyword" newDataType="VARCHAR(4)"/>
+        </rollback>
+    </changeSet>
 
 </databaseChangeLog>

@@ -52,7 +52,7 @@ public class DevStudentBootstrap implements CommandLineRunner {
             val student = Student.builder()
                     .id(UUID.randomUUID())
                     .fullName(String.format("%s %s", FAKER.name().firstName(), FAKER.name().lastName()))
-                    .loginKeyword(StudentService.randomAlphanumeric(4))
+                    .loginKeyword(StudentService.randomAlphanumeric(5))
                     .teacher(teacher)
                     .build();
             studentRepository.save(student);
