@@ -172,6 +172,31 @@ public class WebController {
         return "admin/results";
     }
 
+    @GetMapping("/teacher/profile")
+    public String teacherProfilePage() {
+        return "admin/profile";
+    }
+
+    @PostMapping("/teacher/profile/password")
+    public String changeTeacherPassword(@RequestParam("currentPassword") String currentPassword,
+                                        @RequestParam("newPassword") String newPassword,
+                                        @RequestParam("confirmPassword") String confirmPassword,
+                                        Model model) {
+        if (!newPassword.equals(confirmPassword)) {
+            model.addAttribute("profileError", "Le nuove password non coincidono.");
+            return "admin/profile";
+        }
+
+        try {
+            teacherAuthService.changePassword(teacherAuthService.getCurrentTeacher(), currentPassword, newPassword);
+            model.addAttribute("profileSuccess", "Password aggiornata con successo.");
+            return "admin/profile";
+        } catch (IllegalArgumentException ex) {
+            model.addAttribute("profileError", ex.getMessage());
+            return "admin/profile";
+        }
+    }
+
     @GetMapping("/teacher/quiz/new")
     public String newQuiz() {
         return "admin/quiz-editor";

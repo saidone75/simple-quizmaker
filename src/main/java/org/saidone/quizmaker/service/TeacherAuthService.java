@@ -110,4 +110,28 @@ public class TeacherAuthService implements UserDetailsService {
         return teacherRepository.findByUsernameIgnoreCase(authentication.getName())
                 .orElseThrow(() -> new IllegalStateException("Insegnante non trovato: " + authentication.getName()));
     }
+
+    @Transactional
+    public void changePassword(Teacher teacher, String currentPassword, String newPassword) {
+        if (teacher == null) {
+            throw new IllegalArgumentException("Insegnante non valido");
+        }
+        if (currentPassword == null || currentPassword.isBlank()) {
+            throw new IllegalArgumentException("La password attuale è obbligatoria");
+        }
+        if (newPassword == null || newPassword.length() < 6) {
+            throw new IllegalArgumentException("La nuova password deve avere almeno 6 caratteri");
+        }
+
+        val encodedPassword = normalizeStoredPassword(teacher.getPassword());
+        if (!passwordEncoder.matches(currentPassword, encodedPassword)) {
+            throw new IllegalArgumentException("La password attuale non è corretta");
+        }
+        if (passwordEncoder.matches(newPassword, encodedPassword)) {
+            throw new IllegalArgumentException("La nuova password deve essere diversa da quella attuale");
+        }
+
+        teacher.setPassword(passwordEncoder.encode(newPassword));
+        teacherRepository.save(teacher);
+    }
 }
