@@ -182,7 +182,7 @@ class QuizServiceTest {
         when(quizRepository.findByIdAndTeacher(sampleQuiz.getId(), teacher)).thenReturn(Optional.of(sampleQuiz));
         quizService.delete(sampleQuiz.getId(), teacher);
         verify(quizSubmissionRepository, times(1)).deleteAllByQuizIdAndQuizTeacher(sampleQuiz.getId(), teacher);
-        verify(quizRepository, times(1)).deleteById(sampleQuiz.getId());
+        verify(quizRepository, times(1)).delete(sampleQuiz);
     }
 
     @Test
