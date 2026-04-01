@@ -32,5 +32,6 @@
     <include file="001-create-quizzes-table.xml" relativeToChangelogFile="true" />
     <include file="002-add-published-flag-to-quizzes.xml" relativeToChangelogFile="true" />
     <include file="003-add-students-and-submissions.xml" relativeToChangelogFile="true" />
+    <include file="004-add-teachers-and-tenancy.xml" relativeToChangelogFile="true" />
 
 </databaseChangeLog>

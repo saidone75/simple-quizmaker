@@ -22,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.val;
 import org.saidone.quizmaker.dto.StudentDto;
 import org.saidone.quizmaker.entity.Student;
+import org.saidone.quizmaker.entity.Teacher;
 import org.saidone.quizmaker.repository.QuizSubmissionRepository;
 import org.saidone.quizmaker.repository.StudentRepository;
 import org.springframework.stereotype.Service;
@@ -42,15 +43,15 @@ public class StudentService {
     private final QuizSubmissionRepository quizSubmissionRepository;
 
     @Transactional(readOnly = true)
-    public List<StudentDto.Response> findAll() {
-        return studentRepository.findAllByOrderByFullNameAsc()
+    public List<StudentDto.Response> findAll(Teacher teacher) {
+        return studentRepository.findAllByTeacherOrderByFullNameAsc(teacher)
                 .stream()
                 .map(s -> new StudentDto.Response(s.getId(), s.getFullName(), s.getLoginKeyword()))
                 .toList();
     }
 
     @Transactional
-    public StudentDto.Response create(String fullName) {
+    public StudentDto.Response create(String fullName, Teacher teacher) {
         val cleanedName = fullName == null ? "" : fullName.trim();
         if (cleanedName.isBlank()) {
             throw new IllegalArgumentException("Il nome dello studente è obbligatorio");
@@ -59,30 +60,31 @@ public class StudentService {
         val student = Student.builder()
                 .id(UUID.randomUUID())
                 .fullName(cleanedName)
+                .teacher(teacher)
                 .build();
 
         return saveWithUniqueKeyword(student);
     }
 
     @Transactional
-    public void delete(UUID studentId) {
-        if (!studentRepository.existsById(studentId)) {
+    public void delete(UUID studentId, Teacher teacher) {
+        if (!studentRepository.existsByIdAndTeacher(studentId, teacher)) {
             throw new IllegalArgumentException("Studente non trovato: " + studentId);
         }
-        quizSubmissionRepository.deleteAllByStudentId(studentId);
+        quizSubmissionRepository.deleteAllByStudentIdAndStudentTeacher(studentId, teacher);
         studentRepository.deleteById(studentId);
     }
 
     @Transactional
-    public StudentDto.Response regenerateLoginKeyword(UUID studentId) {
-        val student = studentRepository.findById(studentId)
+    public StudentDto.Response regenerateLoginKeyword(UUID studentId, Teacher teacher) {
+        val student = studentRepository.findByIdAndTeacher(studentId, teacher)
                 .orElseThrow(() -> new IllegalArgumentException("Studente non trovato: " + studentId));
         return saveWithUniqueKeyword(student);
     }
 
     @Transactional
-    public int regenerateAllLoginKeywords() {
-        val students = studentRepository.findAll();
+    public int regenerateAllLoginKeywords(Teacher teacher) {
+        val students = studentRepository.findAllByTeacherOrderByFullNameAsc(teacher);
         students.forEach(this::saveWithUniqueKeyword);
         return students.size();
     }

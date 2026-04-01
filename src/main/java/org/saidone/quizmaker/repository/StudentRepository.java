@@ -19,6 +19,7 @@
 package org.saidone.quizmaker.repository;
 
 import org.saidone.quizmaker.entity.Student;
+import org.saidone.quizmaker.entity.Teacher;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -31,5 +32,9 @@ public interface StudentRepository extends JpaRepository<Student, UUID> {
 
     boolean existsByLoginKeyword(String loginKeyword);
 
-    List<Student> findAllByOrderByFullNameAsc();
+    List<Student> findAllByTeacherOrderByFullNameAsc(Teacher teacher);
+
+    Optional<Student> findByIdAndTeacher(UUID id, Teacher teacher);
+
+    boolean existsByIdAndTeacher(UUID id, Teacher teacher);
 }

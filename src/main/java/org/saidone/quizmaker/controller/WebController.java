@@ -28,6 +28,7 @@ import org.saidone.quizmaker.service.QuizService;
 import org.saidone.quizmaker.service.QuizSubmissionService;
 import org.saidone.quizmaker.service.StudentService;
 import org.saidone.quizmaker.service.StudentSessionService;
+import org.saidone.quizmaker.service.TeacherAuthService;
 import org.springframework.boot.SpringBootVersion;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.core.SpringVersion;
@@ -55,6 +56,7 @@ public class WebController {
     private final StudentService studentService;
     private final ObjectMapper objectMapper;
     private final BuildProperties buildProperties;
+    private final TeacherAuthService teacherAuthService;
 
     @GetMapping("/")
     public String studentPage(HttpSession session, Model model) {
@@ -63,7 +65,7 @@ public class WebController {
             return "student-login";
         }
 
-        val quizzes = quizService.findPublished();
+        val quizzes = quizService.findPublishedForTeacher(maybeStudent.get().getTeacher());
         val lockedQuizIds = quizSubmissionService.findLockedQuizIdsForStudent(maybeStudent.get());
 
         model.addAttribute("studentName", maybeStudent.get().getFullName());
@@ -105,15 +107,42 @@ public class WebController {
         return "admin/login";
     }
 
+
+    @GetMapping("/admin/register")
+    public String registerPage() {
+        return "admin/register";
+    }
+
+    @PostMapping("/admin/register")
+    public String registerTeacher(@RequestParam("username") String username,
+                                  @RequestParam("password") String password,
+                                  @RequestParam("confirmPassword") String confirmPassword,
+                                  Model model) {
+        if (!password.equals(confirmPassword)) {
+            model.addAttribute("registerError", "Le password non coincidono.");
+            model.addAttribute("username", username);
+            return "admin/register";
+        }
+
+        try {
+            teacherAuthService.register(username, password);
+            return "redirect:/admin/login?registered=true";
+        } catch (IllegalArgumentException ex) {
+            model.addAttribute("registerError", ex.getMessage());
+            model.addAttribute("username", username);
+            return "admin/register";
+        }
+    }
+
     @GetMapping("/admin")
     public String adminDashboard(Model model) {
-        model.addAttribute("quizzes", quizService.findAllForAdmin());
+        model.addAttribute("quizzes", quizService.findAllForAdmin(teacherAuthService.getCurrentTeacher()));
         return "admin/dashboard";
     }
 
     @GetMapping("/admin/students")
     public String adminStudents(Model model) {
-        model.addAttribute("students", studentService.findAll());
+        model.addAttribute("students", studentService.findAll(teacherAuthService.getCurrentTeacher()));
         return "admin/students";
     }
 
@@ -124,7 +153,7 @@ public class WebController {
 
     @GetMapping("/admin/results")
     public String adminResults(Model model) {
-        val results = quizSubmissionService.findAllResults();
+        val results = quizSubmissionService.findAllResults(teacherAuthService.getCurrentTeacher());
 
         val groupedResults = results.stream()
                 .collect(Collectors.groupingBy(
@@ -150,7 +179,7 @@ public class WebController {
 
     @GetMapping("/admin/quiz/{id}/edit")
     public String editQuiz(@PathVariable UUID id, Model model) {
-        model.addAttribute("quiz", quizService.findById(id));
+        model.addAttribute("quiz", quizService.findByIdForTeacher(id, teacherAuthService.getCurrentTeacher()));
         return "admin/quiz-editor";
     }
 

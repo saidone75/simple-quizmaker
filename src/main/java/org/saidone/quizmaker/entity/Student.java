@@ -18,10 +18,7 @@
 
 package org.saidone.quizmaker.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -48,4 +45,8 @@ public class Student {
 
     @Column(name = "login_keyword", nullable = false, unique = true, length = 6)
     private String loginKeyword;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "teacher_id", nullable = false)
+    private Teacher teacher;
 }
