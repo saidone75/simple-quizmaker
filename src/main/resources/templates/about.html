@@ -25,6 +25,7 @@
                 <h2>Versione applicazione</h2>
                 <ul class="about-list">
                     <li><strong>Versione:</strong> <span th:text="${appVersion}">0.0.0</span></li>
+                    <li><strong>Data build:</strong> <span th:text="${buildTime}">-</span></li>
                     <li><strong>Spring Boot:</strong> <span th:text="${springBootVersion}">-</span></li>
                     <li><strong>Spring Framework:</strong> <span th:text="${springFrameworkVersion}">-</span></li>
                 </ul>
@@ -59,6 +60,10 @@
                     <li><strong>Heap libera:</strong> <span th:text="${heapFreeMb}">0</span> MB</li>
                 </ul>
             </section>
+        </div>
+
+        <div class="about-footer-link">
+            <a th:href="@{/admin/logs}" class="topbar-back">🧾 Visualizza log in tempo reale</a>
         </div>
     </div>
 </div>
