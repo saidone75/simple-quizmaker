@@ -138,7 +138,7 @@ public class QuizService {
                 .filter(teacher -> !teacher.getId().equals(actingTeacher.getId()))
                 .toList();
 
-        for (Teacher recipient : recipients) {
+        for (val recipient : recipients) {
             val clonedQuiz = Quiz.builder()
                     .title(sourceQuiz.getTitle())
                     .emoji(sourceQuiz.getEmoji())

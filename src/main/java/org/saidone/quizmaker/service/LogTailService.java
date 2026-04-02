@@ -35,7 +35,7 @@ public class LogTailService {
     private static final Path DEFAULT_LOG_PATH = Path.of("./log/quizmaker.log");
 
     public LogTailResult readLastLines(int lines) {
-        val safeLineCount = Math.max(1, Math.min(lines, 500));
+        val safeLineCount = Math.clamp(lines, 1, 500);
         if (!Files.exists(DEFAULT_LOG_PATH)) {
             return new LogTailResult(DEFAULT_LOG_PATH.toString(), List.of(), "File di log non trovato.");
         }
@@ -43,7 +43,7 @@ public class LogTailService {
         try {
             return new LogTailResult(DEFAULT_LOG_PATH.toString(), tailFile(DEFAULT_LOG_PATH, safeLineCount), null);
         } catch (IOException e) {
-            return new LogTailResult(DEFAULT_LOG_PATH.toString(), List.of(), "Errore lettura log: " + e.getMessage());
+            return new LogTailResult(DEFAULT_LOG_PATH.toString(), List.of(), String.format("Errore lettura log: %s", e.getMessage()));
         }
     }
 
