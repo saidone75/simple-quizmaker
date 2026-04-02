@@ -222,10 +222,9 @@ public class WebController {
     public String teacherManagementPage(Model model) {
         ensureAdmin();
         val currentTeacher = teacherAuthService.getCurrentTeacher();
-        val teachers = teacherAuthService.findAllTeachers().stream()
-                .filter(teacher -> !teacher.getId().equals(currentTeacher.getId()))
-                .toList();
+        val teachers = teacherAuthService.findAllTeachers();
         model.addAttribute("teachers", teachers);
+        model.addAttribute("currentTeacherId", currentTeacher.getId());
         return "admin/system-teachers";
     }
 
@@ -234,6 +233,30 @@ public class WebController {
                                          @RequestParam("admin") boolean admin) {
         ensureAdmin();
         teacherAuthService.updateTeacherAdminFlag(id, admin, teacherAuthService.getCurrentTeacher());
+        return "redirect:/teacher/system/teachers";
+    }
+
+
+
+    @PostMapping("/teacher/system/teachers/{id}/ai")
+    public String updateTeacherAiFlag(@PathVariable UUID id,
+                                      @RequestParam("aiEnabled") boolean aiEnabled) {
+        ensureAdmin();
+        teacherAuthService.updateTeacherAiFlag(id, aiEnabled, teacherAuthService.getCurrentTeacher());
+        return "redirect:/teacher/system/teachers";
+    }
+
+    @PostMapping("/teacher/system/teachers/{id}/reset-password")
+    public String resetTeacherPassword(@PathVariable UUID id) {
+        ensureAdmin();
+        teacherAuthService.resetTeacherPassword(id, teacherAuthService.getCurrentTeacher());
+        return "redirect:/teacher/system/teachers";
+    }
+
+    @PostMapping("/teacher/system/teachers/{id}/delete")
+    public String deleteTeacher(@PathVariable UUID id) {
+        ensureAdmin();
+        teacherAuthService.deleteTeacherCompletely(id, teacherAuthService.getCurrentTeacher());
         return "redirect:/teacher/system/teachers";
     }
 

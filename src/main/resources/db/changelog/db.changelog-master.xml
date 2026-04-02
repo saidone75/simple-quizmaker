@@ -34,5 +34,6 @@
     <include file="003-add-students-and-submissions.xml" relativeToChangelogFile="true" />
     <include file="004-add-teachers-and-tenancy.xml" relativeToChangelogFile="true" />
     <include file="005-student-keyword-and-admin-teacher.xml" relativeToChangelogFile="true" />
+    <include file="006-teacher-ai-enabled.xml" relativeToChangelogFile="true" />
 
 </databaseChangeLog>

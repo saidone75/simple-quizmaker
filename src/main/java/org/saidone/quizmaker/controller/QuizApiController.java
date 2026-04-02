@@ -117,6 +117,10 @@ public class QuizApiController {
     public ResponseEntity<QuizDto.Request> generateWithAi(
             @Valid @ModelAttribute QuizGenerationRequestDto request,
             @RequestParam(value = "file", required = false) MultipartFile file) {
+        val currentTeacher = teacherAuthService.getCurrentTeacher();
+        if (!currentTeacher.isAiEnabled()) {
+            throw new IllegalStateException("Generazione AI disabilitata per questo insegnante.");
+        }
         val attachmentText = documentTextExtractorService.extractText(file);
         return ResponseEntity.ok(openAiQuizGeneratorService.generateQuiz(request, attachmentText));
     }

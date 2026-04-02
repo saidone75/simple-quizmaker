@@ -60,10 +60,19 @@ public class DefaultTeacherBootstrap implements CommandLineRunner {
                         .username(adminUsername.trim().toLowerCase())
                         .password(normalizeConfiguredPassword(adminPassword))
                         .admin(true)
+                        .aiEnabled(true)
                         .build()));
 
+        var shouldSaveDefaultTeacher = false;
         if (!defaultTeacher.isAdmin()) {
             defaultTeacher.setAdmin(true);
+            shouldSaveDefaultTeacher = true;
+        }
+        if (!defaultTeacher.isAiEnabled()) {
+            defaultTeacher.setAiEnabled(true);
+            shouldSaveDefaultTeacher = true;
+        }
+        if (shouldSaveDefaultTeacher) {
             teacherRepository.save(defaultTeacher);
         }
 

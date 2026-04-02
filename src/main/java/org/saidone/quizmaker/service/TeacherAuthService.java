@@ -22,6 +22,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.val;
 import org.saidone.quizmaker.entity.Teacher;
 import org.saidone.quizmaker.repository.TeacherRepository;
+import org.saidone.quizmaker.repository.QuizRepository;
+import org.saidone.quizmaker.repository.QuizSubmissionRepository;
+import org.saidone.quizmaker.repository.StudentRepository;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -43,6 +46,9 @@ import java.util.UUID;
 public class TeacherAuthService implements UserDetailsService {
 
     private final TeacherRepository teacherRepository;
+    private final QuizRepository quizRepository;
+    private final StudentRepository studentRepository;
+    private final QuizSubmissionRepository quizSubmissionRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Override
@@ -78,6 +84,7 @@ public class TeacherAuthService implements UserDetailsService {
                 .username(normalizedUsername)
                 .password(passwordEncoder.encode(rawPassword))
                 .admin(false)
+                .aiEnabled(true)
                 .build());
     }
 
@@ -158,4 +165,60 @@ public class TeacherAuthService implements UserDetailsService {
         targetTeacher.setAdmin(admin);
         teacherRepository.save(targetTeacher);
     }
+
+
+    @Transactional
+    public void updateTeacherAiFlag(UUID targetTeacherId, boolean aiEnabled, Teacher actingTeacher) {
+        if (actingTeacher == null || !actingTeacher.isAdmin()) {
+            throw new IllegalArgumentException("Operazione non consentita");
+        }
+        if (targetTeacherId == null) {
+            throw new IllegalArgumentException("Insegnante non valido");
+        }
+
+        val targetTeacher = teacherRepository.findById(targetTeacherId)
+                .orElseThrow(() -> new IllegalArgumentException("Insegnante non trovato"));
+        targetTeacher.setAiEnabled(aiEnabled);
+        teacherRepository.save(targetTeacher);
+    }
+
+    @Transactional
+    public void resetTeacherPassword(UUID targetTeacherId, Teacher actingTeacher) {
+        if (actingTeacher == null || !actingTeacher.isAdmin()) {
+            throw new IllegalArgumentException("Operazione non consentita");
+        }
+        if (targetTeacherId == null) {
+            throw new IllegalArgumentException("Insegnante non valido");
+        }
+
+        val targetTeacher = teacherRepository.findById(targetTeacherId)
+                .orElseThrow(() -> new IllegalArgumentException("Insegnante non trovato"));
+        targetTeacher.setPassword(passwordEncoder.encode("changeme"));
+        teacherRepository.save(targetTeacher);
+    }
+
+    @Transactional
+    public void deleteTeacherCompletely(UUID targetTeacherId, Teacher actingTeacher) {
+        if (actingTeacher == null || !actingTeacher.isAdmin()) {
+            throw new IllegalArgumentException("Operazione non consentita");
+        }
+        if (targetTeacherId == null) {
+            throw new IllegalArgumentException("Insegnante non valido");
+        }
+        if (actingTeacher.getId().equals(targetTeacherId)) {
+            throw new IllegalArgumentException("Non puoi eliminare l'utente attualmente loggato");
+        }
+        if (teacherRepository.countByIdNot(targetTeacherId) == 0) {
+            throw new IllegalArgumentException("Impossibile eliminare l'ultimo insegnante");
+        }
+
+        val targetTeacher = teacherRepository.findById(targetTeacherId)
+                .orElseThrow(() -> new IllegalArgumentException("Insegnante non trovato"));
+
+        quizSubmissionRepository.deleteAllByStudentTeacherOrQuizTeacher(targetTeacher, targetTeacher);
+        quizRepository.deleteAllByTeacher(targetTeacher);
+        studentRepository.deleteAllByTeacher(targetTeacher);
+        teacherRepository.delete(targetTeacher);
+    }
+
 }
