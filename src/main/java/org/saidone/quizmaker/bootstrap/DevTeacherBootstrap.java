@@ -36,7 +36,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class DevTeacherBootstrap implements CommandLineRunner {
 
     private static final String DEV_TEACHER_USERNAME = "pincopanco";
-    private static final String DEV_TEACHER_PASSWORD = "changeme";
+    private static final String DEV_TEACHER_PASSWORD = "pancopinco";
 
     private final TeacherRepository teacherRepository;
     private final PasswordEncoder passwordEncoder;

@@ -45,9 +45,9 @@
                 <div class="manage-card-actions teacher-manage-actions">
                     <form th:action="@{/teacher/system/teachers/{id}/ai(id=${teacher.id})}" method="post" class="teacher-ai-toggle-form">
                         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-                        <input type="hidden" name="aiEnabled" value="false"/>
+                        <input type="hidden" name="aiEnabled" th:value="${teacher.aiEnabled}"/>
                         <label class="teacher-ai-toggle-label">
-                            <input type="checkbox" name="aiEnabled" value="true" th:checked="${teacher.aiEnabled}" onchange="this.form.submit()">
+                            <input type="checkbox" th:checked="${teacher.aiEnabled}" onchange="submitAiToggle(this)">
                             AI attiva
                         </label>
                     </form>
@@ -88,6 +88,13 @@
     </div>
 </div>
 <script>
+    function submitAiToggle(checkbox) {
+        const form = checkbox.form;
+        const hiddenInput = form.querySelector('input[name="aiEnabled"]');
+        hiddenInput.value = checkbox.checked;
+        form.submit();
+    }
+
     function confirmTeacherDelete(form) {
         const username = form.dataset.username || "questo insegnante";
         return confirm(`Eliminare definitivamente ${username} e tutti i suoi dati?`);
