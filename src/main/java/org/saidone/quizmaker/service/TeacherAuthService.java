@@ -20,6 +20,7 @@ package org.saidone.quizmaker.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.val;
+import net.datafaker.Faker;
 import org.jspecify.annotations.NullMarked;
 import org.saidone.quizmaker.entity.Teacher;
 import org.saidone.quizmaker.repository.QuizRepository;
@@ -38,7 +39,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.security.SecureRandom;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 
 @Service
@@ -50,6 +53,9 @@ public class TeacherAuthService implements UserDetailsService {
     private final StudentRepository studentRepository;
     private final QuizSubmissionRepository quizSubmissionRepository;
     private final PasswordEncoder passwordEncoder;
+
+    private static final Faker FAKER = new Faker(Locale.ITALIAN);
+    private static final SecureRandom RANDOM = new SecureRandom();
 
     @Override
     @NullMarked
@@ -207,7 +213,7 @@ public class TeacherAuthService implements UserDetailsService {
     }
 
     @Transactional
-    public void resetTeacherPassword(UUID targetTeacherId, Teacher actingTeacher) {
+    public String resetTeacherPassword(UUID targetTeacherId, Teacher actingTeacher) {
         if (actingTeacher == null || !actingTeacher.isAdmin()) {
             throw new IllegalArgumentException("Operazione non consentita");
         }
@@ -217,8 +223,15 @@ public class TeacherAuthService implements UserDetailsService {
 
         val targetTeacher = teacherRepository.findById(targetTeacherId)
                 .orElseThrow(() -> new IllegalArgumentException("Insegnante non trovato"));
-        targetTeacher.setPassword(passwordEncoder.encode("changeme"));
+
+        String temporaryPassword;
+        do {
+            temporaryPassword = String.format("%s%02d", FAKER.animal().name(), RANDOM.nextInt(100));
+        } while (temporaryPassword.length() < 6 || temporaryPassword.length() > 16);
+
+        targetTeacher.setPassword(passwordEncoder.encode(temporaryPassword));
         teacherRepository.save(targetTeacher);
+        return temporaryPassword;
     }
 
     @Transactional

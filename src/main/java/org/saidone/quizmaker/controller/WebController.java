@@ -272,8 +272,8 @@ public class WebController {
     public String resetTeacherPassword(@PathVariable UUID id,
                                        RedirectAttributes redirectAttributes) {
         ensureAdmin();
-        teacherAuthService.resetTeacherPassword(id, teacherAuthService.getCurrentTeacher());
-        redirectAttributes.addFlashAttribute("teacherResetSuccess", "Password resettata correttamente a changeme.");
+        val temporaryPassword = teacherAuthService.resetTeacherPassword(id, teacherAuthService.getCurrentTeacher());
+        redirectAttributes.addFlashAttribute("teacherResetSuccess", String.format("Password resettata correttamente a %s", temporaryPassword));
         return "redirect:/teacher/system/teachers";
     }
 
