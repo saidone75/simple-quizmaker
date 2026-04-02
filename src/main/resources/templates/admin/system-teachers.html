@@ -42,11 +42,11 @@
                         <span th:text="${#temporals.format(teacher.createdAt, 'dd/MM/yyyy')}">01/01/2026</span>
                     </div>
                 </div>
-                <div class="manage-card-actions" style="display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end;">
-                    <form th:action="@{/teacher/system/teachers/{id}/ai(id=${teacher.id})}" method="post" style="margin:0;display:flex;align-items:center;gap:6px;">
+                <div class="manage-card-actions teacher-manage-actions">
+                    <form th:action="@{/teacher/system/teachers/{id}/ai(id=${teacher.id})}" method="post" class="teacher-ai-toggle-form">
                         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                         <input type="hidden" name="aiEnabled" value="false"/>
-                        <label style="display:flex;align-items:center;gap:5px;font-size:13px;">
+                        <label class="teacher-ai-toggle-label">
                             <input type="checkbox" name="aiEnabled" value="true" th:checked="${teacher.aiEnabled}" onchange="this.form.submit()">
                             AI attiva
                         </label>
@@ -56,7 +56,7 @@
                         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                         <input type="hidden" name="admin" th:value="${teacher.admin ? 'false' : 'true'}"/>
                         <button type="submit"
-                                class="btn-icon-action"
+                                class="btn-teacher-action"
                                 th:title="${teacher.admin ? 'Rimuovi ruolo admin' : 'Assegna ruolo admin'}"
                                 th:text="${teacher.admin ? '⬇️ Admin' : '⬆️ Rendi admin'}"
                                 th:disabled="${teacher.id == currentTeacherId}">
@@ -66,14 +66,14 @@
 
                     <form th:action="@{/teacher/system/teachers/{id}/reset-password(id=${teacher.id})}" method="post" style="margin:0">
                         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-                        <button type="submit" class="btn-icon-action" title="Resetta password a changeme">🔁 Password</button>
+                        <button type="submit" class="btn-teacher-action" title="Resetta password a changeme">🔁 Reset password</button>
                     </form>
 
                     <form th:action="@{/teacher/system/teachers/{id}/delete(id=${teacher.id})}" method="post" style="margin:0"
                           onsubmit="return confirmTeacherDelete(this)"
                           th:attr="data-username=${teacher.username}">
                         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-                        <button type="submit" class="btn-icon-action" style="background:#fff0f0;border-color:#e66;color:#a22;"
+                        <button type="submit" class="btn-teacher-action btn-teacher-action-danger"
                                 th:disabled="${teacher.id == currentTeacherId}"
                                 th:title="${teacher.id == currentTeacherId ? 'Non puoi cancellare utente corrente' : 'Elimina insegnante e tutti i dati associati'}">🗑️ Elimina</button>
                     </form>

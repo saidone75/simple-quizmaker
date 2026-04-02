@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ QuizMaker - fun quizzes for curious minds
+  ~ Copyright (C) 2026 Saidone
+  -->
+
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="007" author="quizmaker">
+        <comment>Disable AI by default for newly created teachers</comment>
+
+        <addDefaultValue tableName="teachers"
+                         columnName="ai_enabled"
+                         defaultValueBoolean="false"/>
+
+        <rollback>
+            <addDefaultValue tableName="teachers"
+                             columnName="ai_enabled"
+                             defaultValueBoolean="true"/>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>

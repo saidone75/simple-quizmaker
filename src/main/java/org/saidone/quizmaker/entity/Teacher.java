@@ -59,7 +59,7 @@ public class Teacher {
 
     @Default
     @Column(name = "ai_enabled", nullable = false)
-    private boolean aiEnabled = true;
+    private boolean aiEnabled = false;
 
     @CreationTimestamp
     @Convert(converter = LocalDateTimeColumnConverter.class)

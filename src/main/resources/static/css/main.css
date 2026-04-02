@@ -443,6 +443,64 @@ input[type="file"].input-field::-webkit-file-upload-button:hover {
 .manage-card-title { font-size: 16px; font-weight: 800; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .manage-card-meta { font-size: 13px; color: var(--gray-muted); font-weight: 600; margin-top: 2px; }
 .manage-card-actions { display: flex; gap: 8px; flex-shrink: 0; }
+.teacher-manage-actions {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    align-items: center;
+}
+.teacher-ai-toggle-form {
+    margin: 0;
+    display: flex;
+    align-items: center;
+}
+.teacher-ai-toggle-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 36px;
+    padding: 0 12px;
+    border-radius: 8px;
+    border: 1.5px solid var(--gray-border);
+    background: var(--gray-bg);
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--text);
+    cursor: pointer;
+}
+.teacher-ai-toggle-label input[type="checkbox"] {
+    width: 15px;
+    height: 15px;
+    accent-color: var(--green);
+    cursor: pointer;
+}
+.btn-teacher-action {
+    height: 36px;
+    border-radius: 8px;
+    border: 1.5px solid #B5D4F4;
+    background: var(--blue-light);
+    padding: 0 12px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--blue-dark);
+    cursor: pointer;
+    transition: all 0.15s;
+}
+.btn-teacher-action:hover {
+    background: #B5D4F4;
+}
+.btn-teacher-action:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+.btn-teacher-action-danger {
+    background: #FFF0F0;
+    border-color: #EAA4A4;
+    color: #A22;
+}
+.btn-teacher-action-danger:hover {
+    background: #FFDCDC;
+}
 .btn-icon-action {
     width: 36px; height: 36px; border-radius: 8px; border: none;
     font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center;

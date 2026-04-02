@@ -84,7 +84,7 @@ public class TeacherAuthService implements UserDetailsService {
                 .username(normalizedUsername)
                 .password(passwordEncoder.encode(rawPassword))
                 .admin(false)
-                .aiEnabled(true)
+                .aiEnabled(false)
                 .build());
     }
 

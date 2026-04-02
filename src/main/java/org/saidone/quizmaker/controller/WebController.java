@@ -202,12 +202,14 @@ public class WebController {
     }
 
     @GetMapping("/teacher/quiz/new")
-    public String newQuiz() {
+    public String newQuiz(Model model) {
+        model.addAttribute("aiEnabled", teacherAuthService.getCurrentTeacher().isAiEnabled());
         return "admin/quiz-editor";
     }
 
     @GetMapping("/teacher/quiz/{id}/edit")
     public String editQuiz(@PathVariable UUID id, Model model) {
+        model.addAttribute("aiEnabled", teacherAuthService.getCurrentTeacher().isAiEnabled());
         model.addAttribute("quiz", quizService.findByIdForTeacher(id, teacherAuthService.getCurrentTeacher()));
         return "admin/quiz-editor";
     }
