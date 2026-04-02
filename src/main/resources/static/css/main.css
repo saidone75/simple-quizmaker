@@ -535,6 +535,8 @@ input[type="file"].input-field::-webkit-file-upload-button:hover {
 }
 .btn-edit-quiz { background: var(--blue-light); color: var(--blue-dark); }
 .btn-edit-quiz:hover { background: #B5D4F4; }
+.btn-share-quiz { background: #EFE8FF; color: #5A36A6; }
+.btn-share-quiz:hover { background: #DDD0FF; }
 .btn-delete-quiz { background: var(--red-light); color: var(--red); }
 .btn-delete-quiz:hover { background: #F7C1C1; }
 .student-actions {
@@ -635,6 +637,39 @@ input[type="file"].input-field::-webkit-file-upload-button:hover {
 .btn-modal:hover { transform: translateY(-1px); }
 .btn-modal-cancel { background: var(--gray-bg); color: var(--text); border: 1.5px solid var(--gray-border); }
 .btn-modal-confirm { background: var(--red); color: #fff; }
+.btn-modal-share { background: var(--green); color: #fff; }
+.modal-box-share { max-width: 460px; }
+.share-grid {
+    text-align: left;
+    margin-bottom: 1.25rem;
+}
+.share-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    border-radius: 10px;
+}
+.share-option:hover { background: var(--gray-bg); }
+.share-option input[type="checkbox"] {
+    width: 15px;
+    height: 15px;
+    accent-color: var(--green);
+}
+.share-option-all {
+    border: 1.5px dashed var(--gray-border);
+    margin-bottom: 8px;
+    font-weight: 800;
+    color: var(--text);
+}
+.share-list {
+    max-height: 230px;
+    overflow: auto;
+    border: 1.5px solid var(--gray-border);
+    border-radius: 10px;
+    background: var(--white);
+    padding: 4px;
+}
 
 /* ===== LOADING OVERLAY ===== */
 #loading-overlay {

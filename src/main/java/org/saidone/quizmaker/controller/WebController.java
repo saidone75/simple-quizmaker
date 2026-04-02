@@ -141,7 +141,18 @@ public class WebController {
 
     @GetMapping("/teacher")
     public String adminDashboard(Model model) {
-        model.addAttribute("quizzes", quizService.findAllForAdmin(teacherAuthService.getCurrentTeacher()));
+        val currentTeacher = teacherAuthService.getCurrentTeacher();
+        model.addAttribute("quizzes", quizService.findAllForAdmin(currentTeacher));
+        model.addAttribute("isAdmin", currentTeacher.isAdmin());
+        if (currentTeacher.isAdmin()) {
+            val shareTeachers = teacherAuthService.findAllTeachers().stream()
+                    .filter(teacher -> !teacher.getId().equals(currentTeacher.getId()))
+                    .map(teacher -> new ShareTeacherOption(teacher.getId(), teacher.getUsername()))
+                    .toList();
+            model.addAttribute("shareTeachers", shareTeachers);
+        } else {
+            model.addAttribute("shareTeachers", List.of());
+        }
         return "admin/dashboard";
     }
 
@@ -324,5 +335,8 @@ public class WebController {
     }
 
     private record QuizResultGroup(UUID quizId, String quizTitle, List<QuizSubmissionService.ResultRow> results) {
+    }
+
+    private record ShareTeacherOption(UUID id, String username) {
     }
 }
