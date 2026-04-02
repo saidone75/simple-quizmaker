@@ -98,6 +98,7 @@
                     </label>
                     <a th:href="@{/teacher/quiz/{id}/edit(id=${quiz.id})}" class="btn-icon-action btn-edit-quiz" title="Modifica">✏️</a>
                     <button sec:authorize="hasRole('ADMIN')"
+                            th:if="${!#lists.isEmpty(shareTeachers)}"
                             class="btn-icon-action btn-share-quiz"
                             title="Invia ad altri insegnanti"
                             th:data-id="${quiz.id}"
