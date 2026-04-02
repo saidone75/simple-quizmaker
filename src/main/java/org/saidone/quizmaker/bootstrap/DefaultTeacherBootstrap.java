@@ -61,6 +61,7 @@ public class DefaultTeacherBootstrap implements CommandLineRunner {
                         .password(normalizeConfiguredPassword(adminPassword))
                         .admin(true)
                         .aiEnabled(true)
+                        .enabled(true)
                         .build()));
 
         var shouldSaveDefaultTeacher = false;
@@ -70,6 +71,10 @@ public class DefaultTeacherBootstrap implements CommandLineRunner {
         }
         if (!defaultTeacher.isAiEnabled()) {
             defaultTeacher.setAiEnabled(true);
+            shouldSaveDefaultTeacher = true;
+        }
+        if (!defaultTeacher.isEnabled()) {
+            defaultTeacher.setEnabled(true);
             shouldSaveDefaultTeacher = true;
         }
         if (shouldSaveDefaultTeacher) {

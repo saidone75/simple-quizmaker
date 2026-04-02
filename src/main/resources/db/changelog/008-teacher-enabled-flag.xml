@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ QuizMaker - fun quizzes for curious minds
+  ~ Copyright (C) 2026 Saidone
+  -->
+
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="008" author="quizmaker">
+        <comment>Add enable/disable login flag for teachers</comment>
+
+        <addColumn tableName="teachers">
+            <column name="enabled" type="BOOLEAN" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+
+        <rollback>
+            <dropColumn tableName="teachers" columnName="enabled"/>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>

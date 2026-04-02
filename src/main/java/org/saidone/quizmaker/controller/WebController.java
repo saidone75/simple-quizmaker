@@ -39,6 +39,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.ZoneId;
@@ -248,10 +249,20 @@ public class WebController {
         return "redirect:/teacher/system/teachers";
     }
 
+    @PostMapping("/teacher/system/teachers/{id}/enabled")
+    public String updateTeacherEnabledFlag(@PathVariable UUID id,
+                                           @RequestParam("enabled") boolean enabled) {
+        ensureAdmin();
+        teacherAuthService.updateTeacherEnabledFlag(id, enabled, teacherAuthService.getCurrentTeacher());
+        return "redirect:/teacher/system/teachers";
+    }
+
     @PostMapping("/teacher/system/teachers/{id}/reset-password")
-    public String resetTeacherPassword(@PathVariable UUID id) {
+    public String resetTeacherPassword(@PathVariable UUID id,
+                                       RedirectAttributes redirectAttributes) {
         ensureAdmin();
         teacherAuthService.resetTeacherPassword(id, teacherAuthService.getCurrentTeacher());
+        redirectAttributes.addFlashAttribute("teacherResetSuccess", "Password resettata correttamente a changeme.");
         return "redirect:/teacher/system/teachers";
     }
 

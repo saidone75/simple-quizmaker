@@ -61,6 +61,10 @@ public class Teacher {
     @Column(name = "ai_enabled", nullable = false)
     private boolean aiEnabled = false;
 
+    @Default
+    @Column(name = "enabled", nullable = false)
+    private boolean enabled = true;
+
     @CreationTimestamp
     @Convert(converter = LocalDateTimeColumnConverter.class)
     @Column(name = "created_at", nullable = false, updatable = false)

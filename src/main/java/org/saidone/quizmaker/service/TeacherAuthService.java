@@ -60,6 +60,10 @@ public class TeacherAuthService implements UserDetailsService {
         return new User(
                 teacher.getUsername(),
                 normalizeStoredPassword(teacher.getPassword()),
+                teacher.isEnabled(),
+                true,
+                true,
+                true,
                 buildAuthorities(teacher)
         );
     }
@@ -85,6 +89,7 @@ public class TeacherAuthService implements UserDetailsService {
                 .password(passwordEncoder.encode(rawPassword))
                 .admin(false)
                 .aiEnabled(false)
+                .enabled(true)
                 .build());
     }
 
@@ -179,6 +184,24 @@ public class TeacherAuthService implements UserDetailsService {
         val targetTeacher = teacherRepository.findById(targetTeacherId)
                 .orElseThrow(() -> new IllegalArgumentException("Insegnante non trovato"));
         targetTeacher.setAiEnabled(aiEnabled);
+        teacherRepository.save(targetTeacher);
+    }
+
+    @Transactional
+    public void updateTeacherEnabledFlag(UUID targetTeacherId, boolean enabled, Teacher actingTeacher) {
+        if (actingTeacher == null || !actingTeacher.isAdmin()) {
+            throw new IllegalArgumentException("Operazione non consentita");
+        }
+        if (targetTeacherId == null) {
+            throw new IllegalArgumentException("Insegnante non valido");
+        }
+        if (actingTeacher.getId().equals(targetTeacherId) && !enabled) {
+            throw new IllegalArgumentException("Non puoi disabilitare il tuo account");
+        }
+
+        val targetTeacher = teacherRepository.findById(targetTeacherId)
+                .orElseThrow(() -> new IllegalArgumentException("Insegnante non trovato"));
+        targetTeacher.setEnabled(enabled);
         teacherRepository.save(targetTeacher);
     }
 

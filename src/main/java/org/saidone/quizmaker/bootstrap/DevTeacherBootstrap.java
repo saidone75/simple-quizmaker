@@ -51,6 +51,7 @@ public class DevTeacherBootstrap implements CommandLineRunner {
                     .password(passwordEncoder.encode(DEV_TEACHER_PASSWORD))
                     .admin(false)
                     .aiEnabled(false)
+                    .enabled(true)
                     .build());
             log.info("Creato insegnante demo '{}' con AI disabilitata", DEV_TEACHER_USERNAME);
             return;
@@ -63,6 +64,10 @@ public class DevTeacherBootstrap implements CommandLineRunner {
         }
         if (existingTeacher.isAdmin()) {
             existingTeacher.setAdmin(false);
+            shouldSave = true;
+        }
+        if (!existingTeacher.isEnabled()) {
+            existingTeacher.setEnabled(true);
             shouldSave = true;
         }
 
