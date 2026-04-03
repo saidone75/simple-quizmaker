@@ -20,10 +20,13 @@ package org.saidone.quizmaker.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 import org.apache.logging.log4j.util.Strings;
+import org.saidone.quizmaker.config.RequestFingerprint;
+import org.saidone.quizmaker.service.BruteForceProtectionService;
 import org.saidone.quizmaker.service.QuizService;
 import org.saidone.quizmaker.service.QuizSubmissionService;
 import org.saidone.quizmaker.service.StudentService;
@@ -62,6 +65,7 @@ public class WebController {
     private final ObjectMapper objectMapper;
     private final BuildProperties buildProperties;
     private final TeacherAuthService teacherAuthService;
+    private final BruteForceProtectionService bruteForceProtectionService;
 
     @GetMapping("/")
     public String studentPage(HttpSession session, Model model) {
@@ -112,7 +116,6 @@ public class WebController {
         return "admin/login";
     }
 
-
     @GetMapping("/teacher/register")
     public String registerPage() {
         return "admin/register";
@@ -122,7 +125,14 @@ public class WebController {
     public String registerTeacher(@RequestParam("username") String username,
                                   @RequestParam("password") String password,
                                   @RequestParam("confirmPassword") String confirmPassword,
+                                  HttpServletRequest request,
                                   Model model) {
+        if (!bruteForceProtectionService.consumeRegisterAttempt(RequestFingerprint.clientIp(request))) {
+            model.addAttribute("registerError", "Troppi tentativi ravvicinati. Riprova tra qualche minuto.");
+            model.addAttribute("username", username);
+            return "admin/register";
+        }
+
         if (!password.equals(confirmPassword)) {
             model.addAttribute("registerError", "Le password non coincidono.");
             model.addAttribute("username", username);
@@ -249,8 +259,6 @@ public class WebController {
         teacherAuthService.updateTeacherAdminFlag(id, admin, teacherAuthService.getCurrentTeacher());
         return "redirect:/teacher/system/teachers";
     }
-
-
 
     @PostMapping("/teacher/system/teachers/{id}/ai")
     public String updateTeacherAiFlag(@PathVariable UUID id,
