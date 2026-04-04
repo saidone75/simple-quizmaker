@@ -24,26 +24,33 @@ import lombok.val;
 import org.saidone.quizmaker.entity.Teacher;
 import org.saidone.quizmaker.repository.TeacherRepository;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.context.annotation.Profile;
+import org.springframework.core.env.Environment;
+import org.springframework.core.env.Profiles;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 @Component
-@Profile({"dev", "docker"})
 @RequiredArgsConstructor
 @Slf4j
 public class DevTeacherBootstrap implements CommandLineRunner {
 
     private static final String DEV_TEACHER_USERNAME = "pincopanco";
     private static final String DEV_TEACHER_PASSWORD = "pancopinco";
+    private static final String CREATE_DEFAULT_TEACHER_PROPERTY = "quizmaker.bootstrap.default-teacher";
 
     private final TeacherRepository teacherRepository;
     private final PasswordEncoder passwordEncoder;
+    private final Environment environment;
 
     @Override
     @Transactional
     public void run(String... args) {
+        if (!shouldBootstrapDefaultTeacher()) {
+            log.debug("Bootstrap insegnante demo disattivato (profili dev/docker non attivi e -D{} non impostato)", CREATE_DEFAULT_TEACHER_PROPERTY);
+            return;
+        }
+
         val existingTeacher = teacherRepository.findByUsernameIgnoreCase(DEV_TEACHER_USERNAME).orElse(null);
         if (existingTeacher == null) {
             teacherRepository.save(Teacher.builder()
@@ -73,7 +80,13 @@ public class DevTeacherBootstrap implements CommandLineRunner {
 
         if (shouldSave) {
             teacherRepository.save(existingTeacher);
-            log.info("Allineato insegnante demo '{}' con impostazioni dev", DEV_TEACHER_USERNAME);
+            log.info("Allineato insegnante demo '{}' con impostazioni demo", DEV_TEACHER_USERNAME);
         }
+    }
+
+    private boolean shouldBootstrapDefaultTeacher() {
+        val devOrDockerProfileActive = environment.acceptsProfiles(Profiles.of("dev", "docker"));
+        val forcedByJvmFlag = Boolean.parseBoolean(System.getProperty(CREATE_DEFAULT_TEACHER_PROPERTY, "false"));
+        return devOrDockerProfileActive || forcedByJvmFlag;
     }
 }
