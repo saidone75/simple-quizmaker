@@ -22,8 +22,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.saidone.quizmaker.entity.Teacher;
-import org.saidone.quizmaker.repository.QuizRepository;
-import org.saidone.quizmaker.repository.StudentRepository;
 import org.saidone.quizmaker.repository.TeacherRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
@@ -48,8 +46,6 @@ public class DefaultAdminBootstrap implements CommandLineRunner {
 
     private final TeacherRepository teacherRepository;
     private final PasswordEncoder passwordEncoder;
-    private final QuizRepository quizRepository;
-    private final StudentRepository studentRepository;
     private final Environment environment;
 
     @Override
@@ -66,7 +62,7 @@ public class DefaultAdminBootstrap implements CommandLineRunner {
                     .username(adminUsername)
                     .password(passwordEncoder.encode(adminPassword))
                     .admin(true)
-                    .aiEnabled(true)
+                    .aiEnabled(false)
                     .enabled(true)
                     .build());
             log.info("Creato amministratore predefinito '{}' con password '{}'", adminUsername, adminPassword);
@@ -74,12 +70,12 @@ public class DefaultAdminBootstrap implements CommandLineRunner {
         }
 
         var shouldSaveDefaultAdmin = false;
-        if (!defaultAdmin.isAdmin()) {
-            defaultAdmin.setAdmin(true);
+        if (!defaultAdmin.getPassword().equals(passwordEncoder.encode(adminPassword))) {
+            defaultAdmin.setPassword(passwordEncoder.encode(adminPassword));
             shouldSaveDefaultAdmin = true;
         }
-        if (!defaultAdmin.isAiEnabled()) {
-            defaultAdmin.setAiEnabled(true);
+        if (!defaultAdmin.isAdmin()) {
+            defaultAdmin.setAdmin(true);
             shouldSaveDefaultAdmin = true;
         }
         if (!defaultAdmin.isEnabled()) {
@@ -89,20 +85,6 @@ public class DefaultAdminBootstrap implements CommandLineRunner {
         if (shouldSaveDefaultAdmin) {
             teacherRepository.save(defaultAdmin);
             log.info("Allineato amministratore predefinito '{}' con impostazioni di default", adminUsername);
-        }
-
-        val quizzesWithoutTeacher = quizRepository.findAll().stream().filter(q -> q.getTeacher() == null).toList();
-        quizzesWithoutTeacher.forEach(q -> q.setTeacher(defaultAdmin));
-        if (!quizzesWithoutTeacher.isEmpty()) {
-            quizRepository.saveAll(quizzesWithoutTeacher);
-            log.info("Assegnati {} quiz senza tenant all'amministratore di default", quizzesWithoutTeacher.size());
-        }
-
-        val studentsWithoutTeacher = studentRepository.findAll().stream().filter(s -> s.getTeacher() == null).toList();
-        studentsWithoutTeacher.forEach(s -> s.setTeacher(defaultAdmin));
-        if (!studentsWithoutTeacher.isEmpty()) {
-            studentRepository.saveAll(studentsWithoutTeacher);
-            log.info("Assegnati {} studenti senza tenant all'amministratore di default", studentsWithoutTeacher.size());
         }
     }
 
