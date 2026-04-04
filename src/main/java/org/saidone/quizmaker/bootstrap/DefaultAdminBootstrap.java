@@ -29,6 +29,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.Profiles;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -46,16 +47,10 @@ public class DefaultAdminBootstrap implements CommandLineRunner {
     private static final String CREATE_DEFAULT_ADMIN_PROPERTY = "quizmaker.bootstrap.default-admin";
 
     private final TeacherRepository teacherRepository;
+    private final PasswordEncoder passwordEncoder;
     private final QuizRepository quizRepository;
     private final StudentRepository studentRepository;
     private final Environment environment;
-
-    private String normalizeConfiguredPassword(String configuredPassword) {
-        if (configuredPassword != null && configuredPassword.startsWith("{bcrypt}")) {
-            return configuredPassword.substring(8);
-        }
-        return configuredPassword;
-    }
 
     @Override
     @Transactional
@@ -65,44 +60,49 @@ public class DefaultAdminBootstrap implements CommandLineRunner {
             return;
         }
 
-        val defaultTeacher = teacherRepository.findByUsernameIgnoreCase(adminUsername)
-                .orElseGet(() -> teacherRepository.save(Teacher.builder()
-                        .username(adminUsername.trim().toLowerCase())
-                        .password(normalizeConfiguredPassword(adminPassword))
-                        .admin(true)
-                        .aiEnabled(true)
-                        .enabled(true)
-                        .build()));
+        val defaultAdmin = teacherRepository.findByUsernameIgnoreCase(adminUsername).orElse(null);
+        if (defaultAdmin == null) {
+            teacherRepository.save(Teacher.builder()
+                    .username(adminUsername)
+                    .password(passwordEncoder.encode(adminPassword))
+                    .admin(true)
+                    .aiEnabled(true)
+                    .enabled(true)
+                    .build());
+            log.info("Creato amministratore predefinito '{}' con password '{}'", adminUsername, adminPassword);
+            return;
+        }
 
-        var shouldSaveDefaultTeacher = false;
-        if (!defaultTeacher.isAdmin()) {
-            defaultTeacher.setAdmin(true);
-            shouldSaveDefaultTeacher = true;
+        var shouldSaveDefaultAdmin = false;
+        if (!defaultAdmin.isAdmin()) {
+            defaultAdmin.setAdmin(true);
+            shouldSaveDefaultAdmin = true;
         }
-        if (!defaultTeacher.isAiEnabled()) {
-            defaultTeacher.setAiEnabled(true);
-            shouldSaveDefaultTeacher = true;
+        if (!defaultAdmin.isAiEnabled()) {
+            defaultAdmin.setAiEnabled(true);
+            shouldSaveDefaultAdmin = true;
         }
-        if (!defaultTeacher.isEnabled()) {
-            defaultTeacher.setEnabled(true);
-            shouldSaveDefaultTeacher = true;
+        if (!defaultAdmin.isEnabled()) {
+            defaultAdmin.setEnabled(true);
+            shouldSaveDefaultAdmin = true;
         }
-        if (shouldSaveDefaultTeacher) {
-            teacherRepository.save(defaultTeacher);
+        if (shouldSaveDefaultAdmin) {
+            teacherRepository.save(defaultAdmin);
+            log.info("Allineato amministratore predefinito '{}' con impostazioni di default", adminUsername);
         }
 
         val quizzesWithoutTeacher = quizRepository.findAll().stream().filter(q -> q.getTeacher() == null).toList();
-        quizzesWithoutTeacher.forEach(q -> q.setTeacher(defaultTeacher));
+        quizzesWithoutTeacher.forEach(q -> q.setTeacher(defaultAdmin));
         if (!quizzesWithoutTeacher.isEmpty()) {
             quizRepository.saveAll(quizzesWithoutTeacher);
-            log.info("Assegnati {} quiz senza tenant all'insegnante di default", quizzesWithoutTeacher.size());
+            log.info("Assegnati {} quiz senza tenant all'amministratore di default", quizzesWithoutTeacher.size());
         }
 
         val studentsWithoutTeacher = studentRepository.findAll().stream().filter(s -> s.getTeacher() == null).toList();
-        studentsWithoutTeacher.forEach(s -> s.setTeacher(defaultTeacher));
+        studentsWithoutTeacher.forEach(s -> s.setTeacher(defaultAdmin));
         if (!studentsWithoutTeacher.isEmpty()) {
             studentRepository.saveAll(studentsWithoutTeacher);
-            log.info("Assegnati {} studenti senza tenant all'insegnante di default", studentsWithoutTeacher.size());
+            log.info("Assegnati {} studenti senza tenant all'amministratore di default", studentsWithoutTeacher.size());
         }
     }
 

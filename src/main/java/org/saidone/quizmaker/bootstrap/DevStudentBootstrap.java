@@ -26,7 +26,9 @@ import org.saidone.quizmaker.entity.Student;
 import org.saidone.quizmaker.repository.StudentRepository;
 import org.saidone.quizmaker.repository.TeacherRepository;
 import org.saidone.quizmaker.service.StudentService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
@@ -34,10 +36,14 @@ import java.util.Locale;
 import java.util.UUID;
 
 @Component
+@DependsOn("defaultAdminBootstrap")
 @Profile({"dev", "docker"})
 @RequiredArgsConstructor
 @Slf4j
 public class DevStudentBootstrap implements CommandLineRunner {
+
+    @Value("${app.admin.username:admin}")
+    private String adminUsername;
 
     private final StudentRepository studentRepository;
     private final TeacherRepository teacherRepository;
@@ -46,7 +52,7 @@ public class DevStudentBootstrap implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        val teacher = teacherRepository.findAll().stream().findFirst().orElseThrow();
+        val teacher = teacherRepository.findByUsernameIgnoreCase(adminUsername).orElseThrow();
 
         for (var i = 0; i < 6; i++) {
             val student = Student.builder()
