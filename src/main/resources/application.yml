@@ -21,7 +21,7 @@ spring:
 app:
   admin:
     username: ${ADMIN_USERNAME:admin}
-    password: '${ADMIN_PASSWORD:$2a$12$.DB0mk/H0KpfN27Uv43ZN.sdifPhExVAMvAKsMxsAvX8pziYUv6Lq}'
+    password: ${ADMIN_PASSWORD:changeme}
   openai:
     api-key: ${OPENAI_API_KEY:}
     model: ${OPENAI_MODEL:gpt-5.4-mini}

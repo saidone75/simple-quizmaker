@@ -25,17 +25,23 @@ import org.saidone.quizmaker.repository.TeacherRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 @Component
+@DependsOn("defaultAdminBootstrap")
 @Profile({"dev", "docker"})
 @RequiredArgsConstructor
 @Slf4j
 public class DevQuizBootstrap implements CommandLineRunner {
+
+    @Value("${app.admin.username:admin}")
+    private String adminUsername;
 
     private static final String DEMO_QUIZ_TITLE = "Astronomia: il quiz delle stelle";
     private static final String DINO_QUIZ_TITLE = "Dinosauri: i giganti del Mesozoico";
@@ -47,7 +53,7 @@ public class DevQuizBootstrap implements CommandLineRunner {
     public void run(String... args) {
         var createdAstronomyQuiz = false;
         var createdDinoQuiz = false;
-        val teacher = teacherRepository.findAll().stream().findFirst().orElseThrow();
+        val teacher = teacherRepository.findByUsernameIgnoreCase(adminUsername).orElseThrow();
 
         if (!quizRepository.existsByTitleAndTeacher(DEMO_QUIZ_TITLE, teacher)) {
             quizRepository.save(

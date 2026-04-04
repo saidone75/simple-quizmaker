@@ -56,15 +56,6 @@
             </column>
         </createTable>
 
-        <insert tableName="teachers">
-            <column name="id" value="00000000-0000-0000-0000-000000000001"/>
-            <column name="username" value="admin"/>
-            <column name="password" value="$2a$12$.DB0mk/H0KpfN27Uv43ZN.sdifPhExVAMvAKsMxsAvX8pziYUv6Lq"/>
-            <column name="is_admin" valueBoolean="true"/>
-            <column name="ai_enabled" valueBoolean="false"/>
-            <column name="enabled" valueBoolean="true"/>
-        </insert>
-
         <createTable tableName="students">
             <column name="id" type="${uuid.type}">
                 <constraints nullable="false" primaryKey="true"/>
@@ -204,15 +195,6 @@
                 <constraints nullable="false"/>
             </column>
         </createTable>
-
-        <insert tableName="teachers">
-            <column name="id" value="00000000-0000-0000-0000-000000000001"/>
-            <column name="username" value="admin"/>
-            <column name="password" value="$2a$12$.DB0mk/H0KpfN27Uv43ZN.sdifPhExVAMvAKsMxsAvX8pziYUv6Lq"/>
-            <column name="is_admin" valueBoolean="true"/>
-            <column name="ai_enabled" valueBoolean="false"/>
-            <column name="enabled" valueBoolean="true"/>
-        </insert>
 
         <createTable tableName="students">
             <column name="id" type="${uuid.type}">
