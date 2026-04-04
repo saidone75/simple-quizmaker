@@ -19,6 +19,7 @@
 package org.saidone.quizmaker.service;
 
 import lombok.val;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.Clock;
@@ -50,6 +51,7 @@ public class BruteForceProtectionService {
     private final Map<String, Deque<Instant>> registerAttempts = new ConcurrentHashMap<>();
     private final Clock clock;
 
+    @Autowired
     public BruteForceProtectionService() {
         this(Clock.systemUTC());
     }
