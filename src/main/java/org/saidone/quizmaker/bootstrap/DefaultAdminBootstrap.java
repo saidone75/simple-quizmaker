@@ -27,13 +27,15 @@ import org.saidone.quizmaker.repository.StudentRepository;
 import org.saidone.quizmaker.repository.TeacherRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.core.env.Environment;
+import org.springframework.core.env.Profiles;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class DefaultTeacherBootstrap implements CommandLineRunner {
+public class DefaultAdminBootstrap implements CommandLineRunner {
 
     @Value("${app.admin.username:admin}")
     private String adminUsername;
@@ -41,9 +43,12 @@ public class DefaultTeacherBootstrap implements CommandLineRunner {
     @Value("${app.admin.password}")
     private String adminPassword;
 
+    private static final String CREATE_DEFAULT_ADMIN_PROPERTY = "quizmaker.bootstrap.default-admin";
+
     private final TeacherRepository teacherRepository;
     private final QuizRepository quizRepository;
     private final StudentRepository studentRepository;
+    private final Environment environment;
 
     private String normalizeConfiguredPassword(String configuredPassword) {
         if (configuredPassword != null && configuredPassword.startsWith("{bcrypt}")) {
@@ -55,6 +60,11 @@ public class DefaultTeacherBootstrap implements CommandLineRunner {
     @Override
     @Transactional
     public void run(String... args) {
+        if (!shouldBootstrapDefaultAdmin()) {
+            log.debug("Bootstrap amministratore predefinito disattivato (profili dev/docker non attivi e -D{} non impostato)", CREATE_DEFAULT_ADMIN_PROPERTY);
+            return;
+        }
+
         val defaultTeacher = teacherRepository.findByUsernameIgnoreCase(adminUsername)
                 .orElseGet(() -> teacherRepository.save(Teacher.builder()
                         .username(adminUsername.trim().toLowerCase())
@@ -95,4 +105,11 @@ public class DefaultTeacherBootstrap implements CommandLineRunner {
             log.info("Assegnati {} studenti senza tenant all'insegnante di default", studentsWithoutTeacher.size());
         }
     }
+
+    private boolean shouldBootstrapDefaultAdmin() {
+        val devOrDockerProfileActive = environment.acceptsProfiles(Profiles.of("dev", "docker"));
+        val forcedByJvmFlag = Boolean.parseBoolean(System.getProperty(CREATE_DEFAULT_ADMIN_PROPERTY, "false"));
+        return devOrDockerProfileActive || forcedByJvmFlag;
+    }
+
 }
