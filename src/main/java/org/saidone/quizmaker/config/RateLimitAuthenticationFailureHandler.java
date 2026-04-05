@@ -18,7 +18,6 @@
 
 package org.saidone.quizmaker.config;
 
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -39,7 +38,7 @@ public class RateLimitAuthenticationFailureHandler implements AuthenticationFail
     @Override
     public void onAuthenticationFailure(HttpServletRequest request,
                                         HttpServletResponse response,
-                                        AuthenticationException exception) throws IOException, ServletException {
+                                        AuthenticationException exception) throws IOException {
         val key = RequestFingerprint.loginKey(request);
         bruteForceProtectionService.recordLoginFailure(key);
 
