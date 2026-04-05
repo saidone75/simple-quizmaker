@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-DOCKER_COMPOSE="docker compose -f docker/docker-compose.yml"
+DOCKER_COMPOSE="docker-compose -f docker/docker-compose.yml"
 
 usage() {
   echo "Usage: $(basename "$0") {build|build_start|start|stop|restart|purge|tail}"
