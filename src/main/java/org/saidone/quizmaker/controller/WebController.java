@@ -222,7 +222,7 @@ public class WebController {
         val results = quizSubmissionService.findAllResults(currentTeacher);
         val quizzesById = quizService.findAllForAdmin(currentTeacher).stream()
                 .collect(Collectors.toMap(
-                        quiz -> quiz.getId(),
+                        QuizDto.Response::getId,
                         quiz -> quiz,
                         (left, right) -> left,
                         LinkedHashMap::new
@@ -238,7 +238,7 @@ public class WebController {
                 .stream()
                 .map(entry -> new QuizResultGroup(
                         entry.getKey(),
-                        entry.getValue().get(0).quizTitle(),
+                        entry.getValue().getFirst().quizTitle(),
                         entry.getValue(),
                         buildAnalytics(entry.getKey(), entry.getValue(), quizzesById, totalStudents)))
                 .toList();
