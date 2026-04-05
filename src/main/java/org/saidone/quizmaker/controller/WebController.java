@@ -306,17 +306,17 @@ public class WebController {
 
         return stats.stream()
                 .filter(stat -> stat.attempts() > 0)
-                .map(stat -> new DifficultQuestion(
-                        stat.index() + 1,
-                        stat.text() == null || stat.text().isBlank() ? "Domanda senza testo" : stat.text(),
-                        String.format(Locale.ROOT, "%.1f%%", ((double) stat.errors() / stat.attempts()) * 100)
-                ))
                 .sorted((left, right) -> {
-                    val leftRate = Double.parseDouble(left.errorRate().replace("%", ""));
-                    val rightRate = Double.parseDouble(right.errorRate().replace("%", ""));
+                    val leftRate = (double) left.errors() / left.attempts();
+                    val rightRate = (double) right.errors() / right.attempts();
                     return Double.compare(rightRate, leftRate);
                 })
                 .limit(3)
+                .map(stat -> new DifficultQuestion(
+                        stat.index() + 1,
+                        stat.text() == null || stat.text().isBlank() ? "Domanda senza testo" : stat.text(),
+                        String.format(Locale.ROOT, "errori: %d/%d", stat.errors(), stat.attempts())
+                ))
                 .toList();
     }
 
@@ -484,7 +484,7 @@ public class WebController {
     private record QuizResultAnalytics(String averageScore, String completionRate, List<DifficultQuestion> difficultQuestions) {
     }
 
-    private record DifficultQuestion(int position, String text, String errorRate) {
+    private record DifficultQuestion(int position, String text, String errorsSummary) {
     }
 
     private record QuestionStats(int index, String text, int attempts, int errors) {

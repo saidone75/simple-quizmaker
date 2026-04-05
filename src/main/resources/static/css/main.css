@@ -882,10 +882,30 @@ input[type="file"].input-field::-webkit-file-upload-button:hover {
     border-top: 1px dashed var(--gray-border);
     padding-top: 12px;
 }
-.results-analytics h3 {
+.results-analytics summary {
+    list-style: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    cursor: pointer;
     font-size: 15px;
     color: var(--green-dark);
-    margin-bottom: 10px;
+    font-weight: 800;
+}
+.results-analytics summary::-webkit-details-marker {
+    display: none;
+}
+.results-analytics-content {
+    margin-top: 10px;
+}
+.analytics-accordion-icon {
+    font-size: 14px;
+    color: var(--gray-muted);
+    transition: transform 0.2s;
+}
+.results-analytics[open] .analytics-accordion-icon {
+    transform: rotate(180deg);
 }
 .results-analytics-grid {
     display: grid;
