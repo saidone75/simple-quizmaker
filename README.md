@@ -2,6 +2,15 @@
 
 Applicazione Spring Boot per creare, pubblicare e somministrare quiz scolastici divertenti, con interfaccia web e API REST.
 
+![QuizMaker](images/quizmaker_dashboard.png)
+
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+![Java CI](https://github.com/saidone75/quizmaker-springboot/actions/workflows/build.yml/badge.svg)
+
+[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=saidone75_quizmaker_springboot&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=saidone75_alfresco-node-vault)
+[![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=saidone75_quizmaker_springboot&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=saidone75_alfresco-node-vault)
+[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=saidone75_quizmaker_springboot&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=saidone75_alfresco-node-vault)
+
 ## Caratteristiche principali
 
 - Accesso **insegnante** con registrazione self-service e dashboard dedicata (`/teacher/...`).
@@ -9,10 +18,6 @@ Applicazione Spring Boot per creare, pubblicare e somministrare quiz scolastici 
 - Generazione quiz con **AI OpenAI** (opzionale) e supporto allegati (`.pdf`, `.docx`, testo).
 - Condivisione quiz verso più insegnanti.
 - Gestione risultati con analytics e sblocco tentativi singolo studente o in blocco.
-- Controlli di sicurezza includono:
-  - protezione brute-force login teacher e login studente;
-  - rate limit registrazione teacher;
-  - supporto **Cloudflare Turnstile** (opzionale) in fase di registrazione.
 - Backup schedulato database SQLite in produzione con retention configurabile.
 - Semplice dispiegamento in cloud o on premise.
 
@@ -176,9 +181,9 @@ export DB_BACKUP_RETENTION_COUNT=14
 ## Sicurezza
 
 - CSRF con cookie token (eccetto H2 console).
-- Login teacher con blocco temporaneo dopo troppi tentativi falliti.
+- Login insegnante con blocco temporaneo dopo troppi tentativi falliti.
 - Login studente protetto per IP + keyword.
-- Registrazione teacher rate-limited e integrata con CAPTCHA Turnstile (se abilitato).
+- Registrazione insegnante rate-limited e integrata con CAPTCHA Turnstile (se abilitato).
 - Ruoli applicativi: `ROLE_TEACHER`, `ROLE_ADMIN`.
 
 ## Database e migration
