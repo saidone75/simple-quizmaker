@@ -1,6 +1,4 @@
 (function () {
-    const csrfToken = document.querySelector('meta[name="quizmaker-csrf-token"]')?.content || '';
-    const csrfHeader = document.querySelector('meta[name="quizmaker-csrf-header"]')?.content || '';
     const isAdmin = document.getElementById('dashboard-page-data')?.dataset.isAdmin === 'true';
     let quizIdToShare = null;
 
@@ -57,11 +55,10 @@
         closeShareModal();
         showLoading('Invio quiz in corso...');
         try {
-            const res = await fetch('/api/quizzes/' + targetQuizId + '/share', {
+            const res = await apiFetch('/api/quizzes/' + targetQuizId + '/share', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
-                    [csrfHeader]: csrfToken
+                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({teacherIds: selectedTeacherIds})
             });
@@ -81,9 +78,8 @@
         closeDeleteModal();
         showLoading('Eliminazione in corso...');
         try {
-            const res = await fetch('/api/quizzes/' + id, {
-                method: 'DELETE',
-                headers: {[csrfHeader]: csrfToken}
+            const res = await apiFetch('/api/quizzes/' + id, {
+                method: 'DELETE'
             });
             if (!res.ok) {
                 throw new Error('Errore server');
@@ -102,11 +98,10 @@
         const published = checkbox.checked;
         checkbox.disabled = true;
         try {
-            const res = await fetch('/api/quizzes/' + id + '/publication', {
+            const res = await apiFetch('/api/quizzes/' + id + '/publication', {
                 method: 'PUT',
                 headers: {
-                    'Content-Type': 'application/json',
-                    [csrfHeader]: csrfToken
+                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({published})
             });

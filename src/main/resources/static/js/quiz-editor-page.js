@@ -1,9 +1,6 @@
 (function () {
     const dataEl = document.getElementById('quiz-editor-data');
 
-    window.CSRF_TOKEN = document.querySelector('meta[name="quizmaker-csrf-token"]')?.content || '';
-    window.CSRF_HEADER = document.querySelector('meta[name="quizmaker-csrf-header"]')?.content || 'X-CSRF-TOKEN';
-
     const rawQuizId = dataEl?.dataset.quizId;
     const quizId = rawQuizId && rawQuizId !== 'null' && rawQuizId !== '' ? rawQuizId : null;
 

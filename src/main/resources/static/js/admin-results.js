@@ -1,13 +1,9 @@
 (function () {
-    const csrfToken = document.querySelector('meta[name="quizmaker-csrf-token"]')?.content || '';
-    const csrfHeader = document.querySelector('meta[name="quizmaker-csrf-header"]')?.content || '';
-
     const unlockSubmission = async (studentId, quizId) => {
         showLoading('Sblocco in corso...');
         try {
-            const res = await fetch('/api/quizzes/' + quizId + '/unlock/' + studentId, {
-                method: 'POST',
-                headers: {[csrfHeader]: csrfToken}
+            const res = await apiFetch('/api/quizzes/' + quizId + '/unlock/' + studentId, {
+                method: 'POST'
             });
             if (!res.ok) {
                 throw new Error('Errore server');
@@ -24,9 +20,8 @@
     const unlockAllForQuiz = async (quizId) => {
         showLoading('Sblocco quiz per tutti in corso...');
         try {
-            const res = await fetch('/api/quizzes/' + quizId + '/unlock-all', {
-                method: 'POST',
-                headers: {[csrfHeader]: csrfToken}
+            const res = await apiFetch('/api/quizzes/' + quizId + '/unlock-all', {
+                method: 'POST'
             });
             if (!res.ok) {
                 throw new Error('Errore server');

@@ -14,8 +14,6 @@
 
     window.QUIZ_DATA_BY_ID = quizById;
     window.LOCKED_QUIZ_IDS = lockedQuizIds;
-    window.CSRF_TOKEN = document.querySelector('meta[name="quizmaker-csrf-token"]')?.content || '';
-    window.CSRF_HEADER = document.querySelector('meta[name="quizmaker-csrf-header"]')?.content || '';
 
     document.getElementById('student-back-home-btn')?.addEventListener('click', () => {
         goTo('student');
