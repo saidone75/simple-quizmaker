@@ -53,7 +53,7 @@
 <div id="screen-admin" class="screen active" style="background:var(--gray-bg);min-height:100vh;">
     <div class="topbar no-print">
         <span class="topbar-title">👨‍🎓 Studenti della classe</span>
-        <div style="display:flex;gap:8px;align-items:center;">
+        <div class="topbar-actions">
             <a th:href="@{/teacher}" class="topbar-back" style="text-decoration:none">← Dashboard</a>
             <button type="button" class="topbar-back no-print" id="print-students-btn">🖨️ Stampa</button>
             <span class="topbar-badge" sec:authentication="name">admin</span>
@@ -83,7 +83,7 @@
                     🔐 Rigenera tutte le password
                 </button>
             </div>
-            <table style="width:100%;border-collapse:collapse;min-width:480px;">
+            <table class="students-table">
                 <thead>
                 <tr style="background:#f8fafc">
                     <th style="text-align:left;padding:10px 12px;">Studente</th>
