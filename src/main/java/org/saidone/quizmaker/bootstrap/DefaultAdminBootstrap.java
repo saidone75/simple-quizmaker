@@ -60,7 +60,7 @@ public class DefaultAdminBootstrap implements InitializingBean {
                     .username(adminUsername)
                     .password(passwordEncoder.encode(adminPassword))
                     .admin(true)
-                    .aiEnabled(false)
+                    .aiEnabled(true)
                     .enabled(true)
                     .build());
             log.info("Creato amministratore predefinito '{}' con password '{}'", adminUsername, adminPassword);
