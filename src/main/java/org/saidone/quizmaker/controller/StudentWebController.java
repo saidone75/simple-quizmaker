@@ -72,6 +72,11 @@ public class StudentWebController {
         return "student";
     }
 
+    @GetMapping("/student/login")
+    public String studentLoginPage() {
+        return "redirect:/";
+    }
+
     @PostMapping("/student/login")
     public String studentLogin(@RequestParam("keyword") String keyword,
                                HttpServletRequest request,

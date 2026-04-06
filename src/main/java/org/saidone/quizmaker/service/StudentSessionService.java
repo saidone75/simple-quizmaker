@@ -20,6 +20,7 @@ package org.saidone.quizmaker.service;
 
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import org.saidone.quizmaker.config.StudentAuthenticationToken;
 import org.saidone.quizmaker.entity.Student;
 import org.saidone.quizmaker.repository.StudentRepository;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -45,6 +46,8 @@ public class StudentSessionService {
 
     public void logout(HttpSession session) {
         session.removeAttribute(STUDENT_ID_SESSION_KEY);
-        SecurityContextHolder.clearContext();
+        if (SecurityContextHolder.getContext().getAuthentication() instanceof StudentAuthenticationToken) {
+            SecurityContextHolder.clearContext();
+        }
     }
 }
