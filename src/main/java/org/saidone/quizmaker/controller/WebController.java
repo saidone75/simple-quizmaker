@@ -198,7 +198,7 @@ public class WebController {
         model.addAttribute("quizzes", quizService.findAllForAdmin(currentTeacher));
         model.addAttribute("isAdmin", currentTeacher.isAdmin());
         if (currentTeacher.isAdmin()) {
-            val shareTeachers = teacherAdministrationService.findAllTeachers().stream()
+            val shareTeachers = teacherAdministrationService.findAllTeachers(currentTeacher).stream()
                     .filter(teacher -> !teacher.getId().equals(currentTeacher.getId()))
                     .map(teacher -> new ShareTeacherOption(teacher.getId(), teacher.getUsername()))
                     .toList();
@@ -386,7 +386,7 @@ public class WebController {
     public String teacherManagementPage(Model model) {
         ensureAdmin();
         val currentTeacher = teacherAuthenticationService.getCurrentTeacher();
-        val teachers = teacherAdministrationService.findAllTeachers();
+        val teachers = teacherAdministrationService.findAllTeachers(currentTeacher);
         model.addAttribute("teachers", teachers);
         model.addAttribute("currentTeacherId", currentTeacher.getId());
         return "admin/system-teachers";

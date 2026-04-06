@@ -27,6 +27,7 @@ import org.saidone.quizmaker.entity.Quiz;
 import org.saidone.quizmaker.entity.Teacher;
 import org.saidone.quizmaker.repository.QuizRepository;
 import org.saidone.quizmaker.repository.TeacherRepository;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -47,11 +48,8 @@ public class QuizSharingService {
     private final TeacherRepository teacherRepository;
 
     @Transactional
+    @PreAuthorize("@teacherAuthorizationPolicy.isAdmin(#actingTeacher)")
     public int shareQuizToTeachers(UUID quizId, List<UUID> destinationTeacherIds, Teacher actingTeacher) {
-        if (actingTeacher == null || !actingTeacher.isAdmin()) {
-            throw new IllegalArgumentException("Operazione non consentita");
-        }
-
         val sourceQuiz = quizRepository.findByIdAndTeacher(quizId, actingTeacher)
                 .orElseThrow(() -> new EntityNotFoundException(String.format(QUIZ_NOT_FOUND_MESSAGE, quizId)));
 

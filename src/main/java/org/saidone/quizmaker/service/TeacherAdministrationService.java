@@ -23,6 +23,7 @@ import lombok.val;
 import net.datafaker.Faker;
 import org.saidone.quizmaker.entity.Teacher;
 import org.saidone.quizmaker.repository.TeacherRepository;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,13 +44,14 @@ public class TeacherAdministrationService {
     private static final SecureRandom RANDOM = new SecureRandom();
 
     @Transactional(readOnly = true)
-    public List<Teacher> findAllTeachers() {
+    @PreAuthorize("@teacherAuthorizationPolicy.isAdmin(#actingTeacher)")
+    public List<Teacher> findAllTeachers(Teacher actingTeacher) {
         return teacherRepository.findAllByOrderByCreatedAtAsc();
     }
 
     @Transactional
+    @PreAuthorize("@teacherAuthorizationPolicy.isAdmin(#actingTeacher)")
     public void updateTeacherAdminFlag(UUID targetTeacherId, boolean admin, Teacher actingTeacher) {
-        ensureAdmin(actingTeacher);
         if (targetTeacherId == null) {
             throw new IllegalArgumentException("Insegnante non valido");
         }
@@ -64,8 +66,8 @@ public class TeacherAdministrationService {
     }
 
     @Transactional
+    @PreAuthorize("@teacherAuthorizationPolicy.isAdmin(#actingTeacher)")
     public void updateTeacherAiFlag(UUID targetTeacherId, boolean aiEnabled, Teacher actingTeacher) {
-        ensureAdmin(actingTeacher);
         if (targetTeacherId == null) {
             throw new IllegalArgumentException("Insegnante non valido");
         }
@@ -77,8 +79,8 @@ public class TeacherAdministrationService {
     }
 
     @Transactional
+    @PreAuthorize("@teacherAuthorizationPolicy.isAdmin(#actingTeacher)")
     public void updateTeacherEnabledFlag(UUID targetTeacherId, boolean enabled, Teacher actingTeacher) {
-        ensureAdmin(actingTeacher);
         if (targetTeacherId == null) {
             throw new IllegalArgumentException("Insegnante non valido");
         }
@@ -93,8 +95,8 @@ public class TeacherAdministrationService {
     }
 
     @Transactional
+    @PreAuthorize("@teacherAuthorizationPolicy.isAdmin(#actingTeacher)")
     public String resetTeacherPassword(UUID targetTeacherId, Teacher actingTeacher) {
-        ensureAdmin(actingTeacher);
         if (targetTeacherId == null) {
             throw new IllegalArgumentException("Insegnante non valido");
         }
@@ -110,11 +112,5 @@ public class TeacherAdministrationService {
         targetTeacher.setPassword(passwordEncoder.encode(temporaryPassword));
         teacherRepository.save(targetTeacher);
         return temporaryPassword;
-    }
-
-    private void ensureAdmin(Teacher actingTeacher) {
-        if (actingTeacher == null || !actingTeacher.isAdmin()) {
-            throw new IllegalArgumentException("Operazione non consentita");
-        }
     }
 }

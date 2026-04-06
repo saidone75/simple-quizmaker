@@ -25,6 +25,7 @@ import org.saidone.quizmaker.repository.QuizRepository;
 import org.saidone.quizmaker.repository.QuizSubmissionRepository;
 import org.saidone.quizmaker.repository.StudentRepository;
 import org.saidone.quizmaker.repository.TeacherRepository;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,10 +41,8 @@ public class TeacherLifecycleService {
     private final QuizSubmissionRepository quizSubmissionRepository;
 
     @Transactional
+    @PreAuthorize("@teacherAuthorizationPolicy.isAdmin(#actingTeacher)")
     public void deleteTeacherCompletely(UUID targetTeacherId, Teacher actingTeacher) {
-        if (actingTeacher == null || !actingTeacher.isAdmin()) {
-            throw new IllegalArgumentException("Operazione non consentita");
-        }
         if (targetTeacherId == null) {
             throw new IllegalArgumentException("Insegnante non valido");
         }
