@@ -29,6 +29,7 @@ import org.saidone.quizmaker.mapper.QuestionMapper;
 import org.saidone.quizmaker.mapper.QuizMapper;
 import org.saidone.quizmaker.repository.QuizRepository;
 import org.saidone.quizmaker.repository.QuizSubmissionRepository;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -79,6 +80,7 @@ public class QuizService {
     }
 
     @Transactional
+    @PreAuthorize("@teacherAuthorizationPolicy.isTeacher(#teacher)")
     public QuizDto.Response create(QuizDto.Request request, Teacher teacher) {
         val quiz = Quiz.builder()
                 .title(request.getTitle())
@@ -94,6 +96,7 @@ public class QuizService {
     }
 
     @Transactional
+    @PreAuthorize("@teacherAuthorizationPolicy.canManageQuiz(#id, #teacher)")
     public QuizDto.Response update(UUID id, QuizDto.Request request, Teacher teacher) {
         val quiz = quizRepository.findByIdAndTeacher(id, teacher)
                 .orElseThrow(() -> new EntityNotFoundException(String.format(QUIZ_NOT_FOUND_MESSAGE, id)));
@@ -108,6 +111,7 @@ public class QuizService {
     }
 
     @Transactional
+    @PreAuthorize("@teacherAuthorizationPolicy.canManageQuiz(#id, #teacher)")
     public void delete(UUID id, Teacher teacher) {
         val quiz = quizRepository.findByIdAndTeacher(id, teacher)
                 .orElseThrow(() -> new EntityNotFoundException(String.format(QUIZ_NOT_FOUND_MESSAGE, id)));
@@ -117,6 +121,7 @@ public class QuizService {
     }
 
     @Transactional
+    @PreAuthorize("@teacherAuthorizationPolicy.canManageQuiz(#id, #teacher)")
     public QuizDto.Response updatePublicationStatus(UUID id, boolean published, Teacher teacher) {
         val quiz = quizRepository.findByIdAndTeacher(id, teacher)
                 .orElseThrow(() -> new EntityNotFoundException(String.format(QUIZ_NOT_FOUND_MESSAGE, id)));

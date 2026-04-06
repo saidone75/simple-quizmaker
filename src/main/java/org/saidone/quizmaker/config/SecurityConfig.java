@@ -38,7 +38,6 @@ public class SecurityConfig {
 
     private static final String ROLE_ADMIN = "ADMIN";
     private static final String ROLE_TEACHER = "TEACHER";
-    private static final String ROLE_STUDENT = "STUDENT";
 
     private final LoginRateLimitFilter loginRateLimitFilter;
     private final RateLimitAuthenticationFailureHandler rateLimitAuthenticationFailureHandler;
@@ -63,11 +62,7 @@ public class SecurityConfig {
                         .requestMatchers("/h2-console/**").permitAll()
                         .requestMatchers("/teacher/login", "/teacher/register", "/", "/student/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/student/logout").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/quizzes", "/api/quizzes/**").hasRole(ROLE_STUDENT)
-                        .requestMatchers(HttpMethod.POST, "/api/quizzes/*/submit").hasRole(ROLE_STUDENT)
-                        .requestMatchers(HttpMethod.POST, "/api/quizzes/**", "/api/quizzes/*/unlock/*").hasRole(ROLE_TEACHER)
-                        .requestMatchers(HttpMethod.PUT, "/api/quizzes/**").hasRole(ROLE_TEACHER)
-                        .requestMatchers(HttpMethod.DELETE, "/api/quizzes/**").hasRole(ROLE_TEACHER)
+                        .requestMatchers("/api/quizzes/**").authenticated()
                         .requestMatchers("/api/students/**").hasRole(ROLE_TEACHER)
                         .requestMatchers("/api/teacher/**").hasRole(ROLE_TEACHER)
                         .requestMatchers("/about").hasRole(ROLE_ADMIN)

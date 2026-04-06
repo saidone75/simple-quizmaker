@@ -28,6 +28,7 @@ import org.saidone.quizmaker.entity.Student;
 import org.saidone.quizmaker.entity.Teacher;
 import org.saidone.quizmaker.repository.QuizRepository;
 import org.saidone.quizmaker.repository.QuizSubmissionRepository;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -98,6 +99,7 @@ public class QuizSubmissionService {
     }
 
     @Transactional
+    @PreAuthorize("@teacherAuthorizationPolicy.canManageQuiz(#quizId, #teacher)")
     public void unlockQuizForStudent(UUID studentId, UUID quizId, Teacher teacher) {
         val submission = quizSubmissionRepository.findByStudentIdAndQuizIdAndStudentTeacherAndQuizTeacher(studentId, quizId, teacher, teacher)
                 .orElseThrow(() -> new EntityNotFoundException("Consegna non trovata per studente/quiz"));
@@ -106,6 +108,7 @@ public class QuizSubmissionService {
     }
 
     @Transactional
+    @PreAuthorize("@teacherAuthorizationPolicy.canManageQuiz(#quizId, #teacher)")
     public int unlockAllForQuiz(UUID quizId, Teacher teacher) {
         val submissions = quizSubmissionRepository.findByQuizIdAndUnlockedFalseAndQuizTeacher(quizId, teacher);
         submissions.forEach(submission -> submission.setUnlocked(true));
