@@ -166,6 +166,7 @@ export DB_BACKUP_RETENTION_COUNT=30
 - `PUT /api/quizzes/{id}` modifica quiz (teacher).
 - `DELETE /api/quizzes/{id}` eliminazione quiz (teacher).
 - `PUT /api/quizzes/{id}/publication` pubblicazione/depubblicazione.
+- `PUT /api/quizzes/{id}/archived` archiviazione/riattivazione quiz.
 - `POST /api/quizzes/{id}/share` condivisione quiz a più teacher.
 - `POST /api/quizzes/{quizId}/unlock/{studentId}` sblocco tentativo singolo.
 - `POST /api/quizzes/{quizId}/unlock-all` sblocco massivo tentativi.

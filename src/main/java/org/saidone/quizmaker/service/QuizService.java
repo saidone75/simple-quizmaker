@@ -59,7 +59,7 @@ public class QuizService {
 
     @Transactional(readOnly = true)
     public List<QuizDto.Response> findPublishedForTeacher(Teacher teacher) {
-        return quizRepository.findByTeacherAndPublishedTrueOrderByCreatedAtDesc(teacher)
+        return quizRepository.findByTeacherAndPublishedTrueAndArchivedFalseOrderByCreatedAtDesc(teacher)
                 .stream()
                 .map(this::toResponse)
                 .toList();
@@ -74,7 +74,7 @@ public class QuizService {
 
     @Transactional(readOnly = true)
     public QuizDto.Response findPublishedByIdForTeacher(UUID id, Teacher teacher) {
-        return quizRepository.findByIdAndTeacherAndPublishedTrue(id, teacher)
+        return quizRepository.findByIdAndTeacherAndPublishedTrueAndArchivedFalse(id, teacher)
                 .map(this::toResponse)
                 .orElseThrow(() -> new EntityNotFoundException(String.format(QUIZ_NOT_FOUND_MESSAGE, id)));
     }
@@ -87,6 +87,7 @@ public class QuizService {
                 .emoji(request.getEmoji())
                 .questions(request.getQuestions().stream().map(questionMapper::toEntity).toList())
                 .published(false)
+                .archived(false)
                 .createdByUsername(teacher.getUsername())
                 .teacher(teacher)
                 .build();
@@ -126,8 +127,27 @@ public class QuizService {
         val quiz = quizRepository.findByIdAndTeacher(id, teacher)
                 .orElseThrow(() -> new EntityNotFoundException(String.format(QUIZ_NOT_FOUND_MESSAGE, id)));
         quiz.setPublished(published);
+        quiz.setModifiedByUsername(teacher.getUsername());
+        quiz.setModifiedAt(LocalDateTime.now());
         val saved = quizRepository.save(quiz);
         log.info("Quiz publication status updated: {} ({}) => {}", saved.getTitle(), saved.getId(), saved.getPublished());
+        return toResponse(saved);
+    }
+
+
+    @Transactional
+    @PreAuthorize("@teacherAuthorizationPolicy.canManageQuiz(#id, #teacher)")
+    public QuizDto.Response updateArchivedStatus(UUID id, boolean archived, Teacher teacher) {
+        val quiz = quizRepository.findByIdAndTeacher(id, teacher)
+                .orElseThrow(() -> new EntityNotFoundException(String.format(QUIZ_NOT_FOUND_MESSAGE, id)));
+        quiz.setArchived(archived);
+        if (archived) {
+            quiz.setPublished(false);
+        }
+        quiz.setModifiedByUsername(teacher.getUsername());
+        quiz.setModifiedAt(LocalDateTime.now());
+        val saved = quizRepository.save(quiz);
+        log.info("Quiz archived status updated: {} ({}) => {}", saved.getTitle(), saved.getId(), saved.getArchived());
         return toResponse(saved);
     }
 

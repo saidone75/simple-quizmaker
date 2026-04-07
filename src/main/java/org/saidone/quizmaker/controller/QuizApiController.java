@@ -110,6 +110,13 @@ public class QuizApiController {
         return ResponseEntity.ok(quizService.updatePublicationStatus(id, request.getPublished(), teacherAuthenticationService.getCurrentTeacher()));
     }
 
+    @PutMapping("/{id}/archived")
+    public ResponseEntity<QuizDto.Response> updateArchivedStatus(
+            @PathVariable UUID id,
+            @Valid @RequestBody QuizDto.PublicationUpdateRequest request) {
+        return ResponseEntity.ok(quizService.updateArchivedStatus(id, request.getPublished(), teacherAuthenticationService.getCurrentTeacher()));
+    }
+
     @PostMapping("/{id}/share")
     public ResponseEntity<Integer> shareQuiz(
             @PathVariable UUID id,

@@ -56,7 +56,7 @@ public class QuizSubmissionService {
 
     @Transactional
     public QuizSubmissionDto.Response submit(UUID quizId, Student student, List<Integer> answers) {
-        val quiz = quizRepository.findByIdAndTeacherAndPublishedTrue(quizId, student.getTeacher())
+        val quiz = quizRepository.findByIdAndTeacherAndPublishedTrueAndArchivedFalse(quizId, student.getTeacher())
                 .orElseThrow(() -> new EntityNotFoundException(String.format("Quiz non trovato: %s", quizId)));
 
         val existingSubmission = quizSubmissionRepository.findByStudentIdAndQuizId(student.getId(), quizId);
@@ -82,7 +82,7 @@ public class QuizSubmissionService {
 
     @Transactional(readOnly = true)
     public List<ResultRow> findAllResults(Teacher teacher) {
-        return quizSubmissionRepository.findAllByStudentTeacherOrderBySubmittedAtDesc(teacher)
+        return quizSubmissionRepository.findAllByStudentTeacherAndQuizArchivedFalseOrderBySubmittedAtDesc(teacher)
                 .stream()
                 .map(s -> new ResultRow(
                         s.getStudent().getId(),

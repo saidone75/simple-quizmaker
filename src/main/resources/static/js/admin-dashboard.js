@@ -111,6 +111,34 @@
         }
     };
 
+    const toggleArchived = async (button) => {
+        const id = button.dataset.id;
+        const currentlyArchived = button.dataset.archived === 'true';
+        const archived = !currentlyArchived;
+        button.disabled = true;
+        showLoading(archived ? 'Archiviazione in corso...' : 'Riattivazione quiz in corso...');
+        try {
+            const res = await apiFetch('/api/quizzes/' + id + '/archived', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({published: archived})
+            });
+            if (!res.ok) {
+                throw new Error('Errore server');
+            }
+            hideLoading();
+            showToast(archived ? 'Quiz archiviato' : 'Quiz riattivato');
+            setTimeout(() => location.reload(), 700);
+        } catch (e) {
+            hideLoading();
+            alert('Errore: ' + e.message);
+        } finally {
+            button.disabled = false;
+        }
+    };
+
     const togglePublication = async (checkbox) => {
         const id = checkbox.dataset.id;
         const published = checkbox.checked;
@@ -163,6 +191,12 @@
     document.querySelectorAll('.js-toggle-publication').forEach((checkbox) => {
         checkbox.addEventListener('change', () => {
             togglePublication(checkbox);
+        });
+    });
+
+    document.querySelectorAll('.js-toggle-archive').forEach((button) => {
+        button.addEventListener('click', () => {
+            toggleArchived(button);
         });
     });
 

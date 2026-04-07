@@ -64,6 +64,7 @@ public class QuizDto {
         private LocalDateTime modifiedAt;
         private String modifiedByUsername;
         private Boolean published;
+        private Boolean archived;
     }
 
     @Data
