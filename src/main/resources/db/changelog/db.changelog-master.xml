@@ -32,5 +32,6 @@
     <property name="json.type" value="TEXT" dbms="sqlite"/>
 
     <include file="001-initial-schema.xml" relativeToChangelogFile="true"/>
+    <include file="002-quiz-archive-flag.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

@@ -78,6 +78,10 @@ public class Quiz {
     @Column(name = "published", nullable = false)
     private Boolean published = false;
 
+    @Builder.Default
+    @Column(name = "archived", nullable = false)
+    private Boolean archived = false;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "teacher_id", nullable = false)
     private Teacher teacher;

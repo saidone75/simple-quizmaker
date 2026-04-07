@@ -71,7 +71,9 @@ public class TeacherDashboardWebController {
     @GetMapping("/teacher")
     public String adminDashboard(Model model) {
         val currentTeacher = teacherAuthenticationService.getCurrentTeacher();
-        model.addAttribute("quizzes", quizService.findAllForAdmin(currentTeacher));
+        val quizzes = quizService.findAllForAdmin(currentTeacher);
+        model.addAttribute("quizzes", quizzes.stream().filter(quiz -> !Boolean.TRUE.equals(quiz.getArchived())).toList());
+        model.addAttribute("archivedQuizzes", quizzes.stream().filter(quiz -> Boolean.TRUE.equals(quiz.getArchived())).toList());
         model.addAttribute("isAdmin", currentTeacher.isAdmin());
         if (currentTeacher.isAdmin()) {
             val shareTeachers = teacherAdministrationService.findAllTeachers(currentTeacher).stream()
@@ -101,6 +103,7 @@ public class TeacherDashboardWebController {
         val currentTeacher = teacherAuthenticationService.getCurrentTeacher();
         val results = quizSubmissionService.findAllResults(currentTeacher);
         val quizzesById = quizService.findAllForAdmin(currentTeacher).stream()
+                .filter(quiz -> !Boolean.TRUE.equals(quiz.getArchived()))
                 .collect(Collectors.toMap(
                         QuizDto.Response::getId,
                         quiz -> quiz,
@@ -116,6 +119,7 @@ public class TeacherDashboardWebController {
                         Collectors.toList()))
                 .entrySet()
                 .stream()
+                .filter(entry -> quizzesById.containsKey(entry.getKey()))
                 .map(entry -> new QuizResultGroup(
                         entry.getKey(),
                         entry.getValue().getFirst().quizTitle(),

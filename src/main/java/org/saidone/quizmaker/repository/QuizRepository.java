@@ -31,11 +31,11 @@ import java.util.UUID;
 public interface QuizRepository extends JpaRepository<Quiz, UUID> {
     List<Quiz> findAllByTeacherOrderByCreatedAtDesc(Teacher teacher);
 
-    List<Quiz> findByTeacherAndPublishedTrueOrderByCreatedAtDesc(Teacher teacher);
+    List<Quiz> findByTeacherAndPublishedTrueAndArchivedFalseOrderByCreatedAtDesc(Teacher teacher);
 
     Optional<Quiz> findByIdAndTeacher(UUID id, Teacher teacher);
 
-    Optional<Quiz> findByIdAndTeacherAndPublishedTrue(UUID id, Teacher teacher);
+    Optional<Quiz> findByIdAndTeacherAndPublishedTrueAndArchivedFalse(UUID id, Teacher teacher);
 
     boolean existsByTitleAndTeacher(String title, Teacher teacher);
 

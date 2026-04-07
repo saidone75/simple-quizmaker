@@ -77,7 +77,7 @@
             </a>
         </div>
 
-        <div class="section-label">Quiz esistenti (<span th:text="${quizzes.size()}">0</span>)</div>
+        <div class="section-label">Quiz attivi (<span th:text="${quizzes.size()}">0</span>)</div>
 
         <div id="manage-list" class="manage-list" th:if="${!quizzes.isEmpty()}">
             <div class="manage-card" th:each="quiz : ${quizzes}">
@@ -110,6 +110,9 @@
                             title="Invia ad altri insegnanti"
                             th:data-id="${quiz.id}"
                             th:data-title="${quiz.title}">📤</button>
+                    <button class="btn-icon-action btn-archive-quiz js-toggle-archive" title="Archivia"
+                            th:data-id="${quiz.id}"
+                            th:data-title="${quiz.title}">🗄️</button>
                     <button class="btn-icon-action btn-delete-quiz js-open-delete-modal" title="Elimina"
                             th:data-id="${quiz.id}"
                             th:data-title="${quiz.title}">🗑</button>
@@ -119,7 +122,36 @@
 
         <div class="manage-empty" th:if="${quizzes.isEmpty()}">
             <span>📭</span>
-            Nessun quiz ancora. Creane uno!
+            Nessun quiz attivo. Creane uno!
+        </div>
+
+
+        <details class="archived-quizzes-accordion" th:if="${!archivedQuizzes.isEmpty()}">
+            <summary>
+                <span>🗂️ Quiz archiviati (<span th:text="${archivedQuizzes.size()}">0</span>)</span>
+                <span class="archived-accordion-icon">▾</span>
+            </summary>
+
+            <div id="archived-list" class="manage-list">
+                <div class="manage-card" th:each="quiz : ${archivedQuizzes}">
+                    <span class="manage-card-icon" th:text="${quiz.emoji}">🦕</span>
+                    <div class="manage-card-info">
+                        <div class="manage-card-title" th:text="${quiz.title}">Titolo</div>
+                        <div class="manage-card-meta">Quiz archiviato (non visibile a studenti e nei risultati)</div>
+                    </div>
+                    <div class="manage-card-actions">
+                        <button class="btn-icon-action btn-restore-quiz js-toggle-archive" title="Riattiva quiz"
+                                th:data-id="${quiz.id}"
+                                th:data-title="${quiz.title}"
+                                data-archived="true">♻️</button>
+                    </div>
+                </div>
+            </div>
+        </details>
+
+        <div class="manage-empty" th:if="${archivedQuizzes.isEmpty()}">
+            <span>🗂️</span>
+            Nessun quiz archiviato.
         </div>
 
         <div class="admin-about-footer" sec:authorize="hasRole('ADMIN')">

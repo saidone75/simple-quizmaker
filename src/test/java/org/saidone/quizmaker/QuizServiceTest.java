@@ -78,6 +78,7 @@ class QuizServiceTest {
                 .title("Quiz di Test")
                 .emoji("🧪")
                 .published(true)
+                .archived(false)
                 .questions(List.of(question))
                 .teacher(teacher)
                 .build();
@@ -107,7 +108,7 @@ class QuizServiceTest {
                 .published(sampleQuiz.getPublished())
                 .questionsCount(sampleQuiz.getQuestions().size())
                 .build();
-        when(quizRepository.findByTeacherAndPublishedTrueOrderByCreatedAtDesc(teacher)).thenReturn(List.of(sampleQuiz));
+        when(quizRepository.findByTeacherAndPublishedTrueAndArchivedFalseOrderByCreatedAtDesc(teacher)).thenReturn(List.of(sampleQuiz));
         when(quizMapper.toResponse(sampleQuiz)).thenReturn(response);
 
         val result = quizService.findPublishedForTeacher(teacher);
@@ -140,7 +141,7 @@ class QuizServiceTest {
                 .published(sampleQuiz.getPublished())
                 .questionsCount(sampleQuiz.getQuestions().size())
                 .build();
-        when(quizRepository.findByIdAndTeacherAndPublishedTrue(sampleQuiz.getId(), teacher)).thenReturn(Optional.of(sampleQuiz));
+        when(quizRepository.findByIdAndTeacherAndPublishedTrueAndArchivedFalse(sampleQuiz.getId(), teacher)).thenReturn(Optional.of(sampleQuiz));
         when(quizMapper.toResponse(sampleQuiz)).thenReturn(response);
 
         val result = quizService.findPublishedByIdForTeacher(sampleQuiz.getId(), teacher);

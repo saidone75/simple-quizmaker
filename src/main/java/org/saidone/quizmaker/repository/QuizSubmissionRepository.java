@@ -33,7 +33,7 @@ public interface QuizSubmissionRepository extends JpaRepository<QuizSubmission, 
 
     List<QuizSubmission> findByStudent(Student student);
 
-    List<QuizSubmission> findAllByStudentTeacherOrderBySubmittedAtDesc(Teacher teacher);
+    List<QuizSubmission> findAllByStudentTeacherAndQuizArchivedFalseOrderBySubmittedAtDesc(Teacher teacher);
 
     List<QuizSubmission> findByQuizIdAndUnlockedFalseAndQuizTeacher(UUID quizId, Teacher teacher);
 
