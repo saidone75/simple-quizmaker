@@ -155,7 +155,7 @@ public class TeacherDashboardWebController {
         val difficultQuestions = difficultQuestionsData.questions();
         val difficultQuestionsMessage = difficultQuestions.isEmpty()
                 ? (difficultQuestionsData.hasAttempts()
-                ? "Tutte le risposte erano corrette."
+                ? "Tutte le risposte sono corrette."
                 : "Non ci sono ancora abbastanza dati.")
                 : "";
 
