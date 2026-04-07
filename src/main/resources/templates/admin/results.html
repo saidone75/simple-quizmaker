@@ -65,24 +65,58 @@
                         </thead>
                         <tbody>
                         <tr th:each="result : ${group.results}">
-                            <td th:text="${#temporals.format(result.submittedAt, 'dd/MM/yyyy HH:mm')}">01/01/2024 10:00</td>
+                            <td th:text="${#temporals.format(result.submittedAt, 'dd/MM/yyyy HH:mm')}">01/01/2024</td>
                             <td th:text="${result.studentName}">Mario Rossi</td>
                             <td th:text="${result.score + '/' + result.totalQuestions}">8/10</td>
                             <td>
                                 <span class="status-pill" th:classappend="${result.unlocked ? ' status-pill-unlocked' : ' status-pill-locked'}"
-                                      th:text="${result.unlocked ? 'Sbloccato' : 'Bloccato'}">Bloccato</span>
+                                      th:title="${result.unlocked ? 'Sbloccato' : 'Bloccato'}"
+                                      th:text="${result.unlocked ? '✅ Sbloccato' : '🔒 Bloccato'}">🔒 Bloccato</span>
                             </td>
                             <td>
                                 <button class="btn-unlock-single js-unlock-submission"
                                         th:data-student-id="${result.studentId}"
                                         th:data-quiz-id="${result.quizId}"
-                                        th:disabled="${result.unlocked}">
+                                        th:disabled="${result.unlocked}"
+                                        title="Sblocca tentativo"
+                                        aria-label="Sblocca tentativo">
                                     🔓 Sblocca
                                 </button>
                             </td>
                         </tr>
                         </tbody>
                     </table>
+
+                    <div class="results-mobile-list">
+                        <details class="result-mobile-item" th:each="result : ${group.results}">
+                            <summary>
+                                <span class="result-mobile-student" th:text="${result.studentName}">Mario Rossi</span>
+                                <span class="result-mobile-score" th:text="${result.score + '/' + result.totalQuestions}">8/10</span>
+                            </summary>
+                            <div class="result-mobile-content">
+                                <div class="result-mobile-row">
+                                    <span>Data</span>
+                                    <strong th:text="${#temporals.format(result.submittedAt, 'dd/MM/yyyy HH:mm')}">01/01/2024</strong>
+                                </div>
+                                <div class="result-mobile-row">
+                                    <span>Stato</span>
+                                    <span class="status-pill" th:classappend="${result.unlocked ? ' status-pill-unlocked' : ' status-pill-locked'}"
+                                          th:title="${result.unlocked ? 'Sbloccato' : 'Bloccato'}"
+                                          th:text="${result.unlocked ? '✅ Sbloccato' : '🔒 Bloccato'}">🔒 Bloccato</span>
+                                </div>
+                                <div class="result-mobile-action">
+                                    <button class="btn-unlock-single js-unlock-submission"
+                                            th:data-student-id="${result.studentId}"
+                                            th:data-quiz-id="${result.quizId}"
+                                            th:disabled="${result.unlocked}"
+                                            title="Sblocca tentativo"
+                                            aria-label="Sblocca tentativo">
+                                        🔓 Sblocca
+                                    </button>
+                                </div>
+                            </div>
+                        </details>
+                    </div>
                 </div>
 
                 <details class="results-analytics" th:if="${group.analytics != null}">
