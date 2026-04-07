@@ -19,6 +19,7 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
+    --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
     --green: #1D9E75;
     --green-dark: #0F6E56;
     --green-light: #E1F5EE;
@@ -45,7 +46,7 @@
     --shadow-lg: 0 8px 40px rgba(0,0,0,0.12);
 }
 
-body { font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background: var(--gray-bg); min-height: 100vh; color: var(--text); }
+body { font-family: var(--font-sans); background: var(--gray-bg); min-height: 100vh; color: var(--text); }
 
 /* ===== SCREENS ===== */
 .screen { display: none; min-height: 100vh; }
@@ -63,7 +64,7 @@ body { font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neu
     background: var(--gray-bg); border: 1.5px solid var(--gray-border);
     border-radius: 8px; padding: 6px 12px;
     font-size: 14px; font-weight: 700; cursor: pointer;
-    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; color: var(--text);
+    font-family: var(--font-sans); color: var(--text);
     transition: background 0.1s; text-decoration: none; display: inline-block;
 }
 .topbar-back:hover { background: var(--gray-border); }
@@ -71,7 +72,7 @@ body { font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neu
 .topbar-badge {
     font-size: 12px; font-weight: 700; padding: 4px 10px;
     border-radius: 99px; background: var(--green-light); color: var(--green-text);
-    border: none; cursor: default; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    border: none; cursor: default; font-family: var(--font-sans);
 }
 .topbar-actions {
     display: flex;
@@ -95,7 +96,7 @@ body { font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neu
     width: 100%; padding: 12px 14px;
     border: 1.5px solid var(--gray-border);
     border-radius: var(--radius-sm);
-    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    font-family: var(--font-sans);
     font-size: 15px; font-weight: 600;
     background: var(--white); color: var(--text);
     transition: border-color 0.15s; outline: none;
@@ -115,7 +116,7 @@ body { font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neu
     border-radius: 12px;
     background: var(--white);
     text-align: center;
-    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    font-family: var(--font-sans);
     font-size: 1.5rem;
     font-weight: 900;
     text-transform: uppercase;
@@ -182,24 +183,7 @@ body { font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neu
 input[type="file"].input-field {
     padding: 8px;
 }
-input[type="file"].input-field::file-selector-button {
-    border: 1.5px solid var(--gray-border);
-    background: var(--gray-bg);
-    color: var(--text);
-    border-radius: 9px;
-    padding: 8px 12px;
-    margin-right: 10px;
-    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-    font-size: 13px;
-    font-weight: 800;
-    cursor: pointer;
-    transition: all 0.15s;
-}
-input[type="file"].input-field::file-selector-button:hover {
-    background: var(--green-light);
-    border-color: var(--green);
-    color: var(--green-text);
-}
+input[type="file"].input-field::file-selector-button,
 input[type="file"].input-field::-webkit-file-upload-button {
     border: 1.5px solid var(--gray-border);
     background: var(--gray-bg);
@@ -207,12 +191,13 @@ input[type="file"].input-field::-webkit-file-upload-button {
     border-radius: 9px;
     padding: 8px 12px;
     margin-right: 10px;
-    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    font-family: var(--font-sans);
     font-size: 13px;
     font-weight: 800;
     cursor: pointer;
     transition: all 0.15s;
 }
+input[type="file"].input-field::file-selector-button:hover,
 input[type="file"].input-field::-webkit-file-upload-button:hover {
     background: var(--green-light);
     border-color: var(--green);
@@ -269,7 +254,7 @@ input[type="file"].input-field::-webkit-file-upload-button:hover {
 .btn-add-question {
     width: 100%; padding: 14px;
     border: 2px dashed var(--gray-border); border-radius: var(--radius);
-    background: transparent; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background: transparent; font-family: var(--font-sans);
     font-size: 15px; font-weight: 800; color: var(--gray-muted); cursor: pointer;
     transition: all 0.15s;
 }
@@ -279,7 +264,7 @@ input[type="file"].input-field::-webkit-file-upload-button:hover {
     width: 100%; padding: 16px;
     background: linear-gradient(135deg, #1D9E75, #0F6E56);
     border: none; border-radius: var(--radius);
-    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 18px; font-weight: 900;
+    font-family: var(--font-sans); font-size: 18px; font-weight: 900;
     color: #fff; cursor: pointer;
     box-shadow: 0 4px 20px rgba(29,158,117,0.3);
     transition: transform 0.15s, box-shadow 0.15s; margin-top: 1rem;
@@ -352,7 +337,8 @@ input[type="file"].input-field::-webkit-file-upload-button:hover {
 .no-quizzes { font-size: 15px; color: var(--gray-muted); padding: 2rem; }
 
 /* ===== QUIZ PLAY ===== */
-#screen-quiz {
+#screen-quiz,
+#screen-result {
     background: linear-gradient(160deg, #E1F5EE 0%, #E6F1FB 60%, #FFF9E6 100%);
     align-items: center; justify-content: center; padding: 2rem 1rem;
 }
@@ -378,7 +364,7 @@ input[type="file"].input-field::-webkit-file-upload-button:hover {
 .quiz-opt {
     display: flex; align-items: center; gap: 12px; padding: 13px 16px;
     background: var(--gray-bg); border: 2px solid var(--gray-border); border-radius: 14px;
-    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 16px; font-weight: 700;
+    font-family: var(--font-sans); font-size: 16px; font-weight: 700;
     color: var(--text); cursor: pointer; transition: all 0.15s; text-align: left; width: 100%;
 }
 .quiz-opt:hover:not(:disabled) { background: var(--green-light); border-color: var(--green); color: var(--green-text); transform: translateX(4px); }
@@ -402,17 +388,13 @@ input[type="file"].input-field::-webkit-file-upload-button:hover {
 .quiz-next {
     width: 100%; margin-top: 1rem; padding: 14px;
     background: linear-gradient(135deg, var(--green), var(--green-dark));
-    border: none; border-radius: 14px; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    border: none; border-radius: 14px; font-family: var(--font-sans);
     font-size: 17px; font-weight: 900; color: #fff; cursor: pointer;
     box-shadow: 0 4px 16px rgba(29,158,117,0.3); transition: transform 0.15s;
 }
 .quiz-next:hover { transform: translateY(-2px); }
 
 /* ===== RESULT ===== */
-#screen-result {
-    background: linear-gradient(160deg, #E1F5EE 0%, #E6F1FB 60%, #FFF9E6 100%);
-    align-items: center; justify-content: center; padding: 2rem 1rem;
-}
 .result-card {
     width: 100%; max-width: 480px; background: var(--white);
     border-radius: 28px; padding: 2.5rem 2rem; box-shadow: var(--shadow-lg);
@@ -432,7 +414,7 @@ input[type="file"].input-field::-webkit-file-upload-button:hover {
 .result-btns { display: grid; gap: 10px; }
 .btn-retry {
     padding: 14px; border: none; border-radius: var(--radius);
-    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 16px; font-weight: 800;
+    font-family: var(--font-sans); font-size: 16px; font-weight: 800;
     cursor: pointer; transition: transform 0.15s;
 }
 .btn-retry:hover { transform: translateY(-2px); }
@@ -448,8 +430,13 @@ input[type="file"].input-field::-webkit-file-upload-button:hover {
 }
 .manage-card-icon { font-size: 32px; flex-shrink: 0; }
 .manage-card-info { flex: 1; min-width: 0; }
-.manage-card-title { font-size: 16px; font-weight: 800; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .manage-card-title {
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
     display: flex;
     align-items: center;
     gap: 8px;
@@ -514,7 +501,7 @@ input[type="file"].input-field::-webkit-file-upload-button:hover {
     border: 1.5px solid #B5D4F4;
     background: var(--blue-light);
     padding: 0 12px;
-    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    font-family: var(--font-sans);
     font-size: 13px;
     font-weight: 800;
     color: var(--blue-dark);
@@ -539,7 +526,7 @@ input[type="file"].input-field::-webkit-file-upload-button:hover {
 .btn-icon-action {
     width: 36px; height: 36px; border-radius: 8px; border: none;
     font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center;
-    transition: all 0.15s; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; text-decoration: none;
+    transition: all 0.15s; font-family: var(--font-sans); text-decoration: none;
 }
 .btn-edit-quiz { background: var(--blue-light); color: var(--blue-dark); }
 .btn-edit-quiz:hover { background: #B5D4F4; }
@@ -560,7 +547,7 @@ input[type="file"].input-field::-webkit-file-upload-button:hover {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    font-family: var(--font-sans);
     font-size: 13px;
     font-weight: 800;
     cursor: pointer;
@@ -596,7 +583,7 @@ input[type="file"].input-field::-webkit-file-upload-button:hover {
 .btn-hero {
     display: flex; align-items: center; gap: 14px;
     padding: 18px 24px; border: none; border-radius: var(--radius);
-    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 17px; font-weight: 800;
+    font-family: var(--font-sans); font-size: 17px; font-weight: 800;
     cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; text-align: left;
 }
 .btn-hero:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
@@ -650,7 +637,7 @@ input[type="file"].input-field::-webkit-file-upload-button:hover {
 .modal-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .btn-modal {
     padding: 12px; border: none; border-radius: var(--radius-sm);
-    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 15px; font-weight: 800;
+    font-family: var(--font-sans); font-size: 15px; font-weight: 800;
     cursor: pointer; transition: transform 0.1s;
 }
 .btn-modal:hover { transform: translateY(-1px); }
@@ -694,7 +681,7 @@ input[type="file"].input-field::-webkit-file-upload-button:hover {
 #loading-overlay {
     position: fixed; inset: 0; background: rgba(255,255,255,0.85);
     display: none; flex-direction: column; align-items: center; justify-content: center;
-    z-index: 9999; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; gap: 12px;
+    z-index: 9999; font-family: var(--font-sans); gap: 12px;
 }
 #loading-overlay .loading-icon { font-size: 40px; animation: spin 1s linear infinite; }
 #loading-overlay p { font-size: 16px; font-weight: 700; color: var(--green-dark); }
@@ -707,7 +694,7 @@ input[type="file"].input-field::-webkit-file-upload-button:hover {
     position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%);
     background: var(--green-dark); color: #fff;
     padding: 12px 24px; border-radius: 99px;
-    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 15px; font-weight: 800;
+    font-family: var(--font-sans); font-size: 15px; font-weight: 800;
     z-index: 9999; box-shadow: 0 4px 16px rgba(0,0,0,0.2);
     transition: opacity 0.3s; opacity: 0; pointer-events: none;
 }
@@ -868,7 +855,7 @@ input[type="file"].input-field::-webkit-file-upload-button:hover {
 .btn-unlock-single {
     border: none;
     border-radius: 10px;
-    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    font-family: var(--font-sans);
     font-weight: 800;
     cursor: pointer;
     transition: all 0.15s;
