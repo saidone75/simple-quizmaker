@@ -19,6 +19,8 @@
 package org.saidone.quizmaker.service.ai;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
@@ -48,6 +50,50 @@ public class OpenAiQuizGenerationService implements QuizGenerationService {
 
     @Value("${app.openai.model:gpt-5.4-mini}")
     private String model;
+
+    private static final String QUIZ_JSON_SCHEMA_TEMPLATE = """
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["title", "emoji", "questions"],
+              "properties": {
+                "title": { "type": "string" },
+                "emoji": { "type": "string" },
+                "questions": {
+                  "type": "array",
+                  "minItems": 1,
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": ["text", "emoji", "options", "answer", "feedback"],
+                    "properties": {
+                      "text": { "type": "string" },
+                      "emoji": { "type": "string" },
+                      "options": {
+                        "type": "array",
+                        "minItems": 4,
+                        "maxItems": 4,
+                        "items": { "type": "string" }
+                      },
+                      "answer": { "type": "integer", "minimum": 0, "maximum": 3 },
+                      "feedback": { "type": "string" }
+                    }
+                  }
+                }
+              }
+            }
+            """;
+
+    private ObjectNode quizJsonSchema;
+
+    @PostConstruct
+    void initSchema() {
+        try {
+            quizJsonSchema = (ObjectNode) objectMapper.readTree(QUIZ_JSON_SCHEMA_TEMPLATE);
+        } catch (Exception e) {
+            throw new IllegalStateException("Schema JSON di OpenAI non valido.", e);
+        }
+    }
 
     @Override
     public QuizDto.Request generateQuiz(QuizGenerationRequestDto request, String attachmentText) {
@@ -100,47 +146,25 @@ public class OpenAiQuizGenerationService implements QuizGenerationService {
                 StringUtils.hasText(attachmentText) ? attachmentText : "N/A"
         );
 
-        Map<String, Object> responseFormat = Map.of(
-                "type", "json_schema",
-                "json_schema", Map.of(
-                        "name", "quiz_dto_request",
-                        "strict", true,
-                        "schema", Map.of(
-                                "type", "object",
-                                "additionalProperties", false,
-                                "required", List.of("title", "emoji", "questions"),
-                                "properties", Map.of(
-                                        "title", Map.of("type", "string"),
-                                        "emoji", Map.of("type", "string"),
-                                        "questions", Map.of(
-                                                "type", "array",
-                                                "minItems", 1,
-                                                "items", Map.of(
-                                                        "type", "object",
-                                                        "additionalProperties", false,
-                                                        "required", List.of("text", "emoji", "options", "answer", "feedback"),
-                                                        "properties", Map.of(
-                                                                "text", Map.of("type", "string"),
-                                                                "emoji", Map.of("type", "string"),
-                                                                "options", Map.of("type", "array", "minItems", 4, "maxItems", 4, "items", Map.of("type", "string")),
-                                                                "answer", Map.of("type", "integer", "minimum", 0, "maximum", 3),
-                                                                "feedback", Map.of("type", "string")
-                                                        )
-                                                )
-                                        )
-                                )
-                        )
-                )
-        );
-
         val payload = new HashMap<String, Object>();
         payload.put("model", model);
-        payload.put("response_format", responseFormat);
+        payload.put("response_format", responseFormat());
         payload.put("messages", List.of(
                 Map.of("role", "system", "content", "Sei un assistente che crea quiz didattici accurati in italiano."),
                 Map.of("role", "user", "content", userPrompt)
         ));
         payload.put("temperature", 0.7);
         return payload;
+    }
+
+    private Map<String, Object> responseFormat() {
+        return Map.of(
+                "type", "json_schema",
+                "json_schema", Map.of(
+                        "name", "quiz_dto_request",
+                        "strict", true,
+                        "schema", quizJsonSchema.deepCopy()
+                )
+        );
     }
 }

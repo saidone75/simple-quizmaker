@@ -19,24 +19,60 @@
 package org.saidone.quizmaker.policy;
 
 import org.saidone.quizmaker.entity.Teacher;
+import org.saidone.quizmaker.repository.QuizRepository;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
+import java.util.UUID;
+
 @Component("teacherAuthorizationPolicy")
 public class TeacherAuthorizationPolicy {
 
+    private static final String ROLE_TEACHER = "ROLE_TEACHER";
     private static final String ROLE_ADMIN = "ROLE_ADMIN";
 
-    public boolean isAdmin(Teacher actingTeacher) {
+    private final QuizRepository quizRepository;
+
+    public TeacherAuthorizationPolicy(QuizRepository quizRepository) {
+        this.quizRepository = quizRepository;
+    }
+
+    public boolean isTeacher(Teacher actingTeacher) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || actingTeacher == null || !actingTeacher.isAdmin()) {
+        if (authentication == null
+                || authentication instanceof AnonymousAuthenticationToken
+                || actingTeacher == null
+                || authentication.getName() == null) {
             return false;
         }
 
+        return hasAuthority(authentication, ROLE_TEACHER)
+                && authentication.getName().equalsIgnoreCase(actingTeacher.getUsername());
+    }
+
+    public boolean isAdmin(Teacher actingTeacher) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !actingTeacher.isAdmin() || !isTeacher(actingTeacher)) {
+            return false;
+        }
+
+        return hasAuthority(authentication, ROLE_ADMIN);
+    }
+
+    public boolean canManageQuiz(UUID quizId, Teacher actingTeacher) {
+        if (quizId == null || !isTeacher(actingTeacher)) {
+            return false;
+        }
+
+        return quizRepository.findByIdAndTeacher(quizId, actingTeacher).isPresent();
+    }
+
+    private boolean hasAuthority(Authentication authentication, String authority) {
         return authentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
-                .anyMatch(ROLE_ADMIN::equals);
+                .anyMatch(authority::equals);
     }
 }

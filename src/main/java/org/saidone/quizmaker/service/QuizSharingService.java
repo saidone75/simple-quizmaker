@@ -48,7 +48,7 @@ public class QuizSharingService {
     private final TeacherRepository teacherRepository;
 
     @Transactional
-    @PreAuthorize("@teacherAuthorizationPolicy.isAdmin(#actingTeacher)")
+    @PreAuthorize("@teacherAuthorizationPolicy.isAdmin(#actingTeacher) && @teacherAuthorizationPolicy.canManageQuiz(#quizId, #actingTeacher)")
     public int shareQuizToTeachers(UUID quizId, List<UUID> destinationTeacherIds, Teacher actingTeacher) {
         val sourceQuiz = quizRepository.findByIdAndTeacher(quizId, actingTeacher)
                 .orElseThrow(() -> new EntityNotFoundException(String.format(QUIZ_NOT_FOUND_MESSAGE, quizId)));
