@@ -21,11 +21,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="quizmaker-theme-preference" th:content="${teacherThemePreference}">
     <title>Profilo Insegnante — QuizMaker</title>
     <link rel="stylesheet" th:href="@{/css/main.css}">
 </head>
 <body>
-<div id="screen-admin" class="screen active" style="background:var(--gray-bg);min-height:100vh;">
+<div id="screen-admin" class="screen active" style="background:var(--page-bg);min-height:100vh;">
     <div class="topbar">
         <span class="topbar-title">👤 Il mio profilo</span>
         <a th:href="@{/teacher}" class="topbar-back" style="text-decoration:none">← Dashboard</a>
@@ -37,6 +38,29 @@
     </div>
 
     <div class="teacher-body" style="max-width:520px;">
+        <div class="editor-mode-card" style="margin-bottom:1rem;">
+            <div class="section-label">Aspetto</div>
+            <h2 style="font-size:24px;font-weight:900;color:var(--green-dark);margin-bottom:6px;">Tema interfaccia</h2>
+            <p style="color:var(--text-light);font-weight:600;margin-bottom:1rem;">Scegli il tema del pannello insegnante.</p>
+
+            <form th:action="@{/teacher/profile/theme}" method="post" id="themePreferenceForm">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+                <div class="form-group">
+                    <label class="form-label" for="themePreference">Tema preferito</label>
+                    <select id="themePreference" name="themePreference" class="input-field">
+                        <option value="light" th:selected="${teacherThemePreference == 'light'}">Chiaro</option>
+                        <option value="dark" th:selected="${teacherThemePreference == 'dark'}">Scuro</option>
+                        <option value="zenburn" th:selected="${teacherThemePreference == 'zenburn'}">Zenburn</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="btn-start-quiz" style="margin-top:1rem;">
+                    🎨 Salva tema
+                </button>
+            </form>
+        </div>
+
         <div class="editor-mode-card">
             <div class="section-label">Sicurezza account</div>
             <h1 style="font-size:26px;font-weight:900;color:var(--green-dark);margin-bottom:6px;">Cambia password</h1>
@@ -74,5 +98,14 @@
         </div>
     </div>
 </div>
+<script th:src="@{/js/main.js}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const form = document.getElementById('themePreferenceForm');
+        const select = document.getElementById('themePreference');
+        if (!form || !select) return;
+        select.addEventListener('change', () => form.submit());
+    });
+</script>
 </body>
 </html>

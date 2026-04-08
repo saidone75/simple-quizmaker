@@ -37,6 +37,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -67,6 +68,12 @@ public class TeacherDashboardWebController {
     private final TeacherAuthenticationService teacherAuthenticationService;
     private final TeacherAdministrationService teacherAdministrationService;
     private final TeacherLifecycleService teacherLifecycleService;
+
+    @ModelAttribute("teacherThemePreference")
+    public String teacherThemePreference() {
+        val preference = teacherAuthenticationService.getCurrentTeacher().getThemePreference();
+        return preference == null || preference.isBlank() ? "light" : preference;
+    }
 
     @GetMapping("/teacher")
     public String adminDashboard(Model model) {
@@ -256,6 +263,18 @@ public class TeacherDashboardWebController {
         } catch (IllegalArgumentException ex) {
             model.addAttribute("profileError", ex.getMessage());
             return "admin/profile";
+        }
+    }
+
+    @PostMapping("/teacher/profile/theme")
+    public String updateTeacherTheme(@RequestParam("themePreference") String themePreference,
+                                     RedirectAttributes redirectAttributes) {
+        try {
+            teacherAuthenticationService.updateThemePreference(teacherAuthenticationService.getCurrentTeacher(), themePreference);
+            return "redirect:/teacher/profile";
+        } catch (IllegalArgumentException ex) {
+            redirectAttributes.addFlashAttribute("profileError", ex.getMessage());
+            return "redirect:/teacher/profile";
         }
     }
 

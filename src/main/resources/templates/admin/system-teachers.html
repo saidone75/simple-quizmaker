@@ -21,6 +21,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="quizmaker-theme-preference" th:content="${teacherThemePreference}">
     <title>System / Insegnanti — QuizMaker</title>
     <link rel="stylesheet" th:href="@{/css/main.css}">
 </head>
@@ -46,7 +47,7 @@
         <div class="manage-list" th:if="${!teachers.isEmpty()}">
             <div class="manage-card"
                  th:each="teacher : ${teachers}"
-                 th:style="${teacher.id == currentTeacherId ? 'border:2px solid #5b8cff;background:#eef4ff;' : ''}">
+                 th:style="${teacher.id == currentTeacherId ? 'border:2px solid var(--blue);background:var(--blue-light);' : ''}">
                 <span class="manage-card-icon" th:text="${teacher.admin ? '🛡️' : '👤'}">👤</span>
                 <div class="manage-card-info">
                     <div class="manage-card-title">
@@ -123,6 +124,7 @@
         </div>
     </div>
 </div>
+<script th:src="@{/js/main.js}"></script>
 <script th:src="@{/js/teacher-system.js}"></script>
 
 </body>

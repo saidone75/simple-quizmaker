@@ -23,6 +23,57 @@ function goTo(screenId) {
     if (target) target.classList.add('active');
 }
 
+// ===== THEME =====
+const QUIZMAKER_THEME_KEY = 'quizmaker-theme';
+
+function resolveInitialTheme() {
+    const profilePreference = document.querySelector('meta[name="quizmaker-theme-preference"]')?.content || '';
+    if (profilePreference === 'light' || profilePreference === 'dark' || profilePreference === 'zenburn') {
+        return profilePreference;
+    }
+
+    const savedTheme = localStorage.getItem(QUIZMAKER_THEME_KEY);
+    if (savedTheme === 'light' || savedTheme === 'dark' || savedTheme === 'zenburn') return savedTheme;
+    return 'light';
+}
+
+function applyTheme(theme) {
+    const nextTheme = theme === 'dark' || theme === 'zenburn' ? theme : 'light';
+    document.body.setAttribute('data-theme', nextTheme);
+    localStorage.setItem(QUIZMAKER_THEME_KEY, nextTheme);
+
+    const toggle = document.getElementById('theme-toggle');
+    if (!toggle) return;
+
+    const icon = toggle.querySelector('.theme-toggle-icon');
+    const label = toggle.querySelector('.theme-toggle-label');
+    if (nextTheme === 'dark') {
+        if (icon) icon.textContent = '☀️';
+        if (label) label.textContent = 'Chiaro';
+        toggle.setAttribute('aria-label', 'Attiva tema chiaro');
+    } else if (nextTheme === 'zenburn') {
+        if (icon) icon.textContent = '🌗';
+        if (label) label.textContent = 'Scuro';
+        toggle.setAttribute('aria-label', 'Attiva tema scuro');
+    } else {
+        if (icon) icon.textContent = '🌙';
+        if (label) label.textContent = 'Scuro';
+        toggle.setAttribute('aria-label', 'Attiva tema scuro');
+    }
+}
+
+function setupThemeToggle() {
+    applyTheme(resolveInitialTheme());
+    const toggle = document.getElementById('theme-toggle');
+    if (!toggle) return;
+    toggle.addEventListener('click', () => {
+        const currentTheme = document.body.getAttribute('data-theme') || 'light';
+        applyTheme(currentTheme === 'dark' ? 'light' : 'dark');
+    });
+}
+
+document.addEventListener('DOMContentLoaded', setupThemeToggle);
+
 // ===== LOADING OVERLAY =====
 function showLoading(msg) {
     let el = document.getElementById('loading-overlay');

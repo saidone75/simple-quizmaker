@@ -21,12 +21,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="quizmaker-theme-preference" th:content="${teacherThemePreference}">
     <title>Dashboard — QuizMaker</title>
     <link rel="stylesheet" th:href="@{/css/main.css}">
 </head>
 <body>
 
-<div id="screen-admin" class="screen active" style="background:var(--gray-bg);min-height:100vh;">
+<div id="screen-admin" class="screen active" style="background:var(--page-bg);min-height:100vh;">
     <div class="topbar">
         <span class="topbar-title">🎓 QuizMaker Dashboard</span>
         <div style="display:flex;gap:8px;align-items:center;">
@@ -65,7 +66,7 @@
                 <span class="btn-icon">👩‍🏫</span>
                 <span>
                     <span class="btn-label">Il mio profilo</span>
-                    <span class="btn-desc">Aggiorna password e sicurezza account</span>
+                    <span class="btn-desc">Aggiorna password e preferenze</span>
                 </span>
             </a>
             <a th:href="@{/}" target="_blank" class="btn-hero btn-student" style="text-decoration:none">
