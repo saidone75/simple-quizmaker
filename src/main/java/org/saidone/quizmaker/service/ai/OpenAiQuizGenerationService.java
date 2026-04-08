@@ -44,7 +44,7 @@ import java.util.Map;
 public class OpenAiQuizGenerationService implements QuizGenerationService {
 
     private final ObjectMapper objectMapper;
-    private final RestClient restClient = RestClient.builder().baseUrl("https://api.openai.com/v1").build();
+    private final RestClient openAiRestClient;
 
     @Value("${app.openai.api-key:}")
     private String apiKey;
@@ -103,7 +103,7 @@ public class OpenAiQuizGenerationService implements QuizGenerationService {
         }
 
         val payload = buildPayload(request, attachmentText);
-        val responseBody = restClient.post()
+        val responseBody = openAiRestClient.post()
                 .uri("/chat/completions")
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + apiKey)
                 .contentType(MediaType.APPLICATION_JSON)
