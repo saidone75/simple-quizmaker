@@ -39,6 +39,7 @@
     --gray-muted: #888780;
     --text: #2C2C2A;
     --text-light: #5F5E5A;
+    --text-on-accent: #FFFFFF;
     --white: #ffffff;
     --radius: 16px;
     --radius-sm: 10px;
@@ -62,13 +63,20 @@ body {
 }
 
 body[data-theme="dark"] {
-    --page-bg: #141A1A;
-    --surface: #1D2525;
-    --surface-soft: #273131;
-    --border-color: #3A4646;
-    --muted: #A0ABAB;
-    --text-main: #EAF0F0;
-    --text-soft: #C0CACA;
+    --page-bg: #1B2222;
+    --surface: #263030;
+    --surface-soft: #2E3A3A;
+    --white: #263030;
+    --gray-bg: #2F3939;
+    --gray-border: #465656;
+    --gray-muted: #B1BCBC;
+    --text: #E2E9E9;
+    --text-light: #C8D2D2;
+    --text-on-accent: #DEE7E7;
+    --border-color: #465656;
+    --muted: #B1BCBC;
+    --text-main: #E2E9E9;
+    --text-soft: #C8D2D2;
     --green-light: #1D3A33;
     --green-dark: #7AE3C2;
     --green-text: #8CE5C7;
@@ -190,10 +198,10 @@ body[data-theme="dark"] {
     box-shadow: var(--shadow);
 }
 .editor-mode-card + .editor-mode-card { margin-top: 1rem; }
-.editor-mode-card-ai { margin-bottom: 0.75rem; border-color: #B8D8C8; background: linear-gradient(180deg, #F8FDFB 0%, #FFFFFF 100%); }
-.editor-mode-card-manual { border-color: #C8D5E3; background: linear-gradient(180deg, #F9FCFF 0%, #FFFFFF 100%); }
-body[data-theme="dark"] .editor-mode-card-ai { background: linear-gradient(180deg, #1D2C27 0%, #1D2525 100%); }
-body[data-theme="dark"] .editor-mode-card-manual { background: linear-gradient(180deg, #1D2833 0%, #1D2525 100%); }
+.editor-mode-card-ai { margin-bottom: 0.75rem; border-color: #B8D8C8; background: #F8FDFB; }
+.editor-mode-card-manual { border-color: #C8D5E3; background: #F9FCFF; }
+body[data-theme="dark"] .editor-mode-card-ai { background: #1D2C27; }
+body[data-theme="dark"] .editor-mode-card-manual { background: #1D2833; }
 .editor-mode-header { margin-bottom: 10px; }
 .editor-mode-subtitle { font-size: 13px; color: var(--text-light); font-weight: 600; line-height: 1.4; }
 .editor-mode-divider {
@@ -290,7 +298,7 @@ input[type="file"].input-field::-webkit-file-upload-button:hover {
     display: flex; align-items: center; justify-content: center;
     flex-shrink: 0; cursor: pointer; transition: all 0.15s;
 }
-.option-letter.correct { background: var(--green); border-color: var(--green); color: #fff; }
+.option-letter.correct { background: var(--green); border-color: var(--green); color: var(--text-on-accent); }
 .correct-hint { font-size: 12px; color: var(--gray-muted); margin-top: 6px; }
 .correct-hint span { color: var(--green); font-weight: 700; }
 
@@ -305,10 +313,10 @@ input[type="file"].input-field::-webkit-file-upload-button:hover {
 
 .btn-start-quiz {
     width: 100%; padding: 16px;
-    background: linear-gradient(135deg, #1D9E75, #0F6E56);
+    background: var(--green);
     border: none; border-radius: var(--radius);
     font-family: var(--font-sans); font-size: 18px; font-weight: 900;
-    color: #fff; cursor: pointer;
+    color: var(--text-on-accent); cursor: pointer;
     box-shadow: 0 4px 20px rgba(29,158,117,0.3);
     transition: transform 0.15s, box-shadow 0.15s; margin-top: 1rem;
 }
@@ -321,7 +329,7 @@ input[type="file"].input-field::-webkit-file-upload-button:hover {
 #screen-student {
     align-items: center; justify-content: center;
     padding: 2rem 1rem;
-    background: linear-gradient(160deg, #E6F1FB 0%, #E1F5EE 100%);
+    background: var(--page-bg);
 }
 .student-inner { width: 100%; max-width: 480px; text-align: center; }
 .student-inner h2 { font-size: 28px; font-weight: 900; color: var(--blue-dark); margin-bottom: 8px; }
@@ -349,10 +357,20 @@ input[type="file"].input-field::-webkit-file-upload-button:hover {
     border-color: #CFCFCB;
     background: #F1F1EF;
 }
+body[data-theme="dark"] .quiz-pick-item.is-locked {
+    background: #343C3C;
+    border-color: #505757;
+    opacity: 0.9;
+}
+body[data-theme="dark"] .quiz-pick-item.is-locked:hover {
+    border-color: #505757;
+    background: #343C3C;
+}
 .quiz-pick-icon { font-size: 28px; flex-shrink: 0; }
 .quiz-pick-item.is-locked .quiz-pick-icon { filter: grayscale(1); }
 .quiz-pick-name { font-size: 16px; font-weight: 800; color: var(--text); display: block; }
 .quiz-pick-item.is-locked .quiz-pick-name { color: #66645F; }
+body[data-theme="dark"] .quiz-pick-item.is-locked .quiz-pick-name { color: var(--muted); }
 .quiz-pick-count { font-size: 13px; color: var(--gray-muted); font-weight: 600; display: block; }
 .student-alert {
     position: fixed;
@@ -366,7 +384,7 @@ input[type="file"].input-field::-webkit-file-upload-button:hover {
     padding: 12px 14px;
     border-radius: 14px;
     border: 1.5px solid #DCC8A3;
-    background: linear-gradient(180deg, #FFF7E8 0%, #FFFDF8 100%);
+    background: #FFF7E8;
     box-shadow: var(--shadow-lg);
     color: var(--amber-text);
     opacity: 0;
@@ -377,12 +395,17 @@ input[type="file"].input-field::-webkit-file-upload-button:hover {
 .student-alert.show { opacity: 1; transform: translateY(0); }
 .student-alert-title { font-size: 14px; font-weight: 900; line-height: 1.2; margin-bottom: 2px; }
 .student-alert-text { font-size: 13px; font-weight: 700; line-height: 1.35; }
+body[data-theme="dark"] .student-alert {
+    background: #4A3B24;
+    border-color: #6B5636;
+    color: #FFDCA5;
+}
 .no-quizzes { font-size: 15px; color: var(--gray-muted); padding: 2rem; }
 
 /* ===== QUIZ PLAY ===== */
 #screen-quiz,
 #screen-result {
-    background: linear-gradient(160deg, #E1F5EE 0%, #E6F1FB 60%, #FFF9E6 100%);
+    background: var(--page-bg);
     align-items: center; justify-content: center; padding: 2rem 1rem;
 }
 .quiz-container { width: 100%; max-width: 580px; }
@@ -395,7 +418,7 @@ input[type="file"].input-field::-webkit-file-upload-button:hover {
 .quiz-progress { margin-bottom: 1.25rem; }
 .quiz-progress-label { display: flex; justify-content: space-between; font-size: 13px; font-weight: 700; color: var(--text-light); margin-bottom: 6px; }
 .quiz-progress-bg { background: rgba(255,255,255,0.5); border-radius: 99px; height: 10px; }
-.quiz-progress-fill { height: 10px; border-radius: 99px; background: linear-gradient(90deg, var(--green), #5DCAA5); transition: width 0.5s cubic-bezier(0.4,0,0.2,1); }
+.quiz-progress-fill { height: 10px; border-radius: 99px; background: var(--green); transition: width 0.5s cubic-bezier(0.4,0,0.2,1); }
 .quiz-card {
     background: var(--white); border-radius: 24px; padding: 1.75rem 1.5rem;
     box-shadow: var(--shadow-lg); animation: slideUp 0.3s cubic-bezier(0.4,0,0.2,1);
@@ -416,11 +439,11 @@ input[type="file"].input-field::-webkit-file-upload-button:hover {
     display: flex; align-items: center; justify-content: center;
     font-size: 13px; font-weight: 800; flex-shrink: 0; transition: all 0.15s;
 }
-.quiz-opt:hover:not(:disabled) .ql { background: var(--green); color: #fff; }
+.quiz-opt:hover:not(:disabled) .ql { background: var(--green); color: var(--text-on-accent); }
 .quiz-opt.correct { background: var(--green-light); border-color: var(--green); color: var(--green-text); }
-.quiz-opt.correct .ql { background: var(--green); color: #fff; }
+.quiz-opt.correct .ql { background: var(--green); color: var(--text-on-accent); }
 .quiz-opt.wrong { background: var(--red-light); border-color: var(--red); color: var(--red-text); }
-.quiz-opt.wrong .ql { background: var(--red); color: #fff; }
+.quiz-opt.wrong .ql { background: var(--red); color: var(--text-on-accent); }
 .quiz-opt:disabled { cursor: default; transform: none; }
 .quiz-feedback {
     margin-top: 14px; padding: 12px 16px; border-radius: 12px;
@@ -430,9 +453,9 @@ input[type="file"].input-field::-webkit-file-upload-button:hover {
 .quiz-feedback.wrong { background: var(--red-light); color: var(--red-text); border-left: 4px solid var(--red); }
 .quiz-next {
     width: 100%; margin-top: 1rem; padding: 14px;
-    background: linear-gradient(135deg, var(--green), var(--green-dark));
+    background: var(--green);
     border: none; border-radius: 14px; font-family: var(--font-sans);
-    font-size: 17px; font-weight: 900; color: #fff; cursor: pointer;
+    font-size: 17px; font-weight: 900; color: var(--text-on-accent); cursor: pointer;
     box-shadow: 0 4px 16px rgba(29,158,117,0.3); transition: transform 0.15s;
 }
 .quiz-next:hover { transform: translateY(-2px); }
@@ -461,7 +484,7 @@ input[type="file"].input-field::-webkit-file-upload-button:hover {
     cursor: pointer; transition: transform 0.15s;
 }
 .btn-retry:hover { transform: translateY(-2px); }
-.btn-retry-play { background: linear-gradient(135deg, var(--green), var(--green-dark)); color: #fff; box-shadow: 0 4px 16px rgba(29,158,117,0.3); }
+.btn-retry-play { background: var(--green); color: var(--text-on-accent); box-shadow: 0 4px 16px rgba(29,158,117,0.3); }
 .btn-retry-home { background: var(--gray-bg); color: var(--text); border: 1.5px solid var(--gray-border); }
 
 /* ===== MANAGE (admin dashboard) ===== */
@@ -581,6 +604,10 @@ input[type="file"].input-field::-webkit-file-upload-button:hover {
 .btn-archive-quiz:hover { background: #FFE5A1; }
 .btn-restore-quiz { background: #E3F6EC; color: #0F6E56; }
 .btn-restore-quiz:hover { background: #C7EBD9; }
+body[data-theme="dark"] .btn-share-quiz { background: #3A2F55; color: #D7C4FF; }
+body[data-theme="dark"] .btn-share-quiz:hover { background: #4A3A6D; }
+body[data-theme="dark"] .btn-archive-quiz { background: #4A3B24; color: #FFDCA5; }
+body[data-theme="dark"] .btn-archive-quiz:hover { background: #5A492F; }
 .student-actions {
     display: inline-flex;
     align-items: center;
@@ -610,6 +637,20 @@ input[type="file"].input-field::-webkit-file-upload-button:hover {
     width: 100%;
     border-collapse: collapse;
     min-width: 480px;
+}
+.students-print-card {
+    overflow: auto;
+    background: var(--surface);
+    border-radius: 14px;
+    border: 1px solid var(--border-color);
+}
+.students-table thead tr {
+    background: var(--surface-soft);
+}
+.students-table td,
+.students-table th {
+    border-color: var(--border-color) !important;
+    color: var(--text-main);
 }
 .btn-publish-toggle {
     background: var(--green-light);
@@ -668,14 +709,14 @@ input[type="file"].input-field::-webkit-file-upload-button:hover {
 .btn-hero .btn-icon { font-size: 30px; flex-shrink: 0; }
 .btn-hero .btn-label { font-size: 18px; font-weight: 900; display: block; }
 .btn-hero .btn-desc { font-size: 13px; font-weight: 600; opacity: 0.8; display: block; }
-.btn-teacher { background: linear-gradient(135deg, #1D9E75, #0F6E56); color: #fff; }
-.btn-student { background: linear-gradient(135deg, #378ADD, #185FA5); color: #fff; }
+.btn-teacher { background: #1D9E75; color: var(--text-on-accent); }
+.btn-student { background: #378ADD; color: var(--text-on-accent); }
 
 /* ===== LOGIN ===== */
 .login-screen {
     min-height: 100vh; display: flex; align-items: center; justify-content: center;
     padding: 2rem 1rem;
-    background: linear-gradient(160deg, #E1F5EE 0%, #E6F1FB 100%);
+    background: var(--page-bg);
 }
 .login-card {
     background: var(--white); border-radius: 24px; padding: 2.5rem 2rem;
@@ -787,8 +828,8 @@ input[type="file"].input-field::-webkit-file-upload-button:hover {
 }
 .btn-modal:hover { transform: translateY(-1px); }
 .btn-modal-cancel { background: var(--gray-bg); color: var(--text); border: 1.5px solid var(--gray-border); }
-.btn-modal-confirm { background: var(--red); color: #fff; }
-.btn-modal-share { background: var(--green); color: #fff; }
+.btn-modal-confirm { background: var(--red); color: var(--text-on-accent); }
+.btn-modal-share { background: var(--green); color: var(--text-on-accent); }
 .modal-box-share { max-width: 460px; }
 .share-grid {
     text-align: left;
@@ -837,7 +878,7 @@ input[type="file"].input-field::-webkit-file-upload-button:hover {
 /* ===== TOAST ===== */
 #toast {
     position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%);
-    background: var(--green-dark); color: #fff;
+    background: var(--green-dark); color: var(--text-on-accent);
     padding: 12px 24px; border-radius: 99px;
     font-family: var(--font-sans); font-size: 15px; font-weight: 800;
     z-index: 9999; box-shadow: 0 4px 16px rgba(0,0,0,0.2);
@@ -1016,8 +1057,8 @@ input[type="file"].input-field::-webkit-file-upload-button:hover {
     transition: all 0.15s;
 }
 .btn-unlock-all {
-    background: linear-gradient(135deg, #1D9E75, #0F6E56);
-    color: #fff;
+    background: var(--green);
+    color: var(--text-on-accent);
     padding: 10px 14px;
     font-size: 14px;
     box-shadow: 0 4px 14px rgba(29,158,117,0.25);
@@ -1083,7 +1124,7 @@ input[type="file"].input-field::-webkit-file-upload-button:hover {
 .result-mobile-item {
     border: 1px solid #e5e7eb;
     border-radius: 12px;
-    background: #fff;
+    background: var(--surface);
 }
 
 .result-mobile-item + .result-mobile-item {
