@@ -75,10 +75,10 @@
                                       th:text="${result.unlocked ? '✅ Sbloccato' : '🔒 Bloccato'}">🔒 Bloccato</span>
                             </td>
                             <td>
-                                <button class="btn-unlock-single js-unlock-submission"
+                                <button th:if="${!result.unlocked}"
+                                        class="btn-unlock-single js-unlock-submission"
                                         th:data-student-id="${result.studentId}"
                                         th:data-quiz-id="${result.quizId}"
-                                        th:disabled="${result.unlocked}"
                                         title="Sblocca tentativo"
                                         aria-label="Sblocca tentativo">
                                     🔓 Sblocca
@@ -106,10 +106,10 @@
                                           th:text="${result.unlocked ? '✅ Sbloccato' : '🔒 Bloccato'}">🔒 Bloccato</span>
                                 </div>
                                 <div class="result-mobile-action">
-                                    <button class="btn-unlock-single js-unlock-submission"
+                                    <button th:if="${!result.unlocked}"
+                                            class="btn-unlock-single js-unlock-submission"
                                             th:data-student-id="${result.studentId}"
                                             th:data-quiz-id="${result.quizId}"
-                                            th:disabled="${result.unlocked}"
                                             title="Sblocca tentativo"
                                             aria-label="Sblocca tentativo">
                                         🔓 Sblocca
