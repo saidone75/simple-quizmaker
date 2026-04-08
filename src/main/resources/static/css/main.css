@@ -1080,7 +1080,11 @@ body[data-theme="dark"] #toast {
     font-size: 13px;
     line-height: 1;
 }
-.btn-unlock-single:hover { background: #BFE7DA; }
+.btn-unlock-single:hover {
+    background: var(--green);
+    color: var(--text-on-accent);
+    transform: translateY(-1px);
+}
 .btn-unlock-single:disabled {
     background: #ECECEC;
     color: #838383;
