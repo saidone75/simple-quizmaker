@@ -102,6 +102,7 @@ body {
     transition: background-color 0.2s ease, color 0.2s ease;
 }
 
+:root[data-theme="dark"],
 body[data-theme="dark"] {
     --surface-soft: #2E3A3A;
     --white: #263030;
@@ -140,6 +141,7 @@ body[data-theme="dark"] {
     --shadow-lg: 0 10px 40px rgba(0,0,0,0.45);
 }
 
+:root[data-theme="zenburn"],
 body[data-theme="zenburn"] {
     --green: #8FB28F;
     --green-dark: #7F9F7F;
