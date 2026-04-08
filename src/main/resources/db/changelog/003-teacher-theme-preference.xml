@@ -23,16 +23,23 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
 
-    <property name="uuid.type" value="UUID" dbms="h2"/>
-    <property name="uuid.type" value="UUID" dbms="postgresql"/>
-    <property name="uuid.type" value="TEXT" dbms="sqlite"/>
+    <changeSet id="003-teacher-theme-preference" author="quizmaker">
+        <preConditions onFail="MARK_RAN" onError="MARK_RAN">
+            <and>
+                <tableExists tableName="teachers"/>
+                <not>
+                    <columnExists tableName="teachers" columnName="theme_preference"/>
+                </not>
+            </and>
+        </preConditions>
 
-    <property name="json.type" value="CLOB" dbms="h2"/>
-    <property name="json.type" value="JSONB" dbms="postgresql"/>
-    <property name="json.type" value="TEXT" dbms="sqlite"/>
+        <addColumn tableName="teachers">
+            <column name="theme_preference" type="VARCHAR(16)"/>
+        </addColumn>
 
-    <include file="001-initial-schema.xml" relativeToChangelogFile="true"/>
-    <include file="002-quiz-archive-flag.xml" relativeToChangelogFile="true"/>
-    <include file="003-teacher-theme-preference.xml" relativeToChangelogFile="true"/>
+        <rollback>
+            <dropColumn tableName="teachers" columnName="theme_preference"/>
+        </rollback>
+    </changeSet>
 
 </databaseChangeLog>

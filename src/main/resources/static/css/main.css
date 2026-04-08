@@ -44,9 +44,44 @@
     --radius-sm: 10px;
     --shadow: 0 4px 24px rgba(0,0,0,0.08);
     --shadow-lg: 0 8px 40px rgba(0,0,0,0.12);
+    --page-bg: var(--gray-bg);
+    --surface: var(--white);
+    --surface-soft: #F1F1EF;
+    --border-color: var(--gray-border);
+    --muted: var(--gray-muted);
+    --text-main: var(--text);
+    --text-soft: var(--text-light);
 }
 
-body { font-family: var(--font-sans); background: var(--gray-bg); min-height: 100vh; color: var(--text); }
+body {
+    font-family: var(--font-sans);
+    background: var(--page-bg);
+    min-height: 100vh;
+    color: var(--text-main);
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+body[data-theme="dark"] {
+    --page-bg: #141A1A;
+    --surface: #1D2525;
+    --surface-soft: #273131;
+    --border-color: #3A4646;
+    --muted: #A0ABAB;
+    --text-main: #EAF0F0;
+    --text-soft: #C0CACA;
+    --green-light: #1D3A33;
+    --green-dark: #7AE3C2;
+    --green-text: #8CE5C7;
+    --blue-light: #1C344C;
+    --blue-dark: #9FCFFF;
+    --blue-text: #9FCFFF;
+    --red-light: #4D2A2A;
+    --red-text: #FFB7B7;
+    --amber-light: #4A3B24;
+    --amber-text: #FFDCA5;
+    --shadow: 0 8px 24px rgba(0,0,0,0.35);
+    --shadow-lg: 0 10px 40px rgba(0,0,0,0.45);
+}
 
 /* ===== SCREENS ===== */
 .screen { display: none; min-height: 100vh; }
@@ -54,20 +89,20 @@ body { font-family: var(--font-sans); background: var(--gray-bg); min-height: 10
 
 /* ===== TOPBAR ===== */
 .topbar {
-    background: var(--white);
-    border-bottom: 1.5px solid var(--gray-border);
-    padding: 12px 20px;
+    background: var(--surface);
+    border-bottom: 1.5px solid var(--border-color);
+    padding: 10px 12px;
     display: flex; align-items: center; gap: 12px;
     position: sticky; top: 0; z-index: 100;
 }
 .topbar-back {
-    background: var(--gray-bg); border: 1.5px solid var(--gray-border);
+    background: var(--page-bg); border: 1.5px solid var(--border-color);
     border-radius: 8px; padding: 6px 12px;
     font-size: 14px; font-weight: 700; cursor: pointer;
-    font-family: var(--font-sans); color: var(--text);
+    font-family: var(--font-sans); color: var(--text-main);
     transition: background 0.1s; text-decoration: none; display: inline-block;
 }
-.topbar-back:hover { background: var(--gray-border); }
+.topbar-back:hover { background: var(--border-color); }
 .topbar-title { font-size: 18px; font-weight: 900; color: var(--green-dark); flex: 1; }
 .topbar-badge {
     font-size: 12px; font-weight: 700; padding: 4px 10px;
@@ -82,23 +117,29 @@ body { font-family: var(--font-sans); background: var(--gray-bg); min-height: 10
     justify-content: flex-end;
     min-width: 0;
 }
+@media (min-width: 768px) {
+    .topbar { padding: 12px 20px; }
+}
 
 /* ===== TEACHER / EDITOR BODY ===== */
-.teacher-body { padding: 1.5rem 1rem; max-width: 700px; margin: 0 auto; width: 100%; }
+.teacher-body { padding: 1rem 0.75rem 1.5rem; max-width: 700px; margin: 0 auto; width: 100%; }
+@media (min-width: 768px) {
+    .teacher-body { padding: 1.5rem 1rem; }
+}
 
 .section-label {
     font-size: 11px; font-weight: 800; letter-spacing: 1px;
-    text-transform: uppercase; color: var(--gray-muted);
+    text-transform: uppercase; color: var(--muted);
     margin-bottom: 8px;
 }
 
 .input-field {
     width: 100%; padding: 12px 14px;
-    border: 1.5px solid var(--gray-border);
+    border: 1.5px solid var(--border-color);
     border-radius: var(--radius-sm);
     font-family: var(--font-sans);
     font-size: 15px; font-weight: 600;
-    background: var(--white); color: var(--text);
+    background: var(--surface); color: var(--text-main);
     transition: border-color 0.15s; outline: none;
 }
 .input-field:focus { border-color: var(--green); }
@@ -112,9 +153,9 @@ body { font-family: var(--font-sans); background: var(--gray-bg); min-height: 10
 .otp-input {
     width: 56px;
     height: 58px;
-    border: 1.5px solid var(--gray-border);
+    border: 1.5px solid var(--border-color);
     border-radius: 12px;
-    background: var(--white);
+    background: var(--surface);
     text-align: center;
     font-family: var(--font-sans);
     font-size: 1.5rem;
@@ -131,8 +172,8 @@ body { font-family: var(--font-sans); background: var(--gray-bg); min-height: 10
 
 
 .ai-generator-card {
-    background: var(--white);
-    border: 1.5px solid var(--gray-border);
+    background: var(--surface);
+    border: 1.5px solid var(--border-color);
     border-radius: var(--radius);
     padding: 14px;
     margin-bottom: 1rem;
@@ -142,8 +183,8 @@ body { font-family: var(--font-sans); background: var(--gray-bg); min-height: 10
 .ai-textarea { min-height: 100px; resize: vertical; }
 
 .editor-mode-card {
-    background: var(--white);
-    border: 1.5px solid var(--gray-border);
+    background: var(--surface);
+    border: 1.5px solid var(--border-color);
     border-radius: var(--radius);
     padding: 14px;
     box-shadow: var(--shadow);
@@ -151,6 +192,8 @@ body { font-family: var(--font-sans); background: var(--gray-bg); min-height: 10
 .editor-mode-card + .editor-mode-card { margin-top: 1rem; }
 .editor-mode-card-ai { margin-bottom: 0.75rem; border-color: #B8D8C8; background: linear-gradient(180deg, #F8FDFB 0%, #FFFFFF 100%); }
 .editor-mode-card-manual { border-color: #C8D5E3; background: linear-gradient(180deg, #F9FCFF 0%, #FFFFFF 100%); }
+body[data-theme="dark"] .editor-mode-card-ai { background: linear-gradient(180deg, #1D2C27 0%, #1D2525 100%); }
+body[data-theme="dark"] .editor-mode-card-manual { background: linear-gradient(180deg, #1D2833 0%, #1D2525 100%); }
 .editor-mode-header { margin-bottom: 10px; }
 .editor-mode-subtitle { font-size: 13px; color: var(--text-light); font-weight: 600; line-height: 1.4; }
 .editor-mode-divider {
@@ -164,7 +207,7 @@ body { font-family: var(--font-sans); background: var(--gray-bg); min-height: 10
     top: 50%;
     left: 0;
     right: 0;
-    border-top: 1.5px dashed var(--gray-border);
+    border-top: 1.5px dashed var(--border-color);
     transform: translateY(-50%);
 }
 .editor-mode-divider span {
@@ -172,8 +215,8 @@ body { font-family: var(--font-sans); background: var(--gray-bg); min-height: 10
     display: inline-block;
     padding: 0 10px;
     border-radius: 99px;
-    background: var(--gray-bg);
-    color: var(--gray-muted);
+    background: var(--page-bg);
+    color: var(--muted);
     font-size: 12px;
     font-weight: 800;
     letter-spacing: 0.5px;

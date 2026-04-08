@@ -37,6 +37,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -67,6 +68,12 @@ public class TeacherDashboardWebController {
     private final TeacherAuthenticationService teacherAuthenticationService;
     private final TeacherAdministrationService teacherAdministrationService;
     private final TeacherLifecycleService teacherLifecycleService;
+
+    @ModelAttribute("teacherThemePreference")
+    public String teacherThemePreference() {
+        val preference = teacherAuthenticationService.getCurrentTeacher().getThemePreference();
+        return preference == null || preference.isBlank() ? "system" : preference;
+    }
 
     @GetMapping("/teacher")
     public String adminDashboard(Model model) {
@@ -252,6 +259,19 @@ public class TeacherDashboardWebController {
         try {
             teacherAuthenticationService.changePassword(teacherAuthenticationService.getCurrentTeacher(), currentPassword, newPassword);
             model.addAttribute("profileSuccess", "Password aggiornata con successo.");
+            return "admin/profile";
+        } catch (IllegalArgumentException ex) {
+            model.addAttribute("profileError", ex.getMessage());
+            return "admin/profile";
+        }
+    }
+
+    @PostMapping("/teacher/profile/theme")
+    public String updateTeacherTheme(@RequestParam("themePreference") String themePreference,
+                                     Model model) {
+        try {
+            teacherAuthenticationService.updateThemePreference(teacherAuthenticationService.getCurrentTeacher(), themePreference);
+            model.addAttribute("profileSuccess", "Tema aggiornato con successo.");
             return "admin/profile";
         } catch (IllegalArgumentException ex) {
             model.addAttribute("profileError", ex.getMessage());

@@ -23,6 +23,51 @@ function goTo(screenId) {
     if (target) target.classList.add('active');
 }
 
+// ===== THEME =====
+const QUIZMAKER_THEME_KEY = 'quizmaker-theme';
+
+function resolveInitialTheme() {
+    const profilePreference = document.querySelector('meta[name="quizmaker-theme-preference"]')?.content || '';
+    if (profilePreference === 'light' || profilePreference === 'dark') {
+        return profilePreference;
+    }
+    if (profilePreference === 'system') {
+        localStorage.removeItem(QUIZMAKER_THEME_KEY);
+        return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+
+    const savedTheme = localStorage.getItem(QUIZMAKER_THEME_KEY);
+    if (savedTheme === 'light' || savedTheme === 'dark') return savedTheme;
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
+
+function applyTheme(theme) {
+    const nextTheme = theme === 'dark' ? 'dark' : 'light';
+    document.body.setAttribute('data-theme', nextTheme);
+    localStorage.setItem(QUIZMAKER_THEME_KEY, nextTheme);
+
+    const toggle = document.getElementById('theme-toggle');
+    if (!toggle) return;
+
+    const icon = toggle.querySelector('.theme-toggle-icon');
+    const label = toggle.querySelector('.theme-toggle-label');
+    if (icon) icon.textContent = nextTheme === 'dark' ? '☀️' : '🌙';
+    if (label) label.textContent = nextTheme === 'dark' ? 'Chiaro' : 'Scuro';
+    toggle.setAttribute('aria-label', nextTheme === 'dark' ? 'Attiva tema chiaro' : 'Attiva tema scuro');
+}
+
+function setupThemeToggle() {
+    applyTheme(resolveInitialTheme());
+    const toggle = document.getElementById('theme-toggle');
+    if (!toggle) return;
+    toggle.addEventListener('click', () => {
+        const currentTheme = document.body.getAttribute('data-theme') || 'light';
+        applyTheme(currentTheme === 'dark' ? 'light' : 'dark');
+    });
+}
+
+document.addEventListener('DOMContentLoaded', setupThemeToggle);
+
 // ===== LOADING OVERLAY =====
 function showLoading(msg) {
     let el = document.getElementById('loading-overlay');

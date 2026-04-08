@@ -21,6 +21,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="quizmaker-theme-preference" th:content="${teacherThemePreference}">
     <title>Studenti della classe — QuizMaker</title>
     <link rel="stylesheet" th:href="@{/css/main.css}">
     <style>
@@ -49,7 +50,7 @@
 </head>
 <body>
 
-<div id="screen-admin" class="screen active" style="background:var(--gray-bg);min-height:100vh;">
+<div id="screen-admin" class="screen active" style="background:var(--page-bg);min-height:100vh;">
     <div class="topbar no-print">
         <span class="topbar-title">👨‍🎓 Studenti della classe</span>
         <div class="topbar-actions">

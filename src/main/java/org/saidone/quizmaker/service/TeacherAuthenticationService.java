@@ -122,6 +122,21 @@ public class TeacherAuthenticationService implements UserDetailsService {
         teacherRepository.save(teacher);
     }
 
+    @Transactional
+    public void updateThemePreference(Teacher teacher, String themePreference) {
+        if (teacher == null) {
+            throw new IllegalArgumentException("Insegnante non valido");
+        }
+
+        String normalizedTheme = themePreference == null ? "" : themePreference.trim().toLowerCase();
+        switch (normalizedTheme) {
+            case "light", "dark" -> teacher.setThemePreference(normalizedTheme);
+            case "", "system" -> teacher.setThemePreference(null);
+            default -> throw new IllegalArgumentException("Tema non valido");
+        }
+        teacherRepository.save(teacher);
+    }
+
     private List<GrantedAuthority> buildAuthorities(Teacher teacher) {
         if (teacher.isAdmin()) {
             return List.of(
