@@ -12,6 +12,9 @@ on:
 permissions:
   contents: read
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
 jobs:
   spotbugs:
     name: SpotBugs (SAST)
@@ -31,11 +34,12 @@ jobs:
           mvn -B
           com.github.spotbugs:spotbugs-maven-plugin:4.9.3.0:spotbugs
           -Dspotbugs.failOnError=true
+          -Dspotbugs.xmlOutput=true
+          -Dspotbugs.outputFile=target/spotbugsXml.xml
 
       - name: Upload SpotBugs report
-        if: always()
-        uses: actions/upload-artifact@v4
+        if: ${{ always() && hashFiles('**/spotbugsXml.xml') != '' }}
+        uses: actions/upload-artifact@v5
         with:
           name: spotbugs-report
-          path: target/spotbugsXml.xml
-          if-no-files-found: warn
+          path: '**/spotbugsXml.xml'
