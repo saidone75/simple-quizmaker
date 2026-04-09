@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #
-# Alice's simple quiz maker - fun quizzes for curious minds
+# Alice's Simple Quiz Maker - fun quizzes for curious minds
 # Copyright (C) 2026 Saidone
 #
 # This program is free software: you can redistribute it and/or modify
