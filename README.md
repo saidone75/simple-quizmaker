@@ -210,6 +210,6 @@ mvn test
 
 ## Licenza
 
-Copyright (c) 2026 Saidone
+Copyright (c) 2026 Miss Alice & Saidone
 
 Distributed under the GNU General Public License v3.0
