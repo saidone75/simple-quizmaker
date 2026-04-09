@@ -47,12 +47,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.lang.management.ManagementFactory;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.springframework.http.HttpStatus.FORBIDDEN;
@@ -144,7 +139,7 @@ public class TeacherDashboardWebController {
                                                Map<UUID, QuizDto.Response> quizzesById,
                                                int totalStudents) {
         int totalQuestions = resolveTotalQuestions(quizId, results, quizzesById);
-        String completionRate = String.format(Locale.ROOT, "%d su %d", results == null ? 0 : results.size(), Math.max(totalStudents, 0));
+        val completionRate = String.format(Locale.ROOT, "%d su %d", results == null ? 0 : results.size(), Math.max(totalStudents, 0));
 
         if (results == null || results.isEmpty()) {
             return new QuizResultAnalytics(
@@ -202,7 +197,7 @@ public class TeacherDashboardWebController {
             return new DifficultQuestionsData(List.of(), false);
         }
 
-        val stats = new java.util.ArrayList<QuestionStats>(quiz.getQuestions().size());
+        val stats = new ArrayList<QuestionStats>(quiz.getQuestions().size());
         for (int i = 0; i < quiz.getQuestions().size(); i++) {
             stats.add(new QuestionStats(i, quiz.getQuestions().get(i).getText(), 0, 0));
         }
