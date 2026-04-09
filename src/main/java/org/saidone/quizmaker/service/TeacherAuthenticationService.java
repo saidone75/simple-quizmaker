@@ -1,5 +1,5 @@
 /*
- * QuizMaker - fun quizzes for curious minds
+ * Alice's Simple Quiz Maker - fun quizzes for curious minds
  * Copyright (C) 2026 Saidone
  *
  * This program is free software: you can redistribute it and/or modify
@@ -130,7 +130,7 @@ public class TeacherAuthenticationService implements UserDetailsService {
 
         String normalizedTheme = themePreference == null ? "" : themePreference.trim().toLowerCase();
         switch (normalizedTheme) {
-            case "light", "dark", "zenburn" -> teacher.setThemePreference(normalizedTheme);
+            case "light", "dark", "zenburn", "true-summer" -> teacher.setThemePreference(normalizedTheme);
             case "" -> teacher.setThemePreference(null);
             default -> throw new IllegalArgumentException("Tema non valido");
         }

@@ -1,5 +1,5 @@
 /*
- * QuizMaker - fun quizzes for curious minds
+ * Alice's Simple Quiz Maker - fun quizzes for curious minds
  * Copyright (C) 2026 Saidone
  *
  * This program is free software: you can redistribute it and/or modify
@@ -44,7 +44,7 @@ import java.util.Map;
 public class OpenAiQuizGenerationService implements QuizGenerationService {
 
     private final ObjectMapper objectMapper;
-    private final RestClient restClient = RestClient.builder().baseUrl("https://api.openai.com/v1").build();
+    private final RestClient openAiRestClient;
 
     @Value("${app.openai.api-key:}")
     private String apiKey;
@@ -103,7 +103,7 @@ public class OpenAiQuizGenerationService implements QuizGenerationService {
         }
 
         val payload = buildPayload(request, attachmentText);
-        val responseBody = restClient.post()
+        val responseBody = openAiRestClient.post()
                 .uri("/chat/completions")
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + apiKey)
                 .contentType(MediaType.APPLICATION_JSON)

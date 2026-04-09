@@ -1,8 +1,8 @@
-# QuizMaker 🦕
+# Alice's Simple Quiz Maker 🦕
 
 Applicazione Spring Boot per creare, pubblicare e somministrare quiz scolastici divertenti, con interfaccia web e API REST.
 
-![QuizMaker](images/quizmaker_dashboard.png)
+![Alice's Simple Quiz Maker](images/quizmaker_dashboard.png)
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 ![Java CI](https://github.com/saidone75/quizmaker-springboot/actions/workflows/build.yml/badge.svg)

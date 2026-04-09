@@ -1,5 +1,5 @@
 <!--
-  ~ QuizMaker - fun quizzes for curious minds
+  ~ Alice's Simple Quiz Maker - fun quizzes for curious minds
   ~ Copyright (C) 2026 Saidone
   ~
   ~ This program is free software: you can redistribute it and/or modify
@@ -22,38 +22,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="quizmaker-theme-preference" th:content="${teacherThemePreference}">
-    <title>System / Insegnanti — QuizMaker</title>
-    <script>
-        (function () {
-            const profilePreference = document.querySelector('meta[name="quizmaker-theme-preference"]')?.content || '';
-            let savedTheme = '';
-            try {
-                savedTheme = localStorage.getItem('quizmaker-theme') || '';
-            } catch (error) {
-                savedTheme = '';
-            }
-            const theme = profilePreference === 'light' || profilePreference === 'dark' || profilePreference === 'zenburn'
-                ? profilePreference
-                : (savedTheme === 'light' || savedTheme === 'dark' || savedTheme === 'zenburn' ? savedTheme : 'light');
-            const preloadBackground = theme === 'dark' ? '#2F3939' : (theme === 'zenburn' ? '#2D2D2D' : '#F7F6F2');
-            document.documentElement.setAttribute('data-theme', theme);
-            document.documentElement.style.backgroundColor = preloadBackground;
-            document.documentElement.style.colorScheme = theme === 'light' ? 'light' : 'dark';
-        })();
-    </script>
+    <title>System / Insegnanti — Alice's Simple Quiz Maker</title>
+    <script th:src="@{/js/theme-init.js}"></script>
     <link rel="stylesheet" th:href="@{/css/main.css}">
 </head>
 <body>
-<script>
-    (function () {
-        const theme = document.documentElement.getAttribute('data-theme');
-        if (theme) {
-            document.body.setAttribute('data-theme', theme);
-            document.body.style.backgroundColor = theme === 'dark' ? '#2F3939' : (theme === 'zenburn' ? '#2D2D2D' : '#F7F6F2');
-            document.body.style.colorScheme = theme === 'light' ? 'light' : 'dark';
-        }
-    })();
-</script>
 <div class="screen active" style="display:block;">
     <div class="topbar">
         <span class="topbar-title">👩‍🏫 Gestione insegnanti</span>

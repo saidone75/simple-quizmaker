@@ -1,5 +1,5 @@
 /*
- * QuizMaker - fun quizzes for curious minds
+ * Alice's Simple Quiz Maker - fun quizzes for curious minds
  * Copyright (C) 2026 Saidone
  *
  * This program is free software: you can redistribute it and/or modify
@@ -19,8 +19,15 @@
 package org.saidone.quizmaker.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.val;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
+import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestTemplate;
+
+import java.time.Duration;
 
 @Configuration
 public class ApplicationConfig {
@@ -28,6 +35,21 @@ public class ApplicationConfig {
     @Bean
     public ObjectMapper objectMapper() {
         return new ObjectMapper();
+    }
+
+    @Bean(name = "openAiRestTemplate")
+    public RestTemplate openAiRestTemplate() {
+        val requestFactory = new SimpleClientHttpRequestFactory();
+        requestFactory.setConnectTimeout((int) Duration.ofSeconds(30).toMillis());
+        requestFactory.setReadTimeout((int) Duration.ofSeconds(180).toMillis());
+        return new RestTemplate(requestFactory);
+    }
+
+    @Bean(name = "openAiRestClient")
+    public RestClient openAiRestClient(@Qualifier("openAiRestTemplate") RestTemplate openAiRestTemplate) {
+        return RestClient.builder(openAiRestTemplate)
+                .baseUrl("https://api.openai.com/v1")
+                .build();
     }
 
 }
