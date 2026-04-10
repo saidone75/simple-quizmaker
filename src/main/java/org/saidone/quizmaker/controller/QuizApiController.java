@@ -25,6 +25,7 @@ import org.saidone.quizmaker.dto.QuizDto;
 import org.saidone.quizmaker.dto.QuizGenerationRequestDto;
 import org.saidone.quizmaker.dto.QuizSubmissionDto;
 import org.saidone.quizmaker.service.DocumentTextExtractorService;
+import org.saidone.quizmaker.service.WikipediaTextExtractorService;
 import org.saidone.quizmaker.service.ai.QuizGenerationApplicationService;
 import org.saidone.quizmaker.service.QuizService;
 import org.saidone.quizmaker.service.QuizSharingService;
@@ -48,6 +49,7 @@ public class QuizApiController {
     private final QuizSubmissionService quizSubmissionService;
     private final QuizGenerationApplicationService quizGenerationApplicationService;
     private final DocumentTextExtractorService documentTextExtractorService;
+    private final WikipediaTextExtractorService wikipediaTextExtractorService;
     private final TeacherAuthenticationService teacherAuthenticationService;
     private final StudentAuthenticationService studentAuthenticationService;
     private final QuizSharingService quizSharingService;
@@ -133,7 +135,25 @@ public class QuizApiController {
             throw new IllegalStateException("Generazione AI disabilitata per questo insegnante.");
         }
         val attachmentText = documentTextExtractorService.extractText(file);
-        return ResponseEntity.ok(quizGenerationApplicationService.generateQuiz(request, attachmentText));
+        val wikipediaExtraction = wikipediaTextExtractorService.extractFromUrl(request.getTopic());
+
+        var effectiveAttachmentText = attachmentText;
+        if (wikipediaExtraction.extracted()) {
+            request.setTopic(wikipediaExtraction.topic());
+            effectiveAttachmentText = mergeAttachmentTexts(attachmentText, wikipediaExtraction.text());
+        }
+
+        return ResponseEntity.ok(quizGenerationApplicationService.generateQuiz(request, effectiveAttachmentText));
+    }
+
+    private String mergeAttachmentTexts(String first, String second) {
+        if (first == null || first.isBlank()) {
+            return second;
+        }
+        if (second == null || second.isBlank()) {
+            return first;
+        }
+        return first + "\n\n" + second;
     }
 
 }
