@@ -366,7 +366,7 @@ public class TeacherDashboardWebController {
         model.addAttribute("osVersion", System.getProperty("os.version"));
         model.addAttribute("osArch", System.getProperty("os.arch"));
         model.addAttribute("availableProcessors", runtime.availableProcessors());
-        return "about";
+        return "admin/about";
     }
 
     @ExceptionHandler(ResponseStatusException.class)
