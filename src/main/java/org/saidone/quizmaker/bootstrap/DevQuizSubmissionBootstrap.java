@@ -107,9 +107,29 @@ public class DevQuizSubmissionBootstrap {
     }
 
     private List<Integer> randomAnswersForQuiz(Quiz quiz) {
-        return quiz.getQuestions().stream()
+        int totalQuestions = quiz.getQuestions().size();
+        if (totalQuestions == 0) {
+            return List.of();
+        }
+
+        int minCorrectAnswers = (int) Math.ceil(totalQuestions * 0.6d);
+        int correctAnswersToGenerate = ThreadLocalRandom.current().nextInt(minCorrectAnswers, totalQuestions + 1);
+
+        val answers = quiz.getQuestions().stream()
                 .map(question -> ThreadLocalRandom.current().nextInt(question.getOptions().size()))
-                .toList();
+                .collect(java.util.stream.Collectors.toCollection(java.util.ArrayList::new));
+
+        val questionIndexes = java.util.stream.IntStream.range(0, totalQuestions)
+                .boxed()
+                .collect(java.util.stream.Collectors.toList());
+        Collections.shuffle(questionIndexes);
+
+        for (int i = 0; i < correctAnswersToGenerate; i++) {
+            int questionIndex = questionIndexes.get(i);
+            answers.set(questionIndex, quiz.getQuestions().get(questionIndex).getAnswer());
+        }
+
+        return answers;
     }
 
     private int calculateScore(Quiz quiz, List<Integer> answers) {

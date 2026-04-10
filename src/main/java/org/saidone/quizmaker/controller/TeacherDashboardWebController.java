@@ -44,14 +44,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.lang.management.ManagementFactory;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.springframework.http.HttpStatus.FORBIDDEN;
@@ -143,7 +139,7 @@ public class TeacherDashboardWebController {
                                                Map<UUID, QuizDto.Response> quizzesById,
                                                int totalStudents) {
         int totalQuestions = resolveTotalQuestions(quizId, results, quizzesById);
-        String completionRate = String.format(Locale.ROOT, "%d su %d", results == null ? 0 : results.size(), Math.max(totalStudents, 0));
+        val completionRate = String.format(Locale.ROOT, "%d su %d", results == null ? 0 : results.size(), Math.max(totalStudents, 0));
 
         if (results == null || results.isEmpty()) {
             return new QuizResultAnalytics(
@@ -201,7 +197,7 @@ public class TeacherDashboardWebController {
             return new DifficultQuestionsData(List.of(), false);
         }
 
-        val stats = new java.util.ArrayList<QuestionStats>(quiz.getQuestions().size());
+        val stats = new ArrayList<QuestionStats>(quiz.getQuestions().size());
         for (int i = 0; i < quiz.getQuestions().size(); i++) {
             stats.add(new QuestionStats(i, quiz.getQuestions().get(i).getText(), 0, 0));
         }
@@ -362,13 +358,14 @@ public class TeacherDashboardWebController {
         model.addAttribute("javaVendor", System.getProperty("java.vendor"));
         model.addAttribute("jvmName", System.getProperty("java.vm.name"));
         model.addAttribute("jvmVersion", System.getProperty("java.vm.version"));
+        model.addAttribute("heapMaxMb", runtime.maxMemory() / (1024 * 1024));
+        model.addAttribute("heapTotalMb", runtime.totalMemory() / (1024 * 1024));
+        model.addAttribute("heapFreeMb", runtime.freeMemory() / (1024 * 1024));
+        model.addAttribute("uptime", formatUptime(ManagementFactory.getRuntimeMXBean().getUptime()));
         model.addAttribute("osName", System.getProperty("os.name"));
         model.addAttribute("osVersion", System.getProperty("os.version"));
         model.addAttribute("osArch", System.getProperty("os.arch"));
         model.addAttribute("availableProcessors", runtime.availableProcessors());
-        model.addAttribute("heapMaxMb", runtime.maxMemory() / (1024 * 1024));
-        model.addAttribute("heapTotalMb", runtime.totalMemory() / (1024 * 1024));
-        model.addAttribute("heapFreeMb", runtime.freeMemory() / (1024 * 1024));
         return "about";
     }
 
@@ -398,6 +395,15 @@ public class TeacherDashboardWebController {
         return DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")
                 .withZone(ZoneId.systemDefault())
                 .format(buildProperties.getTime());
+    }
+
+    private String formatUptime(long uptimeMillis) {
+        val totalMinutes = uptimeMillis / 1000 / 60;
+        val days = totalMinutes / (24 * 60);
+        val hours = (totalMinutes % (24 * 60)) / 60;
+        val minutes = totalMinutes % 60;
+
+        return String.format("%d giorni, %d ore, %d minuti", days, hours, minutes);
     }
 
     private String serializeQuestions(Object questions) {
