@@ -48,19 +48,16 @@ function applyTheme(theme) {
 
     const icon = toggle.querySelector('.theme-toggle-icon');
     const label = toggle.querySelector('.theme-toggle-label');
-    if (nextTheme === 'dark') {
-        if (icon) icon.textContent = '☀️';
-        if (label) label.textContent = 'Chiaro';
-        toggle.setAttribute('aria-label', 'Attiva tema chiaro');
-    } else if (nextTheme === 'zenburn') {
-        if (icon) icon.textContent = '🌗';
-        if (label) label.textContent = 'Scuro';
-        toggle.setAttribute('aria-label', 'Attiva tema scuro');
-    } else {
-        if (icon) icon.textContent = '🌙';
-        if (label) label.textContent = 'Scuro';
-        toggle.setAttribute('aria-label', 'Attiva tema scuro');
-    }
+    const themeToggleContent = {
+        dark: {icon: '☀️', label: 'Chiaro', ariaLabel: 'Attiva tema chiaro'},
+        zenburn: {icon: '🌗', label: 'Scuro', ariaLabel: 'Attiva tema scuro'},
+        default: {icon: '🌙', label: 'Scuro', ariaLabel: 'Attiva tema scuro'}
+    };
+    const content = themeToggleContent[nextTheme] || themeToggleContent.default;
+
+    if (icon) icon.textContent = content.icon;
+    if (label) label.textContent = content.label;
+    toggle.setAttribute('aria-label', content.ariaLabel);
 }
 
 function setupThemeToggle() {
