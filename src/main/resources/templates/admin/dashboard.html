@@ -22,14 +22,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="quizmaker-theme-preference" th:content="${teacherThemePreference}">
-    <title>Dashboard — Alice's Simple Quiz Maker</title>
+    <title>Dashboard — Alice's Simple Quiz&nbsp;Maker</title>
     <script th:src="@{/js/theme-init.js}"></script>
     <link rel="stylesheet" th:href="@{/css/main.css}">
 </head>
 <body>
 <div id="screen-admin" class="screen active" style="background:var(--page-bg);min-height:100vh;">
     <div class="topbar">
-        <span class="topbar-title">🐰 Alice's Simple Quiz Maker</span>
+        <span class="topbar-title">🐰 Alice's Simple Quiz&nbsp;Maker</span>
         <div style="display:flex;gap:8px;align-items:center;">
             <span class="topbar-badge" sec:authentication="name">admin</span>
             <form th:action="@{/teacher/logout}" method="post" style="margin:0">
