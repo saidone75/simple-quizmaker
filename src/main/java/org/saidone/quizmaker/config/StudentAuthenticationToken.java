@@ -18,6 +18,7 @@
 
 package org.saidone.quizmaker.config;
 
+import lombok.EqualsAndHashCode;
 import org.jspecify.annotations.NullMarked;
 import org.saidone.quizmaker.entity.Student;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
@@ -25,8 +26,10 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.util.List;
 
+@EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = false)
 public class StudentAuthenticationToken extends AbstractAuthenticationToken {
 
+    @EqualsAndHashCode.Include
     private final Student student;
 
     public StudentAuthenticationToken(Student student) {

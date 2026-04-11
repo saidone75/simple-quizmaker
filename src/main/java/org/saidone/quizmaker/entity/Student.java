@@ -22,6 +22,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.JdbcTypeCode;
 
@@ -31,12 +32,14 @@ import java.util.UUID;
 @Entity
 @Table(name = "students")
 @Data
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class Student implements Serializable {
 
     @Id
+    @EqualsAndHashCode.Include
     @Column(name = "id", nullable = false)
     @JdbcTypeCode(java.sql.Types.VARCHAR)
     private UUID id;
