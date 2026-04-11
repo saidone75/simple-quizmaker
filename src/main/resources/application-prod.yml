@@ -13,9 +13,13 @@ spring:
     hibernate:
       ddl-auto: none
     show-sql: false
+  thymeleaf:
+    cache: true
   h2:
     console:
       enabled: false
+  liquibase:
+    enabled: ${LIQUIBASE_ENABLED:false}
 
 server:
   servlet:
@@ -27,3 +31,9 @@ server:
 app:
   db-backup:
     enabled: ${DB_BACKUP_ENABLED:true}
+
+logging:
+  level:
+    com.zaxxer.hikari: WARN
+    liquibase: WARN
+    org.hibernate: WARN
