@@ -15,7 +15,7 @@ spring:
     cache: false
     encoding: UTF-8
   liquibase:
-    enabled: true
+    enabled: ${LIQUIBASE_ENABLED:true}
     change-log: classpath:db/changelog/db.changelog-master.xml
 
 app:
