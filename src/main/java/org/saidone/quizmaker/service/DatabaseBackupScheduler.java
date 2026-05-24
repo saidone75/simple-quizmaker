@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.nio.file.attribute.FileTime;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
@@ -74,7 +75,8 @@ public class DatabaseBackupScheduler {
             val timestamp = LocalDateTime.now().format(TIMESTAMP_FORMATTER);
             val backupFile = backupDirPath.resolve(String.format("%s-%s.db", baseName, timestamp));
 
-            Files.copy(sourceDbPath, backupFile, StandardCopyOption.COPY_ATTRIBUTES, StandardCopyOption.REPLACE_EXISTING);
+            Files.copy(sourceDbPath, backupFile, StandardCopyOption.REPLACE_EXISTING);
+            Files.setLastModifiedTime(backupFile, FileTime.fromMillis(System.currentTimeMillis()));
             log.info("Backup del database completato: {}", backupFile);
 
             cleanupOldBackups(backupDirPath, baseName);
