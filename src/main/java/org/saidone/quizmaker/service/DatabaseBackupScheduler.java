@@ -31,6 +31,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.FileTime;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 
@@ -72,7 +73,7 @@ public class DatabaseBackupScheduler {
                     ? sourceFileName.substring(0, sourceFileName.length() - 3)
                     : sourceFileName;
 
-            val timestamp = LocalDateTime.now().format(TIMESTAMP_FORMATTER);
+            val timestamp = LocalDateTime.now(ZoneId.systemDefault()).format(TIMESTAMP_FORMATTER);
             val backupFile = backupDirPath.resolve(String.format("%s-%s.db", baseName, timestamp));
 
             Files.copy(sourceDbPath, backupFile, StandardCopyOption.REPLACE_EXISTING);

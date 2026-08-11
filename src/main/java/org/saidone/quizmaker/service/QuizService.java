@@ -34,6 +34,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.UUID;
 
@@ -105,7 +106,7 @@ public class QuizService {
         quiz.setEmoji(request.getEmoji());
         quiz.setQuestions(request.getQuestions().stream().map(questionMapper::toEntity).toList());
         quiz.setModifiedByUsername(teacher.getUsername());
-        quiz.setModifiedAt(LocalDateTime.now());
+        quiz.setModifiedAt(LocalDateTime.now(ZoneId.systemDefault()));
         val saved = quizRepository.save(quiz);
         log.info("Quiz aggiornato: {} ({})", saved.getTitle(), saved.getId());
         return toResponse(saved);
@@ -128,7 +129,7 @@ public class QuizService {
                 .orElseThrow(() -> new EntityNotFoundException(String.format(QUIZ_NOT_FOUND_MESSAGE, id)));
         quiz.setPublished(published);
         quiz.setModifiedByUsername(teacher.getUsername());
-        quiz.setModifiedAt(LocalDateTime.now());
+        quiz.setModifiedAt(LocalDateTime.now(ZoneId.systemDefault()));
         val saved = quizRepository.save(quiz);
         log.info("Stato pubblicazione del quiz aggiornato: {} ({}) => {}", saved.getTitle(), saved.getId(), saved.getPublished());
         return toResponse(saved);
@@ -145,7 +146,7 @@ public class QuizService {
             quiz.setPublished(false);
         }
         quiz.setModifiedByUsername(teacher.getUsername());
-        quiz.setModifiedAt(LocalDateTime.now());
+        quiz.setModifiedAt(LocalDateTime.now(ZoneId.systemDefault()));
         val saved = quizRepository.save(quiz);
         log.info("Stato archiviazione del quiz aggiornato: {} ({}) => {}", saved.getTitle(), saved.getId(), saved.getArchived());
         return toResponse(saved);

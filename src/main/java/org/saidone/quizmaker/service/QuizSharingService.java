@@ -32,6 +32,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -78,7 +79,7 @@ public class QuizSharingService {
                     .published(false)
                     .createdByUsername(sourceQuiz.getCreatedByUsername() != null ? sourceQuiz.getCreatedByUsername() : actingTeacher.getUsername())
                     .modifiedByUsername(actingTeacher.getUsername())
-                    .modifiedAt(LocalDateTime.now())
+                    .modifiedAt(LocalDateTime.now(ZoneId.systemDefault()))
                     .teacher(recipient)
                     .build();
             quizRepository.save(clonedQuiz);
