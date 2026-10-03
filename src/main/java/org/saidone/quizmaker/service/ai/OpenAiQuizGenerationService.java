@@ -262,7 +262,6 @@ public class OpenAiQuizGenerationService implements QuizGenerationService {
                 Map.of("role", "system", "content", "Sei un assistente che crea quiz didattici accurati in italiano."),
                 Map.of("role", "user", "content", userPrompt)
         ));
-        payload.put("temperature", 0.7);
         return payload;
     }
 
