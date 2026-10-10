@@ -1,5 +1,6 @@
 package org.saidone.quizmaker.service;
 
+import lombok.val;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -39,7 +40,7 @@ class QuestionImageSecurityTest {
         storage = context.getBean(QuestionImageStorageService.class);
         images = context.getBean(UploadedImageRepository.class);
         teachers = context.getBean(TeacherRepository.class);
-        var image = new UploadedImage();
+        val image = new UploadedImage();
         image.setId(imageId);
         image.setTeacherId(owner.getId());
         image.setFilePath("/must-not-be-accessed");

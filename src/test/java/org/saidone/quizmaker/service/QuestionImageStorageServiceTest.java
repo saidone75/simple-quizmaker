@@ -94,7 +94,7 @@ class QuestionImageStorageServiceTest {
 
         assertThat(result.getId()).isNotNull();
         assertThat(result.getUrl()).isEqualTo("/api/quizzes/images/" + result.getId());
-        var imageCaptor = ArgumentCaptor.forClass(UploadedImage.class);
+        val imageCaptor = ArgumentCaptor.forClass(UploadedImage.class);
         verify(uploadedImageRepository).save(imageCaptor.capture());
         assertThat(imageCaptor.getValue().getTeacherId()).isEqualTo(teacher.getId());
     }
@@ -116,23 +116,23 @@ class QuestionImageStorageServiceTest {
 
     @Test
     void duplicateCreatesOwnedRecordWithoutCopyingBinary() throws Exception {
-        var source = savedImage();
-        var recipient = Teacher.builder().id(UUID.randomUUID()).build();
-        var result = service.duplicateForTeacher(source.getId(), recipient);
+        val source = savedImage();
+        val recipient = Teacher.builder().id(UUID.randomUUID()).build();
+        val result = service.duplicateForTeacher(source.getId(), recipient);
 
-        var captor = ArgumentCaptor.forClass(UploadedImage.class);
+        val captor = ArgumentCaptor.forClass(UploadedImage.class);
         verify(uploadedImageRepository).save(captor.capture());
         assertThat(captor.getValue().getId()).isNotEqualTo(source.getId()).isEqualTo(result.getId());
         assertThat(captor.getValue().getTeacherId()).isEqualTo(recipient.getId());
         assertThat(captor.getValue().getFilePath()).isEqualTo(source.getFilePath());
-        try (var files = Files.list(tempDir)) {
+        try (val files = Files.list(tempDir)) {
             assertThat(files.count()).isEqualTo(1);
         }
     }
 
     @Test
     void deletingRecordPreservesBinaryUsedByAnotherRecord() throws Exception {
-        var source = savedImage();
+        val source = savedImage();
         when(uploadedImageRepository.existsByFilePath(source.getFilePath())).thenReturn(true);
         service.delete(source.getId());
         verify(uploadedImageRepository).delete(source);
@@ -141,7 +141,7 @@ class QuestionImageStorageServiceTest {
 
     @Test
     void sharedCopyRemainsReadableAfterOriginalIsDeletedAndLastDeletionRemovesFile() throws Exception {
-        var source = imageOnDisk();
+        val source = imageOnDisk();
         Map<UUID, UploadedImage> records = new HashMap<>();
         records.put(source.getId(), source);
         when(uploadedImageRepository.findById(any())).thenAnswer(invocation ->
@@ -159,7 +159,7 @@ class QuestionImageStorageServiceTest {
         when(uploadedImageRepository.existsByFilePath(any())).thenAnswer(invocation ->
                 records.values().stream().anyMatch(image -> image.getFilePath().equals(invocation.getArgument(0))));
 
-        var copy = service.duplicateForTeacher(source.getId(), Teacher.builder().id(UUID.randomUUID()).build());
+        val copy = service.duplicateForTeacher(source.getId(), Teacher.builder().id(UUID.randomUUID()).build());
         service.delete(source.getId());
         assertThat(service.load(copy.getId()).getContentAsByteArray()).containsExactly(1, 2, 3);
         service.delete(copy.getId());
@@ -169,7 +169,7 @@ class QuestionImageStorageServiceTest {
 
     @Test
     void deletingLastRecordRemovesBinaryOnlyAfterCommit() throws Exception {
-        var source = savedImage();
+        val source = savedImage();
         TransactionSynchronizationManager.initSynchronization();
         try {
             service.delete(source.getId());
@@ -183,7 +183,7 @@ class QuestionImageStorageServiceTest {
 
     @Test
     void rollbackDoesNotRemoveBinary() throws Exception {
-        var source = savedImage();
+        val source = savedImage();
         TransactionSynchronizationManager.initSynchronization();
         try {
             service.delete(source.getId());
@@ -195,13 +195,13 @@ class QuestionImageStorageServiceTest {
     }
 
     private UploadedImage savedImage() throws Exception {
-        var source = imageOnDisk();
+        val source = imageOnDisk();
         when(uploadedImageRepository.findById(source.getId())).thenReturn(Optional.of(source));
         return source;
     }
 
     private UploadedImage imageOnDisk() throws Exception {
-        var source = new UploadedImage();
+        val source = new UploadedImage();
         source.setId(UUID.randomUUID());
         source.setTeacherId(teacher.getId());
         source.setFilePath(Files.write(tempDir.resolve("shared.png"), new byte[]{1, 2, 3}).toString());
