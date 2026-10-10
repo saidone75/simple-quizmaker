@@ -110,7 +110,7 @@ public class QuizApiController {
         if (!teacher.isImageUploadEnabled()) {
             throw new IllegalStateException("Caricamento immagini disabilitato nel profilo insegnante.");
         }
-        return ResponseEntity.status(HttpStatus.CREATED).body(questionImageStorageService.store(file));
+        return ResponseEntity.status(HttpStatus.CREATED).body(questionImageStorageService.store(file, teacher));
     }
 
     @GetMapping("/images/{imageId}")
@@ -124,7 +124,7 @@ public class QuizApiController {
 
     @DeleteMapping("/images/{imageId}")
     public ResponseEntity<Void> deleteQuestionImage(@PathVariable UUID imageId) {
-        questionImageStorageService.delete(imageId);
+        questionImageStorageService.deleteForTeacher(imageId, teacherAuthenticationService.getCurrentTeacher());
         return ResponseEntity.noContent().build();
     }
 

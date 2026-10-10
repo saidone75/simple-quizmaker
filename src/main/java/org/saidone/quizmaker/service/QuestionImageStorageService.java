@@ -24,6 +24,8 @@ import lombok.val;
 import org.apache.tika.Tika;
 import org.saidone.quizmaker.dto.QuestionImageUploadDto;
 import org.saidone.quizmaker.entity.UploadedImage;
+import org.saidone.quizmaker.entity.Teacher;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.saidone.quizmaker.repository.UploadedImageRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
@@ -31,6 +33,9 @@ import org.springframework.core.io.UrlResource;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -44,6 +49,7 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class QuestionImageStorageService {
 
     private static final Tika TIKA_DETECTOR = new Tika();
@@ -54,7 +60,8 @@ public class QuestionImageStorageService {
     private String uploadDirectory;
 
     @Transactional
-    public QuestionImageUploadDto store(MultipartFile file) {
+    @PreAuthorize("@teacherAuthorizationPolicy.isTeacher(#teacher)")
+    public QuestionImageUploadDto store(MultipartFile file, Teacher teacher) {
         if (file == null || file.isEmpty()) {
             throw new IllegalArgumentException("Seleziona un file immagine da caricare.");
         }
@@ -79,6 +86,7 @@ public class QuestionImageStorageService {
 
             val image = new UploadedImage();
             image.setId(imageId);
+            image.setTeacherId(teacher.getId());
             image.setFilePath(destination.toString());
             uploadedImageRepository.save(image);
 
@@ -92,6 +100,7 @@ public class QuestionImageStorageService {
     }
 
     @Transactional(readOnly = true)
+    @PreAuthorize("@questionImageAuthorizationPolicy.canRead(#imageId)")
     public Resource load(UUID imageId) {
         val image = uploadedImageRepository.findById(imageId)
                 .orElseThrow(() -> new EntityNotFoundException("Immagine non trovata: " + imageId));
@@ -108,6 +117,7 @@ public class QuestionImageStorageService {
     }
 
     @Transactional(readOnly = true)
+    @PreAuthorize("@questionImageAuthorizationPolicy.canRead(#imageId)")
     public MediaType resolveMediaType(UUID imageId) {
         val image = uploadedImageRepository.findById(imageId)
                 .orElseThrow(() -> new EntityNotFoundException("Immagine non trovata: " + imageId));
@@ -124,17 +134,53 @@ public class QuestionImageStorageService {
     }
 
     @Transactional
+    @PreAuthorize("hasRole('ADMIN') && @questionImageAuthorizationPolicy.canRead(#imageId)")
+    public QuestionImageUploadDto duplicateForTeacher(UUID imageId, Teacher recipient) {
+        val source = uploadedImageRepository.findById(imageId)
+                .orElseThrow(() -> new EntityNotFoundException("Immagine non trovata: " + imageId));
+        val copy = new UploadedImage();
+        copy.setId(UUID.randomUUID());
+        copy.setTeacherId(recipient.getId());
+        copy.setFilePath(source.getFilePath());
+        uploadedImageRepository.save(copy);
+        return QuestionImageUploadDto.builder().id(copy.getId()).url(imageUrl(copy.getId())).build();
+    }
+
+    @Transactional
+    @PreAuthorize("@questionImageAuthorizationPolicy.canDelete(#imageId, #teacher)")
+    public void deleteForTeacher(UUID imageId, Teacher teacher) {
+        delete(imageId);
+    }
+
+    // Internal cleanup entry point; never expose directly through a controller.
+    @Transactional
     public void delete(UUID imageId) {
         val image = uploadedImageRepository.findById(imageId)
                 .orElseThrow(() -> new EntityNotFoundException("Immagine non trovata: " + imageId));
 
-        try {
-            Files.deleteIfExists(Path.of(image.getFilePath()));
-        } catch (IOException exception) {
-            throw new IllegalStateException("Errore durante la rimozione del file immagine.", exception);
-        }
-
         uploadedImageRepository.delete(image);
+        uploadedImageRepository.flush();
+        // Only remove the binary after the DB deletion commits, and only when
+        // neither the original record nor any shared copy still references it.
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    deleteUnreferencedBinary(image.getFilePath());
+                }
+            });
+        } else {
+            deleteUnreferencedBinary(image.getFilePath());
+        }
+    }
+
+    private void deleteUnreferencedBinary(String filePath) {
+        if (uploadedImageRepository.existsByFilePath(filePath)) return;
+        try {
+            Files.deleteIfExists(Path.of(filePath));
+        } catch (IOException exception) {
+            log.error("Errore durante la rimozione del file immagine non più referenziato: {}", filePath, exception);
+        }
     }
 
     public String imageUrl(UUID imageId) {
