@@ -26,6 +26,7 @@ import org.saidone.quizmaker.entity.Question;
 import org.saidone.quizmaker.entity.Quiz;
 import org.saidone.quizmaker.entity.Teacher;
 import org.saidone.quizmaker.dto.QuestionImageUploadDto;
+import org.saidone.quizmaker.dto.QuizBadgeDefinition;
 import org.saidone.quizmaker.repository.QuizRepository;
 import org.saidone.quizmaker.repository.TeacherRepository;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -79,6 +80,7 @@ public class QuizSharingService {
             val clonedQuiz = Quiz.builder()
                     .title(sourceQuiz.getTitle())
                     .emoji(sourceQuiz.getEmoji())
+                    .badges(QuizBadgeDefinition.normalize(sourceQuiz.getBadges()))
                     .questions(cloneQuestions(sourceQuiz.getQuestions(), recipient))
                     .published(false)
                     .createdByUsername(sourceQuiz.getCreatedByUsername() != null ? sourceQuiz.getCreatedByUsername() : actingTeacher.getUsername())

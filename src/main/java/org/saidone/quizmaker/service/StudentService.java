@@ -25,6 +25,7 @@ import org.saidone.quizmaker.entity.Student;
 import org.saidone.quizmaker.entity.Teacher;
 import org.saidone.quizmaker.repository.QuizSubmissionRepository;
 import org.saidone.quizmaker.repository.StudentRepository;
+import org.saidone.quizmaker.repository.StudentQuizAttemptRepository;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,6 +44,7 @@ public class StudentService {
 
     private final StudentRepository studentRepository;
     private final QuizSubmissionRepository quizSubmissionRepository;
+    private final StudentQuizAttemptRepository studentQuizAttemptRepository;
 
     @Transactional(readOnly = true)
     public List<StudentDto.Response> findAll(Teacher teacher) {
@@ -73,6 +75,7 @@ public class StudentService {
         val student = studentRepository.findByIdAndTeacher(studentId, teacher)
                 .orElseThrow(() -> new IllegalArgumentException(String.format("Studente non trovato: %s", studentId)));
         quizSubmissionRepository.deleteAllByStudentIdAndStudentTeacher(studentId, teacher);
+        studentQuizAttemptRepository.deleteAllByStudentIdAndStudentTeacher(studentId, teacher);
         studentRepository.delete(student);
     }
 

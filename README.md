@@ -45,9 +45,56 @@ Alice's Simple Quiz Maker è pensato per chi desidera:
 - Ricerca immagini Wikimedia con modalità **advanced** e **simple**, configurabile globalmente e per insegnante.
 - Condivisione quiz verso più insegnanti.
 - Gestione risultati con analytics e sblocco tentativi singolo studente o massivo.
+- Badge automatici per risultati, percorso e costanza, con premi a tema personalizzabili per ogni quiz e proposte AI opzionali.
+- Raccolta personale dei badge per ogni studente, consultabile anche dal suo insegnante.
 - Profilo insegnante con preferenze tema, ricerca immagini e gestione password.
 - Architettura Spring con migrazioni schema DB versionate via Liquibase.
 - Backup schedulato database SQLite in produzione con retention configurabile.
+
+## 🏅 Badge degli studenti
+
+Nell’editor, la sezione **Premi di questo quiz** permette di configurare fino
+a 8 badge con nome, emoji e percentuale minima di risposte corrette. Per
+esempio, un quiz di geografia può assegnare “Cartografo provetto” all’80% e
+“Grande esploratore” al 100%. Le soglie si cumulano: chi le raggiunge entrambe
+riceve entrambi i badge. Una soglia di **0%** premia chiunque completi il quiz,
+anche senza risposte corrette. Senza personalizzazioni, i premi sono “Stella
+del quiz” (80%) e “Senza errori” (100%).
+
+Gli insegnanti con AI abilitata possono usare **Proponi badge con AI**. Le
+proposte si aggiungono ai premi presenti, includono un premio per l’impegno e
+restano modificabili prima del salvataggio. Vengono inviati soltanto il titolo
+e i testi delle domande del quiz. L’integrazione usa la chiave e il modello
+OpenAI già configurati per la generazione dei quiz.
+
+Si guadagnano automaticamente anche questi traguardi, indipendentemente dal risultato:
+
+| Badge | Come si guadagna |
+| --- | --- |
+| 🌱 Primo passo | Completa il primo quiz |
+| 🧭 Esploratore | Completa 5 quiz diversi |
+| 🚀 Grande esploratore | Completa 10 quiz diversi |
+| 📅 Presenza costante | Completa quiz in 3 giorni diversi |
+| 💪 Con impegno | Completa quiz in 7 giorni diversi |
+
+La raccolta si apre da **I miei badge** nell’area studente (`/student/badges`),
+o dal pulsante **Badge** nella lista studenti dell’insegnante. Lo studente vede
+solo i propri premi; l’insegnante può consultare quelli della propria classe.
+Il risultato del quiz mostra i nuovi badge e messaggi positivi anche quando
+ci sono risposte errate.
+
+I tentativi sbloccati non duplicano i premi già guadagnati. Un nuovo tentativo
+può guadagnare altri premi e contribuire alla costanza, ma ogni quiz si conta
+una sola volta per i traguardi di percorso e ogni giorno una sola volta per
+la costanza (secondo l’orario del server). Lo storico conserva i premi anche
+dopo modifiche, archiviazione o cancellazione del quiz; viene eliminato insieme
+allo studente o all’insegnante proprietario.
+
+La migrazione **009-student-badges** importa i risultati già presenti. Può
+recuperare solo il tentativo ancora memorizzato per ciascun quiz: i tentativi
+sovrascritti prima dell’introduzione dello storico non sono ricostruibili.
+In produzione, avvia l’aggiornamento con `LIQUIBASE_ENABLED=true` per applicare
+la nuova migrazione prima di usare la funzionalità.
 
 ## 🧰 Stack tecnologico
 

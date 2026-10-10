@@ -670,15 +670,17 @@ input[type="file"].input-field::-webkit-file-upload-button:hover {
 .result-score { font-size: 56px; font-weight: 900; color: var(--green); line-height: 1; margin-bottom: 4px; }
 .result-score span { font-size: 28px; color: var(--gray-muted); }
 .result-stars { font-size: 30px; letter-spacing: 6px; margin: 10px 0 1.5rem; display: block; }
-.result-pills { display: flex; justify-content: center; gap: 10px; margin-bottom: 1.75rem; flex-wrap: wrap; }
+.result-pills { display: flex; justify-content: center; gap: 10px; margin-bottom: 1.25rem; flex-wrap: wrap; }
 .rpill { padding: 6px 16px; border-radius: 99px; font-size: 14px; font-weight: 800; }
 .rpill-ok { background: var(--green-light); color: var(--green-text); }
+.rpill-amber { background: var(--amber-light); color: var(--amber-text); }
+.rpill-learn { background: var(--blue-light); color: var(--blue-text); }
 .rpill-bad { background: var(--red-light); color: var(--red-text); }
-.result-btns { display: grid; gap: 10px; }
+.result-btns { display: grid; gap: 1.25rem; }
 .btn-retry {
     padding: 14px; border: none; border-radius: var(--radius);
     font-family: var(--font-sans, sans-serif); font-size: 16px; font-weight: 800;
-    cursor: pointer; transition: transform 0.15s;
+    cursor: pointer; transition: transform 0.15s; text-decoration: none;
 }
 .btn-retry:hover { transform: translateY(-2px); }
 .btn-retry-play { background: var(--green); color: var(--text-on-accent); box-shadow: 0 4px 16px var(--green-shadow); }
@@ -1695,4 +1697,39 @@ body[data-theme="dark"] #toast {
     font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
     font-size: 12px;
     line-height: 1.45;
+}
+
+/* ===== BADGES ===== */
+.badge-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 1rem 0; }
+.badge-stats .editor-mode-card { display: flex; flex-direction: column-reverse; gap: 6px; text-align: center; margin: 0; }
+.badge-stats dt, .badge-grid p { color: var(--text-light); font-size: 14px; line-height: 1.5; }
+.badge-stats dd { color: var(--green-dark); font-size: 30px; font-weight: 800; }
+.badge-section { margin-top: 1.5rem; }
+.badge-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr));
+    gap: 12px; list-style: none; }
+.badge-grid .editor-mode-card { display: flex; flex-direction: column; align-items: center;
+    text-align: center; gap: 10px; margin: 0; overflow-wrap: anywhere; }
+.earned-badge-card { border-color: var(--amber); }
+.milestone-badge-card.is-earned { border-color: var(--green); }
+.badge-icon { font-size: 44px; line-height: 1.3; }
+.badge-grid h3 { font-size: 19px; }
+.badge-grid .badge-quiz-title { color: var(--text); font-weight: 700; }
+.badge-grid .badge-date { font-size: 12px; margin-top: auto; }
+.badge-progress-label { color: var(--text-light); font-size: 13px; margin-top: auto; }
+.badge-grid progress { width: 100%; height: 12px; accent-color: var(--green); }
+.result-badges { margin: 0 0 1.25rem; padding: 14px; border-radius: var(--radius);
+    background: var(--amber-light); color: var(--amber-text); }
+.result-badges h2 { font-size: 18px; margin-bottom: 12px; }
+.new-badges-list { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; list-style: none; }
+.new-badges-list li { padding: 8px 12px; background: var(--white); border-radius: var(--radius-sm); font-weight: 700; }
+.quiz-badge-editor-row { display: grid; grid-template-columns: minmax(0, 1fr) 90px 170px 44px;
+    gap: 12px; align-items: end; margin: 1rem 0; }
+.badge-editor-note, .badge-editor .manage-list { margin-top: 12px; }
+.badge-editor .btn-add-question:disabled { opacity: 0.5; cursor: default; }
+.quiz-feedback.learning { background: var(--blue-light); color: var(--blue-text); border-left: 4px solid var(--blue); }
+@media (max-width: 600px) {
+    .badge-stats { grid-template-columns: 1fr; }
+    .quiz-badge-editor-row { grid-template-columns: minmax(0, 1fr) 44px; padding-bottom: 1rem; border-bottom: 1px solid var(--gray-border); }
+    .quiz-badge-editor-row > div { grid-column: 1; }
+    .quiz-badge-editor-row > button { grid-column: 2; grid-row: 3; }
 }

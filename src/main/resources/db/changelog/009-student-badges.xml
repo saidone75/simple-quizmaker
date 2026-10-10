@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+    <changeSet id="009-student-badges" author="quizmaker">
+        <comment>Keep immutable quiz attempts as evidence for earned badges.</comment>
+        <addColumn tableName="quizzes">
+            <column name="badges" type="${json.type}"/>
+        </addColumn>
+        <createTable tableName="student_quiz_attempts">
+            <column name="id" type="${uuid.type}">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="student_id" type="${uuid.type}">
+                <constraints nullable="false" references="students(id)" foreignKeyName="fk_student_attempts_student"/>
+            </column>
+            <column name="quiz_id" type="${uuid.type}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="quiz_title" type="TEXT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="quiz_badges" type="${json.type}"/>
+            <column name="score" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="total_questions" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="completed_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createIndex tableName="student_quiz_attempts" indexName="idx_student_attempts">
+            <column name="student_id"/>
+            <column name="completed_at"/>
+        </createIndex>
+        <sql>
+            INSERT INTO student_quiz_attempts (id, student_id, quiz_id, quiz_title, quiz_badges, score, total_questions, completed_at)
+            SELECT s.id, s.student_id, s.quiz_id, q.title, q.badges, s.score, s.total_questions, s.submitted_at
+            FROM quiz_submissions s JOIN quizzes q ON q.id = s.quiz_id
+        </sql>
+        <rollback>
+            <dropTable tableName="student_quiz_attempts"/>
+            <dropColumn tableName="quizzes" columnName="badges"/>
+        </rollback>
+    </changeSet>
+</databaseChangeLog>

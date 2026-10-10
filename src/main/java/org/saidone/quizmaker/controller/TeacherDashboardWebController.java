@@ -32,6 +32,7 @@ import org.saidone.quizmaker.service.TeacherAuthenticationService;
 import org.saidone.quizmaker.service.TeacherLifecycleService;
 import org.springframework.boot.SpringBootVersion;
 import org.springframework.boot.info.BuildProperties;
+import org.saidone.quizmaker.dto.QuizBadgeDefinition;
 import org.springframework.core.SpringVersion;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -317,6 +318,7 @@ public class TeacherDashboardWebController {
     public String newQuiz(Model model) {
         model.addAttribute("aiEnabled", teacherAuthenticationService.getCurrentTeacher().isAiEnabled());
         model.addAttribute("quizQuestionsJson", "[]");
+        model.addAttribute("quizBadgesJson", serializeQuestions(QuizBadgeDefinition.defaults()));
         return "admin/quiz-editor";
     }
 
@@ -326,6 +328,7 @@ public class TeacherDashboardWebController {
         val quiz = quizService.findByIdForTeacher(id, teacherAuthenticationService.getCurrentTeacher());
         model.addAttribute("quiz", quiz);
         model.addAttribute("quizQuestionsJson", serializeQuestions(quiz.getQuestions()));
+        model.addAttribute("quizBadgesJson", serializeQuestions(quiz.getBadges()));
         return "admin/quiz-editor";
     }
 

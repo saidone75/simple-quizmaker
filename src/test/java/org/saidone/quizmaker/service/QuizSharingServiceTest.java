@@ -7,6 +7,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.saidone.quizmaker.dto.QuestionImageUploadDto;
+import org.saidone.quizmaker.dto.QuizBadgeDefinition;
 import org.saidone.quizmaker.entity.Question;
 import org.saidone.quizmaker.entity.Quiz;
 import org.saidone.quizmaker.entity.Teacher;
@@ -48,6 +49,7 @@ class QuizSharingServiceTest {
 
     @Test
     void eachRecipientGetsOwnImageIdAndRepeatedReferencesReuseTheirCopy() {
+        source.setBadges(List.of(new QuizBadgeDefinition("cartographer", "Cartografo provetto", "🗺️", 80)));
         source.setQuestions(List.of(source.getQuestions().getFirst(), source.getQuestions().getFirst()));
         when(teachers.findAllById(List.of(first.getId(), second.getId()))).thenReturn(List.of(first, second));
         var firstCopy = copy();
@@ -60,6 +62,7 @@ class QuizSharingServiceTest {
         var captor = ArgumentCaptor.forClass(Quiz.class);
         verify(quizzes, times(2)).save(captor.capture());
         var shared = captor.getAllValues();
+        assertThat(shared).allSatisfy(q -> assertThat(q.getBadges()).isEqualTo(source.getBadges()));
         assertThat(shared.get(0).getQuestions()).allSatisfy(q -> {
             assertThat(q.getImageId()).isEqualTo(firstCopy.getId().toString());
             assertThat(q.getImageUrl()).isEqualTo(firstCopy.getUrl());

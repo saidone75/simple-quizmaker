@@ -19,6 +19,7 @@
 package org.saidone.quizmaker.dto;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -47,6 +48,10 @@ public class QuizDto {
 
         @NotNull(message = "Le domande sono obbligatorie")
         private List<QuestionDto> questions;
+
+        @Valid
+        @Size(max = 8, message = "Puoi impostare al massimo 8 badge per quiz")
+        private List<@NotNull QuizBadgeDefinition> badges;
     }
 
     @Data
@@ -59,6 +64,7 @@ public class QuizDto {
         private String emoji;
         private List<QuestionDto> questions;
         private Integer questionsCount;
+        private List<QuizBadgeDefinition> badges;
         private LocalDateTime createdAt;
         private String createdByUsername;
         private LocalDateTime modifiedAt;

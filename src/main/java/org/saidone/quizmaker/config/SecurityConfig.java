@@ -29,6 +29,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 
 @Configuration
@@ -62,8 +63,10 @@ public class SecurityConfig {
                         .requestMatchers("/h2-console/**").permitAll()
                         .requestMatchers("/teacher/login", "/teacher/register", "/", "/student/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/student/logout").permitAll()
+                        .requestMatchers("/student/badges").hasRole("STUDENT")
                         .requestMatchers(HttpMethod.GET, "/api/quizzes/images/**").authenticated()
                         .requestMatchers("/api/quizzes/images/**").hasRole(ROLE_TEACHER)
+                        .requestMatchers("/api/quizzes/badges/generate").hasRole(ROLE_TEACHER)
                         .requestMatchers("/api/quizzes/**").authenticated()
                         .requestMatchers("/api/students/**").hasRole(ROLE_TEACHER)
                         .requestMatchers("/api/teacher/logs/**").hasRole(ROLE_ADMIN)
@@ -74,6 +77,9 @@ public class SecurityConfig {
                         .requestMatchers("/teacher/**").hasRole(ROLE_TEACHER)
                         .anyRequest().authenticated()
                 )
+                .exceptionHandling(exceptions -> exceptions.defaultAuthenticationEntryPointFor(
+                        new LoginUrlAuthenticationEntryPoint("/"),
+                        request -> request.getRequestURI().equals(request.getContextPath() + "/student/badges")))
                 .formLogin(form -> form
                         .loginPage("/teacher/login")
                         .loginProcessingUrl("/teacher/login")

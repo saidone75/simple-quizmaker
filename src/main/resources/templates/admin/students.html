@@ -101,6 +101,9 @@
                         th:text="${student.loginKeyword}">ABCDE</td>
                     <td class="print-hide" style="padding:10px 12px;border-top:1px solid var(--border-color);text-align:right;">
                         <div class="student-actions">
+                            <a th:href="@{/teacher/students/{id}/badges(id=${student.id})}"
+                               class="btn-regenerate-password topbar-back-link"
+                               th:aria-label="'Badge di ' + ${student.fullName}">🏅 Badge</a>
                             <button class="btn-regenerate-password js-regenerate-student-password"
                                     title="Rigenera parola chiave"
                                     th:data-id="${student.id}">

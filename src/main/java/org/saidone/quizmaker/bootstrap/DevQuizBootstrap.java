@@ -59,6 +59,7 @@ public class DevQuizBootstrap {
             quizRepository.save(
                     Quiz.builder()
                             .title(DEMO_QUIZ_TITLE)
+                            .badges(List.of())
                             .emoji("🌌")
                             .published(true)
                             .teacher(teacher)
@@ -97,6 +98,7 @@ public class DevQuizBootstrap {
             quizRepository.save(
                     Quiz.builder()
                             .title(DINO_QUIZ_TITLE)
+                            .badges(List.of())
                             .emoji("🦖")
                             .published(true)
                             .teacher(teacher)

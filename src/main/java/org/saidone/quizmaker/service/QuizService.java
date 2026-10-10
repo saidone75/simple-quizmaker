@@ -28,6 +28,7 @@ import org.saidone.quizmaker.entity.Teacher;
 import org.saidone.quizmaker.mapper.QuestionMapper;
 import org.saidone.quizmaker.mapper.QuizMapper;
 import org.saidone.quizmaker.policy.QuestionImageAuthorizationPolicy;
+import org.saidone.quizmaker.dto.QuizBadgeDefinition;
 import org.saidone.quizmaker.repository.QuizRepository;
 import org.saidone.quizmaker.repository.QuizSubmissionRepository;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -89,6 +90,7 @@ public class QuizService {
         val quiz = Quiz.builder()
                 .title(request.getTitle())
                 .emoji(request.getEmoji())
+                .badges(QuizBadgeDefinition.normalize(request.getBadges()))
                 .questions(request.getQuestions().stream().map(questionMapper::toEntity).toList())
                 .published(false)
                 .archived(false)
@@ -108,6 +110,9 @@ public class QuizService {
                 .orElseThrow(() -> new EntityNotFoundException(String.format(QUIZ_NOT_FOUND_MESSAGE, id)));
         quiz.setTitle(request.getTitle());
         quiz.setEmoji(request.getEmoji());
+        if (request.getBadges() != null) {
+            quiz.setBadges(QuizBadgeDefinition.normalize(request.getBadges()));
+        }
         quiz.setQuestions(request.getQuestions().stream().map(questionMapper::toEntity).toList());
         quiz.setModifiedByUsername(teacher.getUsername());
         quiz.setModifiedAt(LocalDateTime.now(ZoneId.systemDefault()));
@@ -158,6 +163,7 @@ public class QuizService {
 
     private QuizDto.Response toResponse(Quiz quiz) {
         val response = quizMapper.toResponse(quiz);
+        response.setBadges(QuizBadgeDefinition.normalize(quiz.getBadges()));
         if (response.getCreatedByUsername() == null || response.getCreatedByUsername().isBlank()) {
             response.setCreatedByUsername(quiz.getTeacher().getUsername());
         }
