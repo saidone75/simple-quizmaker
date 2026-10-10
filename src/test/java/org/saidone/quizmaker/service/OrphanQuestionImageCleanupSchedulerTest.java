@@ -109,4 +109,19 @@ class OrphanQuestionImageCleanupSchedulerTest {
 
         verify(questionImageStorageService, times(1)).delete(storedImage.getId());
     }
+
+    @Test
+    void cleanupPreservesImageReferencedOnlyByLocalUrl() {
+        var id = UUID.randomUUID();
+        var question = new Question();
+        question.setImageUrl("/api/quizzes/images/" + id);
+        var image = new UploadedImage();
+        image.setId(id);
+        when(quizRepository.findAll()).thenReturn(List.of(Quiz.builder().questions(List.of(question)).build()));
+        when(uploadedImageRepository.findAll()).thenReturn(List.of(image));
+
+        cleanupScheduler.cleanupOrphanImages();
+
+        verifyNoInteractions(questionImageStorageService);
+    }
 }

@@ -27,6 +27,7 @@ import org.saidone.quizmaker.entity.Quiz;
 import org.saidone.quizmaker.entity.Teacher;
 import org.saidone.quizmaker.mapper.QuestionMapper;
 import org.saidone.quizmaker.mapper.QuizMapper;
+import org.saidone.quizmaker.policy.QuestionImageAuthorizationPolicy;
 import org.saidone.quizmaker.repository.QuizRepository;
 import org.saidone.quizmaker.repository.QuizSubmissionRepository;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -47,6 +48,7 @@ public class QuizService {
     private final QuizSubmissionRepository quizSubmissionRepository;
     private final QuizMapper quizMapper;
     private final QuestionMapper questionMapper;
+    private final QuestionImageAuthorizationPolicy questionImageAuthorizationPolicy;
 
     private static final String QUIZ_NOT_FOUND_MESSAGE = "Quiz non found for id: %s";
 
@@ -83,6 +85,7 @@ public class QuizService {
     @Transactional
     @PreAuthorize("@teacherAuthorizationPolicy.isTeacher(#teacher)")
     public QuizDto.Response create(QuizDto.Request request, Teacher teacher) {
+        questionImageAuthorizationPolicy.validateQuestions(request.getQuestions(), teacher);
         val quiz = Quiz.builder()
                 .title(request.getTitle())
                 .emoji(request.getEmoji())
@@ -100,6 +103,7 @@ public class QuizService {
     @Transactional
     @PreAuthorize("@teacherAuthorizationPolicy.canManageQuiz(#id, #teacher)")
     public QuizDto.Response update(UUID id, QuizDto.Request request, Teacher teacher) {
+        questionImageAuthorizationPolicy.validateQuestions(request.getQuestions(), teacher);
         val quiz = quizRepository.findByIdAndTeacher(id, teacher)
                 .orElseThrow(() -> new EntityNotFoundException(String.format(QUIZ_NOT_FOUND_MESSAGE, id)));
         quiz.setTitle(request.getTitle());

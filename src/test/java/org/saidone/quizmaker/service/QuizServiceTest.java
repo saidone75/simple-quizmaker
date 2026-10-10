@@ -19,6 +19,8 @@
 package org.saidone.quizmaker.service;
 
 import org.saidone.quizmaker.dto.QuestionDto;
+import org.saidone.quizmaker.policy.QuestionImageAuthorizationPolicy;
+import org.springframework.security.access.AccessDeniedException;
 import org.saidone.quizmaker.mapper.QuestionMapper;
 import org.saidone.quizmaker.mapper.QuizMapper;
 import org.saidone.quizmaker.entity.Question;
@@ -40,6 +42,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -58,11 +61,39 @@ class QuizServiceTest {
     @Mock
     private QuestionMapper questionMapper;
 
+    @Mock
+    private QuestionImageAuthorizationPolicy questionImageAuthorizationPolicy;
+
     @InjectMocks
     private QuizService quizService;
 
     private Quiz sampleQuiz;
     private Teacher teacher;
+
+    @Test
+    void createRejectsUnauthorizedImageBeforeSaving() {
+        var question = new QuestionDto();
+        question.setImageId(UUID.randomUUID().toString());
+        var request = QuizDto.Request.builder().title("Quiz").emoji("🧪").questions(List.of(question)).build();
+        doThrow(new AccessDeniedException("Accesso immagine non consentito"))
+                .when(questionImageAuthorizationPolicy).validateQuestions(request.getQuestions(), teacher);
+
+        assertThatThrownBy(() -> quizService.create(request, teacher)).isInstanceOf(AccessDeniedException.class);
+        verify(quizRepository, never()).save(any());
+    }
+
+    @Test
+    void updateRejectsUnauthorizedImageBeforeChangingQuiz() {
+        var question = new QuestionDto();
+        question.setImageUrl("/api/quizzes/images/" + UUID.randomUUID());
+        var request = QuizDto.Request.builder().title("Quiz").emoji("🧪").questions(List.of(question)).build();
+        doThrow(new AccessDeniedException("Accesso immagine non consentito"))
+                .when(questionImageAuthorizationPolicy).validateQuestions(request.getQuestions(), teacher);
+
+        assertThatThrownBy(() -> quizService.update(sampleQuiz.getId(), request, teacher))
+                .isInstanceOf(AccessDeniedException.class);
+        verify(quizRepository, never()).save(any());
+    }
 
     @BeforeEach
     void setUp() {

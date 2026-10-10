@@ -25,6 +25,7 @@ import lombok.val;
 import org.saidone.quizmaker.entity.Question;
 import org.saidone.quizmaker.entity.Quiz;
 import org.saidone.quizmaker.entity.Teacher;
+import org.saidone.quizmaker.dto.QuestionImageUploadDto;
 import org.saidone.quizmaker.repository.QuizRepository;
 import org.saidone.quizmaker.repository.TeacherRepository;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -37,6 +38,8 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.UUID;
+import java.util.HashMap;
+import java.net.URI;
 
 @Service
 @RequiredArgsConstructor
@@ -47,6 +50,7 @@ public class QuizSharingService {
 
     private final QuizRepository quizRepository;
     private final TeacherRepository teacherRepository;
+    private final QuestionImageStorageService questionImageStorageService;
 
     @Transactional
     @PreAuthorize("@teacherAuthorizationPolicy.isAdmin(#actingTeacher) && @teacherAuthorizationPolicy.canManageQuiz(#quizId, #actingTeacher)")
@@ -75,7 +79,7 @@ public class QuizSharingService {
             val clonedQuiz = Quiz.builder()
                     .title(sourceQuiz.getTitle())
                     .emoji(sourceQuiz.getEmoji())
-                    .questions(cloneQuestions(sourceQuiz.getQuestions()))
+                    .questions(cloneQuestions(sourceQuiz.getQuestions(), recipient))
                     .published(false)
                     .createdByUsername(sourceQuiz.getCreatedByUsername() != null ? sourceQuiz.getCreatedByUsername() : actingTeacher.getUsername())
                     .modifiedByUsername(actingTeacher.getUsername())
@@ -101,17 +105,37 @@ public class QuizSharingService {
         );
     }
 
-    private List<Question> cloneQuestions(List<Question> sourceQuestions) {
+    private List<Question> cloneQuestions(List<Question> sourceQuestions, Teacher recipient) {
         val clonedQuestions = new ArrayList<Question>();
+        val copiedImages = new HashMap<UUID, QuestionImageUploadDto>();
         for (val sourceQuestion : sourceQuestions) {
             val clonedQuestion = new Question();
             clonedQuestion.setText(sourceQuestion.getText());
             clonedQuestion.setEmoji(sourceQuestion.getEmoji());
+            val imageId = uploadedImageId(sourceQuestion);
+            if (imageId != null) {
+                val copy = copiedImages.computeIfAbsent(imageId,
+                        id -> questionImageStorageService.duplicateForTeacher(id, recipient));
+                clonedQuestion.setImageId(copy.getId().toString());
+                clonedQuestion.setImageUrl(copy.getUrl());
+            } else {
+                clonedQuestion.setImageUrl(sourceQuestion.getImageUrl());
+            }
             clonedQuestion.setAnswer(sourceQuestion.getAnswer());
             clonedQuestion.setFeedback(sourceQuestion.getFeedback());
             clonedQuestion.setOptions(sourceQuestion.getOptions() == null ? List.of() : new ArrayList<>(sourceQuestion.getOptions()));
             clonedQuestions.add(clonedQuestion);
         }
         return clonedQuestions;
+    }
+
+    private UUID uploadedImageId(Question question) {
+        if (question.getImageId() != null && !question.getImageId().isBlank()) {
+            return UUID.fromString(question.getImageId().trim());
+        }
+        if (question.getImageUrl() == null || question.getImageUrl().isBlank()) return null;
+        val path = URI.create(question.getImageUrl().trim()).getPath();
+        val prefix = "/api/quizzes/images/";
+        return path != null && path.startsWith(prefix) ? UUID.fromString(path.substring(prefix.length())) : null;
     }
 }

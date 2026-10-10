@@ -30,6 +30,7 @@ import org.springframework.stereotype.Component;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.UUID;
+import java.net.URI;
 
 @Slf4j
 @Component
@@ -51,10 +52,21 @@ public class OrphanQuestionImageCleanupScheduler {
                     return;
                 }
                 for (val question : quiz.getQuestions()) {
-                    if (question == null || question.getImageId() == null || question.getImageId().isBlank()) {
-                        continue;
+                    if (question == null) continue;
+                    if (question.getImageId() != null && !question.getImageId().isBlank()) {
+                        parseUuid(question.getImageId()).ifPresent(usedImageIds::add);
                     }
-                    parseUuid(question.getImageId()).ifPresent(usedImageIds::add);
+                    if (question.getImageUrl() != null && !question.getImageUrl().isBlank()) {
+                        try {
+                            val path = URI.create(question.getImageUrl().trim()).getPath();
+                            val prefix = "/api/quizzes/images/";
+                            if (path != null && path.startsWith(prefix)) {
+                                parseUuid(path.substring(prefix.length())).ifPresent(usedImageIds::add);
+                            }
+                        } catch (IllegalArgumentException ex) {
+                            log.debug("URL immagine non valido ignorato durante la pulizia immagini orfane");
+                        }
+                    }
                 }
             });
 

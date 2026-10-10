@@ -25,11 +25,20 @@ import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.saidone.quizmaker.repository.UploadedImageRepository;
+import org.saidone.quizmaker.entity.Teacher;
+import org.saidone.quizmaker.entity.UploadedImage;
+import org.mockito.ArgumentCaptor;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.nio.file.Path;
+import java.util.UUID;
+import java.util.Optional;
+import java.util.HashMap;
+import java.util.Map;
+import java.nio.file.Files;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -48,6 +57,7 @@ class QuestionImageStorageServiceTest {
     Path tempDir;
 
     private QuestionImageStorageService service;
+    private final Teacher teacher = Teacher.builder().id(UUID.randomUUID()).build();
 
     @BeforeEach
     void setUp() {
@@ -64,7 +74,7 @@ class QuestionImageStorageServiceTest {
                 "<svg><script>alert('xss')</script></svg>".getBytes()
         );
 
-        assertThatThrownBy(() -> service.store(file))
+        assertThatThrownBy(() -> service.store(file, teacher))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Il file selezionato non è un'immagine valida.");
         verify(uploadedImageRepository, never()).save(any());
@@ -80,11 +90,13 @@ class QuestionImageStorageServiceTest {
         );
         when(uploadedImageRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
-        val result = service.store(file);
+        val result = service.store(file, teacher);
 
         assertThat(result.getId()).isNotNull();
         assertThat(result.getUrl()).isEqualTo("/api/quizzes/images/" + result.getId());
-        verify(uploadedImageRepository).save(any());
+        var imageCaptor = ArgumentCaptor.forClass(UploadedImage.class);
+        verify(uploadedImageRepository).save(imageCaptor.capture());
+        assertThat(imageCaptor.getValue().getTeacherId()).isEqualTo(teacher.getId());
     }
 
     @Test
@@ -96,9 +108,103 @@ class QuestionImageStorageServiceTest {
                 "<svg><script>alert('xss')</script></svg>".getBytes()
         );
 
-        assertThatThrownBy(() -> service.store(file))
+        assertThatThrownBy(() -> service.store(file, teacher))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Il file selezionato non è un'immagine valida.");
         verify(uploadedImageRepository, never()).save(any());
+    }
+
+    @Test
+    void duplicateCreatesOwnedRecordWithoutCopyingBinary() throws Exception {
+        var source = savedImage();
+        var recipient = Teacher.builder().id(UUID.randomUUID()).build();
+        var result = service.duplicateForTeacher(source.getId(), recipient);
+
+        var captor = ArgumentCaptor.forClass(UploadedImage.class);
+        verify(uploadedImageRepository).save(captor.capture());
+        assertThat(captor.getValue().getId()).isNotEqualTo(source.getId()).isEqualTo(result.getId());
+        assertThat(captor.getValue().getTeacherId()).isEqualTo(recipient.getId());
+        assertThat(captor.getValue().getFilePath()).isEqualTo(source.getFilePath());
+        try (var files = Files.list(tempDir)) {
+            assertThat(files.count()).isEqualTo(1);
+        }
+    }
+
+    @Test
+    void deletingRecordPreservesBinaryUsedByAnotherRecord() throws Exception {
+        var source = savedImage();
+        when(uploadedImageRepository.existsByFilePath(source.getFilePath())).thenReturn(true);
+        service.delete(source.getId());
+        verify(uploadedImageRepository).delete(source);
+        assertThat(Path.of(source.getFilePath())).exists();
+    }
+
+    @Test
+    void sharedCopyRemainsReadableAfterOriginalIsDeletedAndLastDeletionRemovesFile() throws Exception {
+        var source = imageOnDisk();
+        Map<UUID, UploadedImage> records = new HashMap<>();
+        records.put(source.getId(), source);
+        when(uploadedImageRepository.findById(any())).thenAnswer(invocation ->
+                Optional.ofNullable(records.get(invocation.getArgument(0))));
+        when(uploadedImageRepository.save(any())).thenAnswer(invocation -> {
+            UploadedImage image = invocation.getArgument(0);
+            records.put(image.getId(), image);
+            return image;
+        });
+        org.mockito.Mockito.doAnswer(invocation -> {
+            UploadedImage image = invocation.getArgument(0);
+            records.remove(image.getId());
+            return null;
+        }).when(uploadedImageRepository).delete(any());
+        when(uploadedImageRepository.existsByFilePath(any())).thenAnswer(invocation ->
+                records.values().stream().anyMatch(image -> image.getFilePath().equals(invocation.getArgument(0))));
+
+        var copy = service.duplicateForTeacher(source.getId(), Teacher.builder().id(UUID.randomUUID()).build());
+        service.delete(source.getId());
+        assertThat(service.load(copy.getId()).getContentAsByteArray()).containsExactly(1, 2, 3);
+        service.delete(copy.getId());
+        assertThat(Path.of(source.getFilePath())).doesNotExist();
+        assertThat(records).isEmpty();
+    }
+
+    @Test
+    void deletingLastRecordRemovesBinaryOnlyAfterCommit() throws Exception {
+        var source = savedImage();
+        TransactionSynchronizationManager.initSynchronization();
+        try {
+            service.delete(source.getId());
+            assertThat(Path.of(source.getFilePath())).exists();
+            TransactionSynchronizationManager.getSynchronizations().forEach(s -> s.afterCommit());
+            assertThat(Path.of(source.getFilePath())).doesNotExist();
+        } finally {
+            TransactionSynchronizationManager.clearSynchronization();
+        }
+    }
+
+    @Test
+    void rollbackDoesNotRemoveBinary() throws Exception {
+        var source = savedImage();
+        TransactionSynchronizationManager.initSynchronization();
+        try {
+            service.delete(source.getId());
+            TransactionSynchronizationManager.getSynchronizations().forEach(s -> s.afterCompletion(1));
+            assertThat(Path.of(source.getFilePath())).exists();
+        } finally {
+            TransactionSynchronizationManager.clearSynchronization();
+        }
+    }
+
+    private UploadedImage savedImage() throws Exception {
+        var source = imageOnDisk();
+        when(uploadedImageRepository.findById(source.getId())).thenReturn(Optional.of(source));
+        return source;
+    }
+
+    private UploadedImage imageOnDisk() throws Exception {
+        var source = new UploadedImage();
+        source.setId(UUID.randomUUID());
+        source.setTeacherId(teacher.getId());
+        source.setFilePath(Files.write(tempDir.resolve("shared.png"), new byte[]{1, 2, 3}).toString());
+        return source;
     }
 }

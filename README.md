@@ -185,6 +185,9 @@ export ADMIN_PASSWORD='$2a$12$...'
 java -jar target/quizmaker-*.jar --spring.profiles.active=prod
 ```
 
+Quando aggiorni lo schema del database, avvia con `LIQUIBASE_ENABLED=true`
+(nel profilo `prod` Liquibase è disabilitato di default).
+
 ### `docker`
 
 - DB H2 in-memory
@@ -258,8 +261,15 @@ java -jar target/quizmaker-*.jar --spring.profiles.active=prod
 - `POST /api/quizzes/{quizId}/unlock-all` sblocco massivo tentativi.
 - `POST /api/quizzes/generate` generazione quiz via AI (multipart, allegato opzionale, topic anche da URL Wikipedia).
 - `POST /api/quizzes/images` upload immagine domanda (insegnante con upload abilitato).
-- `GET /api/quizzes/images/{imageId}` download immagine domanda.
-- `DELETE /api/quizzes/images/{imageId}` eliminazione immagine domanda.
+- `GET /api/quizzes/images/{imageId}` download consentito al proprietario o agli insegnanti con un quiz che usa l'immagine; gli studenti accedono solo tramite quiz pubblicati e non archiviati del proprio insegnante.
+- `DELETE /api/quizzes/images/{imageId}` eliminazione consentita al proprietario (per immagini precedenti alla migrazione, all'insegnante del quiz che le usa), purché nessun quiz di altri insegnanti usi l'immagine. Accessi non consentiti restituiscono HTTP 403.
+
+La condivisione di un quiz duplica anche i record delle immagini caricate:
+ogni destinatario riceve UUID e proprietà separati, mantenendo lo stesso file
+binario su disco. Eliminare un record immagine non cancella le altre copie;
+il file viene rimosso soltanto dopo la cancellazione dell'ultimo record che
+lo usa. Le immagini esterne mantengono il loro URL. Le copie di quiz già
+condivise non vengono modificate retroattivamente.
 
 **Studenti (`/api/students`)**
 

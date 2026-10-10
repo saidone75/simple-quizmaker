@@ -41,6 +41,10 @@ public class UploadedImage {
     @Column(name = "file_path", nullable = false)
     private String filePath;
 
+    @Column(name = "teacher_id")
+    @JdbcTypeCode(java.sql.Types.VARCHAR)
+    private UUID teacherId;
+
     @PrePersist
     public void prePersist() {
         if (this.id == null) {
