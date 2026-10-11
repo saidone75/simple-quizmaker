@@ -19,7 +19,7 @@
 
         const fields = [
             { key: 'name', label: 'Nome del premio', type: 'text', maxLength: 80,
-                placeholder: 'Cartografo provetto', value: badge?.name || '' },
+                placeholder: 'Genio dei quiz', value: badge?.name || '' },
             { key: 'emoji', label: 'Emoji', type: 'text', maxLength: 16,
                 placeholder: '🗺️', value: badge?.emoji || '🏅' },
             { key: 'minimumPercentage', label: 'Risposte corrette (%)', type: 'number',
