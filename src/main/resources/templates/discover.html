@@ -1,0 +1,109 @@
+<!--
+  ~ Alice's Simple Quiz Maker - fun quizzes for curious minds
+  ~ Copyright (C) 2026 Miss Alice & Saidone
+  ~
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as published by
+  ~ the Free Software Foundation, either version 3 of the License, or
+  ~ (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU General Public License
+  ~ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<!DOCTYPE html>
+<html lang="it" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scopri le funzionalità | Alice's Simple Quiz Maker</title>
+    <meta name="description" content="Crea quiz scolastici, anche con AI, condividili con gli altri insegnanti e segui i progressi degli studenti con risultati e badge. Software libero e open source.">
+    <meta name="robots" content="index, follow, max-image-preview:large">
+    <link rel="canonical" href="https://quiz.saidone.org/discover">
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="it_IT">
+    <meta property="og:site_name" content="Alice's Simple Quiz Maker">
+    <meta property="og:title" content="Scopri le funzionalità | Alice's Simple Quiz Maker">
+    <meta property="og:description" content="Crea quiz scolastici, anche con AI, condividili con gli altri insegnanti e segui i progressi degli studenti con risultati e badge. Software libero e open source.">
+    <meta property="og:url" content="https://quiz.saidone.org/discover">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Scopri le funzionalità | Alice's Simple Quiz Maker">
+    <meta name="twitter:description" content="Crea quiz scolastici, anche con AI, condividili con gli altri insegnanti e segui i progressi degli studenti con risultati e badge. Software libero e open source.">
+    <script type="application/ld+json">
+        {
+          "@context": "https://schema.org",
+          "@graph": [
+            {
+              "@type": "WebSite",
+              "name": "Alice's Simple Quiz Maker",
+              "url": "https://quiz.saidone.org/",
+              "inLanguage": "it",
+              "description": "Applicazione web libera e open source per creare e somministrare quiz scolastici."
+            },
+            {
+              "@type": "WebApplication",
+              "name": "Alice's Simple Quiz Maker",
+              "url": "https://quiz.saidone.org/",
+              "description": "Crea quiz scolastici, anche con AI, condividili con gli altri insegnanti e segui i progressi degli studenti con risultati e badge. Software libero e open source.",
+              "applicationCategory": "EducationalApplication",
+              "operatingSystem": "Web browser",
+              "inLanguage": "it",
+              "license": "https://www.gnu.org/licenses/gpl-3.0.html",
+              "codeRepository": "https://github.com/saidone75/simple-quizmaker",
+              "featureList": ["Quiz scolastici", "Generazione quiz con AI", "Risultati e progressi", "Condivisione tra insegnanti"]
+            }
+          ]
+        }
+    </script>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+</head>
+<body>
+<main class="teacher-body" id="discover">
+    <h1 class="profile-heading">Crea quiz scolastici e accompagna ogni studente</h1>
+    <p class="profile-subtitle">Alice's Simple Quiz Maker è un'applicazione web libera e open source per insegnanti
+        e studenti. Prepara quiz didattici, condividi materiali con i colleghi e segui i progressi della classe.</p>
+    <div class="about-grid">
+        <section class="about-card">
+            <h2>Quiz personalizzati, anche con intelligenza artificiale</h2>
+            <p>Crea domande a scelta multipla con quattro risposte, immagini e curiosità sulla risposta corretta.
+                Puoi preparare il quiz manualmente oppure usare la generazione AI, se abilitata, partendo
+                da un argomento o da un allegato PDF, Word o di testo. Cerca immagini su Wikimedia o caricale quando consentito.</p>
+        </section>
+        <section class="about-card">
+            <h2>Badge e incoraggiamenti per gli studenti</h2>
+            <p>Ogni quiz può assegnare premi a tema.
+                L'insegnante sceglie le soglie e può premiare anche la partecipazione.
+                I badge di percorso e costanza valorizzano i quiz completati e i giorni di attività,
+                senza richiedere sfide quotidiane. Anche chi sbaglia riceve incoraggiamenti.</p>
+        </section>
+        <section class="about-card">
+            <h2>Risultati e condivisione tra insegnanti</h2>
+            <p>Pubblica i quiz per la tua classe, consulta risultati e progressi, sblocca nuovi tentativi
+                e condividi i quiz con altri insegnanti. Ogni studente ha una raccolta personale dei badge,
+                consultabile anche dal suo insegnante.</p>
+        </section>
+        <section class="about-card">
+            <h2>Come accedono gli studenti?</h2>
+            <p>L'insegnante crea gli studenti e assegna a ciascuno una parola chiave di cinque caratteri.
+                Gli studenti la inseriscono nella pagina di accesso per trovare i quiz della propria classe.</p>
+        </section>
+        <section class="about-card">
+            <h2>L'intelligenza artificiale è obbligatoria?</h2>
+            <p>No. Puoi creare quiz e configurare badge manualmente. La generazione di quiz e proposte di badge
+                con OpenAI è opzionale e richiede l'abilitazione dell'insegnante.</p>
+        </section>
+        <section class="about-card">
+            <h2>Il software è libero?</h2>
+            <p>Sì. Il progetto è distribuito con licenza GPLv3 e può essere installato sul proprio server.
+                <a class="admin-about-link" href="https://github.com/saidone75/simple-quizmaker">Codice sorgente e istruzioni di installazione</a>.</p>
+        </section>
+    </div>
+    <p class="admin-about-footer"><a class="admin-about-link" th:href="@{/teacher/register}">Registrazione insegnanti</a></p>
+</main>
+</body>
+</html>

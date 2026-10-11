@@ -228,6 +228,7 @@ Quando aggiorni lo schema del database, avvia con `LIQUIBASE_ENABLED=true`
 | URL                                     | Accesso                       | Descrizione                                    |
 |-----------------------------------------|-------------------------------|------------------------------------------------|
 | `/`                                     | Pubblico / sessione studente  | Login studente + pagina quiz                   |
+| `/discover`                               | Pubblico                      | Presentazione delle funzionalità e domande frequenti |
 | `/teacher/login`                        | Pubblico                      | Login insegnante                               |
 | `/teacher/register`                     | Pubblico                      | Registrazione insegnante                       |
 | `/teacher`                              | Insegnante                    | Dashboard quiz                                 |

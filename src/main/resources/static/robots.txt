@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+Disallow: /teacher/
+Disallow: /teacher$
+Disallow: /student/
+Disallow: /api/
+Disallow: /h2-console/
+Disallow: /about
+Disallow: /admin
+Disallow: /error
+
+Sitemap: https://quiz.saidone.org/sitemap.xml
