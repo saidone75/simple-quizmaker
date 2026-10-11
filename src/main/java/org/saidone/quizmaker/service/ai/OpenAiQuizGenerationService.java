@@ -190,7 +190,8 @@ public class OpenAiQuizGenerationService implements QuizGenerationService {
             return new String[0];
         }
 
-        return Arrays.stream(imageKeywords.trim().split("\\s*[,;\\n]+\\s*"))
+        return Arrays.stream(imageKeywords.split("[,;\\n]+"))
+                .map(String::trim)
                 .map(s -> s.replaceFirst("^\\d+[\\)\\.\\-:]\\s*", ""))
                 .map(String::trim)
                 .filter(StringUtils::hasText)
