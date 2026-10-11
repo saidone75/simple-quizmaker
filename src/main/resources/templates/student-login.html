@@ -22,42 +22,50 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quiz scolastici per studenti | Alice's Simple Quiz Maker</title>
-    <meta name="description" content="Crea quiz scolastici, anche con AI, condividili con gli altri insegnanti e segui i progressi degli studenti con risultati e badge. Software libero e open source.">
+    <meta name="description"
+          content="Crea quiz scolastici, anche con AI, condividili con gli altri insegnanti e segui i progressi degli studenti con risultati e badge. Software libero e open source.">
     <meta name="robots" content="index, follow, max-image-preview:large">
     <link rel="canonical" href="https://quiz.saidone.org/">
     <meta property="og:type" content="website">
     <meta property="og:locale" content="it_IT">
     <meta property="og:site_name" content="Alice's Simple Quiz Maker">
     <meta property="og:title" content="Quiz scolastici per studenti | Alice's Simple Quiz Maker">
-    <meta property="og:description" content="Crea quiz scolastici, anche con AI, condividili con gli altri insegnanti e segui i progressi degli studenti con risultati e badge. Software libero e open source.">
+    <meta property="og:description"
+          content="Crea quiz scolastici, anche con AI, condividili con gli altri insegnanti e segui i progressi degli studenti con risultati e badge. Software libero e open source.">
     <meta property="og:url" content="https://quiz.saidone.org/">
     <meta name="twitter:card" content="summary">
     <meta name="twitter:title" content="Quiz scolastici per studenti | Alice's Simple Quiz Maker">
-    <meta name="twitter:description" content="Crea quiz scolastici, anche con AI, condividili con gli altri insegnanti e segui i progressi degli studenti con risultati e badge. Software libero e open source.">
+    <meta name="twitter:description"
+          content="Crea quiz scolastici, anche con AI, condividili con gli altri insegnanti e segui i progressi degli studenti con risultati e badge. Software libero e open source.">
     <script type="application/ld+json">
         {
-          "@context": "https://schema.org",
-          "@graph": [
-            {
-              "@type": "WebSite",
-              "name": "Alice's Simple Quiz Maker",
-              "url": "https://quiz.saidone.org/",
-              "inLanguage": "it",
-              "description": "Applicazione web libera e open source per creare e somministrare quiz scolastici."
-            },
-            {
-              "@type": "WebApplication",
-              "name": "Alice's Simple Quiz Maker",
-              "url": "https://quiz.saidone.org/",
-              "description": "Crea quiz scolastici, anche con AI, condividili con gli altri insegnanti e segui i progressi degli studenti con risultati e badge. Software libero e open source.",
-              "applicationCategory": "EducationalApplication",
-              "operatingSystem": "Web browser",
-              "inLanguage": "it",
-              "license": "https://www.gnu.org/licenses/gpl-3.0.html",
-              "codeRepository": "https://github.com/saidone75/simple-quizmaker",
-              "featureList": ["Quiz scolastici", "Generazione quiz con AI", "Risultati e progressi", "Condivisione tra insegnanti"]
-            }
-          ]
+            "@context": "https://schema.org",
+            "@graph": [
+                {
+                    "@type": "WebSite",
+                    "name": "Alice's Simple Quiz Maker",
+                    "url": "https://quiz.saidone.org/",
+                    "inLanguage": "it",
+                    "description": "Applicazione web libera e open source per creare e somministrare quiz scolastici."
+                },
+                {
+                    "@type": "WebApplication",
+                    "name": "Alice's Simple Quiz Maker",
+                    "url": "https://quiz.saidone.org/",
+                    "description": "Crea quiz scolastici, anche con AI, condividili con gli altri insegnanti e segui i progressi degli studenti con risultati e badge. Software libero e open source.",
+                    "applicationCategory": "EducationalApplication",
+                    "operatingSystem": "Web browser",
+                    "inLanguage": "it",
+                    "license": "https://www.gnu.org/licenses/gpl-3.0.html",
+                    "codeRepository": "https://github.com/saidone75/simple-quizmaker",
+                    "featureList": [
+                        "Quiz scolastici",
+                        "Generazione quiz con AI",
+                        "Risultati e progressi",
+                        "Condivisione tra insegnanti"
+                    ]
+                }
+            ]
         }
     </script>
     <link rel="stylesheet" th:href="@{/css/main.css}">
@@ -70,11 +78,13 @@
         <div style="font-size:52px;margin-bottom:12px">🐰</div>
         <h2>Accesso studenti</h2>
         <p>Inserisci la parola chiave di 5 caratteri assegnata dalla maestra.</p>
-        <form id="student-login-form" th:action="@{/student/login}" method="post" style="display:grid;gap:12px;margin-top:14px;">
+        <form id="student-login-form" th:action="@{/student/login}" method="post"
+              style="display:grid;gap:12px;margin-top:14px;">
             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
             <input id="keyword-hidden" type="hidden" name="keyword" maxlength="5" minlength="5" required/>
             <div class="otp-group" aria-label="Parola chiave di 5 caratteri">
-                <input class="otp-input" type="text" inputmode="text" maxlength="1" autocomplete="one-time-code" aria-label="Carattere 1">
+                <input class="otp-input" type="text" inputmode="text" maxlength="1" autocomplete="one-time-code"
+                       aria-label="Carattere 1">
                 <input class="otp-input" type="text" inputmode="text" maxlength="1" aria-label="Carattere 2">
                 <input class="otp-input" type="text" inputmode="text" maxlength="1" aria-label="Carattere 3">
                 <input class="otp-input" type="text" inputmode="text" maxlength="1" aria-label="Carattere 4">
@@ -83,52 +93,16 @@
             <button class="quiz-next" style="display:block">Entra</button>
         </form>
         <p th:if="${loginError}" th:text="${loginError}" style="margin-top:12px;color:var(--red);font-weight:700"></p>
-        <p class="admin-about-footer"><a class="admin-about-link" th:href="@{/teacher/login}">Accesso insegnanti</a>
-            · <a class="admin-about-link" href="#scopri">Scopri le funzionalità</a></p>
+        <p style="text-align:center;margin-top:1.25rem;">
+            <a th:href="@{/teacher/login}" style="font-size:14px;color:var(--gray-muted);font-weight:700;text-decoration:none;">
+                → Accesso insegnanti
+            </a>
+        </p>
+        <p class="admin-about-footer">
+            <a class="admin-about-link" th:href="@{/discover}">Scopri le funzionalità</a></p>
     </div>
 </div>
-<main class="teacher-body" id="scopri">
-    <h2 class="profile-heading">Crea quiz scolastici e accompagna ogni studente</h2>
-    <p class="profile-subtitle">Alice's Simple Quiz Maker è un'applicazione web libera e open source per insegnanti
-        e studenti. Prepara quiz didattici, condividi materiali con i colleghi e segui i progressi della classe.</p>
-    <div class="about-grid">
-        <section class="about-card">
-            <h2>Quiz personalizzati, anche con intelligenza artificiale</h2>
-            <p>Crea domande a scelta multipla con quattro risposte, immagini e curiosità sulla risposta corretta.
-                Puoi preparare il quiz manualmente oppure usare la generazione AI, se abilitata, partendo
-                da un argomento o da un allegato PDF, Word o di testo. Cerca immagini su Wikimedia o caricale quando consentito.</p>
-        </section>
-        <section class="about-card">
-            <h2>Badge e incoraggiamenti per i bambini</h2>
-            <p>Ogni quiz può assegnare premi a tema.
-                L'insegnante sceglie le soglie e può premiare anche la partecipazione.
-                I badge di percorso e costanza valorizzano i quiz completati e i giorni di attività,
-                senza richiedere sfide quotidiane. Anche chi sbaglia riceve incoraggiamenti.</p>
-        </section>
-        <section class="about-card">
-            <h2>Risultati e condivisione tra insegnanti</h2>
-            <p>Pubblica i quiz per la tua classe, consulta risultati e progressi, sblocca nuovi tentativi
-                e condividi i quiz con altri insegnanti. Ogni studente ha una raccolta personale dei badge,
-                consultabile anche dal suo insegnante.</p>
-        </section>
-        <section class="about-card">
-            <h2>Come accedono gli studenti?</h2>
-            <p>L'insegnante crea gli studenti e assegna a ciascuno una parola chiave di cinque caratteri.
-                Gli studenti la inseriscono qui per trovare i quiz della propria classe.</p>
-        </section>
-        <section class="about-card">
-            <h2>L'intelligenza artificiale è obbligatoria?</h2>
-            <p>No. Puoi creare quiz e configurare badge manualmente. La generazione di quiz e proposte di badge
-                con OpenAI è opzionale e richiede l'abilitazione dell'insegnante.</p>
-        </section>
-        <section class="about-card">
-            <h2>Il software è libero?</h2>
-            <p>Sì. Il progetto è distribuito con licenza GPLv3 e può essere installato sul proprio server.
-                <a class="about-footer-link" href="https://github.com/saidone75/simple-quizmaker">Codice sorgente e istruzioni di installazione</a>.</p>
-        </section>
-    </div>
-    <p class="admin-about-footer"><a class="topbar-back" th:href="@{/teacher/register}">Registrazione insegnanti</a></p>
-</main>
+
 <script th:src="@{/js/student-login.js}"></script>
 
 </body>

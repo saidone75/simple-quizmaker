@@ -73,6 +73,11 @@ public class StudentWebController {
         return "student";
     }
 
+    @GetMapping("/discover")
+    public String discoverPage() {
+        return "discover";
+    }
+
     @GetMapping("/student/login")
     public String studentLoginPage() {
         return "redirect:/";

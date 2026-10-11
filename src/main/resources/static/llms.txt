@@ -9,7 +9,8 @@ I badge a tema possono essere configurati dagli insegnanti o proposti dall'AI.
 
 ## Fonti pubbliche
 
-- [Presentazione e domande frequenti](https://quiz.saidone.org/): funzionalità e accesso all'applicazione.
+- [Accesso all'applicazione](https://quiz.saidone.org/): login degli studenti e collegamento all'area insegnante.
+- [Presentazione e domande frequenti](https://quiz.saidone.org/discover): funzionalità dell'applicazione.
 - [Codice e documentazione](https://github.com/saidone75/simple-quizmaker): installazione e API.
 - [Licenza GPLv3](https://www.gnu.org/licenses/gpl-3.0.html).
 

@@ -55,9 +55,10 @@ public class OpenAiBadgeGenerationService {
                 Ogni badge deve avere: name (string), emoji (string), minimumPercentage (intero 0-100).
 
                 Vincoli:
-                - Usa nomi brevi, creativi, gentili e incoraggianti, ed emoji pertinenti.
-                - Crea almeno un premio per l'impegno, con minimumPercentage 0: tutti i bambini
-                  che completano il quiz lo meritano, anche quando sbagliano.
+                - Usa nomi brevi, creativi, gentili e incoraggianti, metti sempre almeno un aggettivo ed emoji
+                  pertinenti.
+                - Crea almeno un premio per l'impegno, con minimumPercentage 0: tutti i bambini che completano il quiz
+                  lo meritano, anche quando sbagliano.
                 - Gli altri premi hanno soglie crescenti tra 50 e 100.
                 - Non umiliare, non confrontare i bambini, non usare etichette negative o sarcasmo.
                 - Esempi per geografia: "Piccolo viaggiatore" per l'impegno,

@@ -62,7 +62,7 @@ public class SecurityConfig {
                         .requestMatchers("/css/**", "/js/**", "/images/**", "/favicon.ico").permitAll()
                         .requestMatchers(HttpMethod.GET, "/robots.txt", "/sitemap.xml", "/llms.txt").permitAll()
                         .requestMatchers("/h2-console/**").permitAll()
-                        .requestMatchers("/teacher/login", "/teacher/register", "/", "/student/login").permitAll()
+                        .requestMatchers("/teacher/login", "/teacher/register", "/", "/student/login", "/discover").permitAll()
                         .requestMatchers(HttpMethod.POST, "/student/logout").permitAll()
                         .requestMatchers("/student/badges").hasRole("STUDENT")
                         .requestMatchers(HttpMethod.GET, "/api/quizzes/images/**").authenticated()
@@ -109,7 +109,8 @@ public class SecurityConfig {
                             boolean signedIn = authentication != null && authentication.isAuthenticated()
                                     && !(authentication instanceof org.springframework.security.authentication.AnonymousAuthenticationToken);
                             var path = request.getRequestURI().substring(request.getContextPath().length());
-                            boolean publicPage = "GET".equals(request.getMethod()) && "/".equals(path) && !signedIn;
+                            boolean publicPage = "GET".equals(request.getMethod())
+                                    && ("/discover".equals(path) || ("/".equals(path) && !signedIn));
                             boolean publicResource = path.startsWith("/css/") || path.startsWith("/js/")
                                     || path.startsWith("/images/") || "/favicon.ico".equals(path)
                                     || "/robots.txt".equals(path) || "/sitemap.xml".equals(path) || "/llms.txt".equals(path);
