@@ -44,6 +44,7 @@ public class QuizSubmissionService {
 
     private final QuizRepository quizRepository;
     private final QuizSubmissionRepository quizSubmissionRepository;
+    private final StudentBadgeService studentBadgeService;
 
     @Transactional(readOnly = true)
     public Set<UUID> findLockedQuizIdsForStudent(Student student) {
@@ -75,9 +76,13 @@ public class QuizSubmissionService {
         submission.setScore(score);
         submission.setTotalQuestions(quiz.getQuestions().size());
         submission.setUnlocked(false);
+        val completedAt = LocalDateTime.now();
+        submission.setSubmittedAt(completedAt);
         quizSubmissionRepository.save(submission);
+        val newBadges = studentBadgeService.recordCompletion(quiz, student, score,
+                quiz.getQuestions().size(), completedAt);
 
-        return new QuizSubmissionDto.Response(quiz.getId(), score, quiz.getQuestions().size(), true);
+        return new QuizSubmissionDto.Response(quiz.getId(), score, quiz.getQuestions().size(), true, newBadges);
     }
 
     @Transactional(readOnly = true)

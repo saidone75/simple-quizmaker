@@ -24,6 +24,7 @@ import org.saidone.quizmaker.entity.Teacher;
 import org.saidone.quizmaker.repository.QuizRepository;
 import org.saidone.quizmaker.repository.QuizSubmissionRepository;
 import org.saidone.quizmaker.repository.StudentRepository;
+import org.saidone.quizmaker.repository.StudentQuizAttemptRepository;
 import org.saidone.quizmaker.repository.TeacherRepository;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
@@ -39,6 +40,7 @@ public class TeacherLifecycleService {
     private final QuizRepository quizRepository;
     private final StudentRepository studentRepository;
     private final QuizSubmissionRepository quizSubmissionRepository;
+    private final StudentQuizAttemptRepository studentQuizAttemptRepository;
 
     @Transactional
     @PreAuthorize("@teacherAuthorizationPolicy.isAdmin(#actingTeacher)")
@@ -57,6 +59,7 @@ public class TeacherLifecycleService {
                 .orElseThrow(() -> new IllegalArgumentException("Insegnante non trovato"));
 
         quizSubmissionRepository.deleteAllByStudentTeacherOrQuizTeacher(targetTeacher, targetTeacher);
+        studentQuizAttemptRepository.deleteAllByStudentTeacher(targetTeacher);
         quizRepository.deleteAllByTeacher(targetTeacher);
         studentRepository.deleteAllByTeacher(targetTeacher);
         teacherRepository.delete(targetTeacher);

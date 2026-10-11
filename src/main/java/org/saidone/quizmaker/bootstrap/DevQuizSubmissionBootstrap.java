@@ -24,9 +24,12 @@ import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.saidone.quizmaker.entity.Quiz;
 import org.saidone.quizmaker.entity.QuizSubmission;
+import org.saidone.quizmaker.entity.StudentQuizAttempt;
+import org.saidone.quizmaker.dto.QuizBadgeDefinition;
 import org.saidone.quizmaker.repository.QuizRepository;
 import org.saidone.quizmaker.repository.QuizSubmissionRepository;
 import org.saidone.quizmaker.repository.StudentRepository;
+import org.saidone.quizmaker.repository.StudentQuizAttemptRepository;
 import org.saidone.quizmaker.repository.TeacherRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.DependsOn;
@@ -58,6 +61,7 @@ public class DevQuizSubmissionBootstrap {
     private final StudentRepository studentRepository;
     private final QuizRepository quizRepository;
     private final QuizSubmissionRepository quizSubmissionRepository;
+    private final StudentQuizAttemptRepository studentQuizAttemptRepository;
 
     @PostConstruct
     public void init() {
@@ -93,7 +97,7 @@ public class DevQuizSubmissionBootstrap {
             val answers = randomAnswersForQuiz(selectedQuiz);
             val score = calculateScore(selectedQuiz, answers);
 
-            quizSubmissionRepository.save(QuizSubmission.builder()
+            val submission = quizSubmissionRepository.saveAndFlush(QuizSubmission.builder()
                     .student(student)
                     .quiz(selectedQuiz)
                     .answers(answers)
@@ -101,6 +105,11 @@ public class DevQuizSubmissionBootstrap {
                     .totalQuestions(selectedQuiz.getQuestions().size())
                     .unlocked(false)
                     .build());
+            studentQuizAttemptRepository.save(StudentQuizAttempt.builder()
+                    .id(submission.getId()).student(student).quizId(selectedQuiz.getId())
+                    .quizTitle(selectedQuiz.getTitle()).quizBadges(QuizBadgeDefinition.normalize(selectedQuiz.getBadges()))
+                    .score(score).totalQuestions(submission.getTotalQuestions())
+                    .completedAt(submission.getSubmittedAt()).build());
 
             created++;
         }

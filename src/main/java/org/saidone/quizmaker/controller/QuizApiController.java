@@ -25,6 +25,9 @@ import org.saidone.quizmaker.dto.QuizDto;
 import org.saidone.quizmaker.dto.QuizGenerationRequestDto;
 import org.saidone.quizmaker.dto.QuestionImageUploadDto;
 import org.saidone.quizmaker.dto.QuizSubmissionDto;
+import org.saidone.quizmaker.dto.QuizBadgeDefinition;
+import org.saidone.quizmaker.dto.QuizBadgeGenerationRequest;
+import org.saidone.quizmaker.service.ai.OpenAiBadgeGenerationService;
 import org.saidone.quizmaker.service.DocumentTextExtractorService;
 import org.saidone.quizmaker.service.QuestionImageStorageService;
 import org.saidone.quizmaker.service.WikipediaTextExtractorService;
@@ -58,6 +61,12 @@ public class QuizApiController {
     private final TeacherAuthenticationService teacherAuthenticationService;
     private final StudentAuthenticationService studentAuthenticationService;
     private final QuizSharingService quizSharingService;
+    private final OpenAiBadgeGenerationService badgeGenerationService;
+
+    @PostMapping("/badges/generate")
+    public ResponseEntity<List<QuizBadgeDefinition>> generateBadges(@Valid @RequestBody QuizBadgeGenerationRequest request) {
+        return ResponseEntity.ok(badgeGenerationService.generate(request, teacherAuthenticationService.getCurrentTeacher()));
+    }
 
     @GetMapping
     public ResponseEntity<List<QuizDto.Response>> getAll() {

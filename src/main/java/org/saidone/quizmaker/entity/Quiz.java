@@ -28,6 +28,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
+import org.saidone.quizmaker.dto.QuizBadgeDefinition;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -58,6 +59,11 @@ public class Quiz {
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "questions", nullable = false, columnDefinition = "jsonb")
     private List<Question> questions;
+
+    @Builder.Default
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "badges", columnDefinition = "jsonb")
+    private List<QuizBadgeDefinition> badges = QuizBadgeDefinition.defaults();
 
     @CreationTimestamp
     @Convert(converter = LocalDateTimeColumnConverter.class)

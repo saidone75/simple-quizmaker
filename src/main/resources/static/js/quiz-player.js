@@ -416,12 +416,12 @@ function pickAnswer(idx, restoring) {
     if (idx === q.answer) {
         recomputeScoreFromAnswers();
         document.getElementById('play-score').textContent = '⭐ ' + playState.score;
-        fb.innerHTML = `<div class="quiz-feedback correct">✅ ${escHtml(q.feedback) || 'Esatto!'}</div>`;
+        fb.innerHTML = `<div class="quiz-feedback correct">✅ Ottimo lavoro! ${escHtml(q.feedback) || 'Hai trovato la risposta!'}</div>`;
     } else {
         recomputeScoreFromAnswers();
         btns[idx].classList.add('wrong');
         const correctText = q.options[q.answer];
-        fb.innerHTML = `<div class="quiz-feedback wrong">❌ Risposta sbagliata! La risposta corretta era: <strong>${escHtml(correctText)}</strong>${q.feedback ? '. ' + escHtml(q.feedback) : '.'}</div>`;
+        fb.innerHTML = `<div class="quiz-feedback learning">🌱 Bravo per averci provato! Scopriamo insieme: la risposta corretta è <strong>${escHtml(correctText)}</strong>${q.feedback ? '. ' + escHtml(q.feedback) : '.'} Ogni tentativo ti aiuta a imparare!</div>`;
     }
     persistQuizProgress();
     document.getElementById('play-next').style.display = 'block';
@@ -435,8 +435,10 @@ function nextQuestion() {
 }
 
 async function showResult() {
-    const { score, wrong, quiz, answers } = playState;
-    const total = quiz.questions.length;
+    const { quiz, answers } = playState;
+    let score = playState.score;
+    let total = quiz.questions.length;
+    let newBadges = [];
 
     try {
         const res = await apiFetch('/api/quizzes/' + quiz.id + '/submit', {
@@ -448,6 +450,9 @@ async function showResult() {
         if (!res.ok) {
             throw new Error(payload.message || 'Errore nel salvataggio');
         }
+        score = payload.score;
+        total = payload.total;
+        newBadges = Array.isArray(payload.newBadges) ? payload.newBadges : [];
         if (globalThis.LOCKED_QUIZ_IDS) {
             globalThis.LOCKED_QUIZ_IDS.add(String(quiz.id));
         }
@@ -465,20 +470,39 @@ async function showResult() {
 
     const pct = score / total;
     let emoji, title, stars;
-    if (pct === 1)       { emoji = '🏆'; title = 'Perfetto! Sei un campione!'; stars = '⭐⭐⭐⭐⭐'; }
+    if (pct === 1)       { emoji = '🏆'; title = 'Ottimo lavoro, tutte corrette!'; stars = '⭐⭐⭐⭐⭐'; }
     else if (pct >= 0.8) { emoji = '🎉'; title = 'Fantastico! Ottimo lavoro!'; stars = '⭐⭐⭐⭐'; }
     else if (pct >= 0.6) { emoji = '😊'; title = 'Bravo! Hai fatto bene!'; stars = '⭐⭐⭐'; }
-    else if (pct >= 0.4) { emoji = '👍'; title = 'Bene! Puoi migliorare!'; stars = '⭐⭐'; }
-    else                 { emoji = '📚'; title = 'Studia ancora un po\'!'; stars = '⭐'; }
+    else if (pct >= 0.4) { emoji = '🌱'; title = 'Bravo per il tuo impegno!'; stars = '⭐⭐'; }
+    else                 { emoji = '💪'; title = 'Hai affrontato una nuova sfida, bravo!'; stars = '⭐'; }
 
     document.getElementById('res-emoji').textContent = emoji;
     document.getElementById('res-title').textContent = title;
-    document.getElementById('res-sub').textContent = 'Hai completato: ' + quiz.title;
+    document.getElementById('res-sub').textContent = 'Hai completato: ' + quiz.title + '. Ogni tentativo è un passo avanti!';
     document.getElementById('res-score').innerHTML = score + '<span> / ' + total + '</span>';
     document.getElementById('res-stars').textContent = stars;
     document.getElementById('res-pills').innerHTML = `
         <span class="rpill rpill-ok">✅ ${score} corrette</span>
-        <span class="rpill rpill-bad">❌ ${wrong} sbagliate</span>
+        <span class="rpill rpill-learn">🌱 ${total - score} da scoprire insieme</span>
     `;
+    const badgeArea = document.getElementById('res-badges');
+    if (badgeArea) {
+        badgeArea.replaceChildren();
+        badgeArea.hidden = newBadges.length === 0;
+        if (newBadges.length > 0) {
+            const title = document.createElement('h2');
+            title.textContent = newBadges.length === 1 ? 'Hai guadagnato un badge!' : 'Hai guadagnato nuovi badge!';
+            badgeArea.appendChild(title);
+            const list = document.createElement('ul');
+            list.className = 'new-badges-list';
+            for (const badge of newBadges) {
+                const item = document.createElement('li');
+                item.textContent = `${badge.emoji} ${badge.name}`;
+                item.title = badge.description;
+                list.appendChild(item);
+            }
+            badgeArea.appendChild(list);
+        }
+    }
     goTo('result');
 }

@@ -422,6 +422,7 @@ async function saveQuiz() {
     showLoading(quizId ? 'Salvataggio modifiche...' : 'Salvataggio in corso...');
 
     try {
+        const badges = globalThis.readQuizBadges();
         const url = quizId ? '/api/quizzes/' + quizId : '/api/quizzes';
         const method = quizId ? 'PUT' : 'POST';
 
@@ -433,6 +434,7 @@ async function saveQuiz() {
             body: JSON.stringify({
                 title,
                 emoji,
+                badges,
                 questions: finalQuestions
             })
         });

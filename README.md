@@ -45,6 +45,8 @@ Alice's Simple Quiz Maker è pensato per chi desidera:
 - Ricerca immagini Wikimedia con modalità **advanced** e **simple**, configurabile globalmente e per insegnante.
 - Condivisione quiz verso più insegnanti.
 - Gestione risultati con analytics e sblocco tentativi singolo studente o massivo.
+- Badge per risultati, percorso e costanza, con premi a tema personalizzabili per ogni quiz.
+- Raccolta personale dei badge per ogni studente, consultabile anche dal suo insegnante.
 - Profilo insegnante con preferenze tema, ricerca immagini e gestione password.
 - Architettura Spring con migrazioni schema DB versionate via Liquibase.
 - Backup schedulato database SQLite in produzione con retention configurabile.
@@ -230,6 +232,8 @@ Quando aggiorni lo schema del database, avvia con `LIQUIBASE_ENABLED=true`
 | `/teacher/register`                     | Pubblico                      | Registrazione insegnante                       |
 | `/teacher`                              | Insegnante                    | Dashboard quiz                                 |
 | `/teacher/students`                     | Insegnante                    | Gestione studenti                              |
+| `/student/badges`                       | Studente                      | Raccolta personale dei badge                   |
+| `/teacher/students/{studentId}/badges`   | Insegnante                   | Badge di uno studente della propria classe     |
 | `/teacher/results`                      | Insegnante                    | Risultati + analytics + sblocco quiz           |
 | `/teacher/logs`                         | Amministratore                | Visualizzazione log applicativi                |
 | `/teacher/profile`                      | Insegnante                    | Cambio password personale                      |
@@ -270,6 +274,13 @@ binario su disco. Eliminare un record immagine non cancella le altre copie;
 il file viene rimosso soltanto dopo la cancellazione dell'ultimo record che
 lo usa. Le immagini esterne mantengono il loro URL. Le copie di quiz già
 condivise non vengono modificate retroattivamente.
+
+**Badge dei quiz (`/api/quizzes`)**
+
+- `POST /api/quizzes/badges/generate` propone badge a tema via AI da titolo e domande (insegnante con AI abilitata), senza salvarli.
+- `POST /api/quizzes` e `PUT /api/quizzes/{id}` salvano il campo `badges`: fino a 8 premi con nome, emoji e soglia 0–100%; `[]` disabilita i premi specifici.
+- `GET /api/quizzes` e `GET /api/quizzes/{id}` includono le definizioni dei badge.
+- `POST /api/quizzes/{id}/submit` restituisce i premi appena guadagnati nel campo `newBadges`.
 
 **Studenti (`/api/students`)**
 

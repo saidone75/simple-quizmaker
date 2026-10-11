@@ -46,5 +46,6 @@ public class QuizSubmissionDto {
         private Integer score;
         private Integer total;
         private Boolean locked;
+        private List<StudentBadgeDto.EarnedBadge> newBadges = List.of();
     }
 }

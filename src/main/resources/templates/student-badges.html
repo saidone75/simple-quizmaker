@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="it" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta th:if="${teacherView}" name="quizmaker-theme-preference" th:content="${teacherThemePreference}">
+    <title th:text="'Badge di ' + ${collection.studentName} + ' — Alice’s Simple Quiz Maker'">I miei badge</title>
+    <script th:if="${teacherView}" th:src="@{/js/theme-init.js}"></script>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+</head>
+<body>
+<header class="topbar">
+    <span class="topbar-title">🏅 La raccolta dei badge</span>
+    <div class="topbar-actions">
+        <a class="topbar-back" th:href="${teacherView} ? @{/teacher/students} : @{/}"
+           th:text="${teacherView} ? '← Studenti' : '← Torna ai quiz'">← Torna ai quiz</a>
+        <span class="topbar-badge" th:text="${collection.studentName}">Studente</span>
+        <form class="topbar-inline-form" th:unless="${teacherView}" th:action="@{/student/logout}" method="post">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+            <button type="submit" class="topbar-back">Esci</button>
+        </form>
+    </div>
+</header>
+
+<main class="teacher-body">
+    <section class="manage-card" aria-labelledby="badge-page-title">
+        <span class="quiz-emoji" aria-hidden="true">🏅</span>
+        <div>
+            <p class="section-label">Ogni piccolo passo conta</p>
+            <h1 class="profile-heading" id="badge-page-title" th:text="${teacherView} ? 'I badge di ' + ${collection.studentName} : 'I miei badge'">I miei badge</h1>
+            <p class="editor-mode-subtitle">I risultati e la costanza meritano un premio. I badge che guadagni restano tuoi!</p>
+        </div>
+    </section>
+
+    <dl class="badge-stats">
+        <div class="editor-mode-card"><dt>Badge guadagnati</dt><dd th:text="${collection.badges.size()}">0</dd></div>
+        <div class="editor-mode-card"><dt>Quiz completati</dt><dd th:text="${collection.completedQuizzes}">0</dd></div>
+        <div class="editor-mode-card"><dt>Giorni di attività</dt><dd th:text="${collection.activeDays}">0</dd></div>
+    </dl>
+
+    <section aria-labelledby="earned-badges-title" class="badge-section">
+        <h2 class="profile-heading" id="earned-badges-title">La tua collezione</h2>
+        <p class="alert alert-success" th:if="${collection.badges.isEmpty()}">
+            🌱 La tua avventura comincia qui! Completa un quiz per guadagnare il primo badge.
+        </p>
+        <ul class="badge-grid" th:unless="${collection.badges.isEmpty()}">
+            <li th:each="badge : ${collection.badges}" class="editor-mode-card earned-badge-card">
+                <span class="badge-icon" th:text="${badge.emoji}" aria-hidden="true">🏆</span>
+                <span class="rpill rpill-amber" th:text="${badge.category}">Quiz</span>
+                <h3 th:text="${badge.name}">Senza errori</h3>
+                <p th:text="${badge.description}">Tutte le risposte corrette.</p>
+                <p class="badge-quiz-title" th:if="${badge.quizId != null}" th:text="${badge.quizTitle}">Titolo del quiz</p>
+                <p class="badge-date">Guadagnato il
+                    <time th:datetime="${badge.earnedAt}" th:text="${#temporals.format(badge.earnedAt, 'dd/MM/yyyy')}">01/01/2026</time>
+                </p>
+            </li>
+        </ul>
+    </section>
+
+    <section aria-labelledby="milestone-badges-title" class="badge-section">
+        <h2 class="profile-heading" id="milestone-badges-title">I traguardi del percorso</h2>
+        <p class="profile-subtitle">Anche un quiz difficile conta. Per questi premi basta completarlo!</p>
+        <ul class="badge-grid">
+            <li th:each="milestone : ${collection.milestones}" class="editor-mode-card milestone-badge-card"
+                th:classappend="${milestone.earned} ? 'is-earned' : ''">
+                <span class="badge-icon" th:text="${milestone.emoji}" aria-hidden="true">🌱</span>
+                <h3 th:text="${milestone.name}">Primo passo</h3>
+                <p th:text="${milestone.description}">Completa un quiz.</p>
+                <span th:if="${milestone.earned}" class="rpill rpill-ok">✓ Guadagnato</span>
+                <th:block th:unless="${milestone.earned}">
+                    <label th:for="${'progress-' + milestone.code}" class="badge-progress-label"
+                           th:text="${milestone.progress} + ' / ' + ${milestone.target}">0 / 1</label>
+                    <progress th:id="${'progress-' + milestone.code}" th:value="${milestone.progress}"
+                              th:max="${milestone.target}" th:aria-label="${milestone.name}">0</progress>
+                </th:block>
+            </li>
+        </ul>
+    </section>
+
+    <aside class="about-card badge-section">
+        <h2>Come funzionano i premi dei quiz?</h2>
+        <p class="profile-subtitle">Ogni quiz può avere premi a tema scelti dall’insegnante, con una percentuale minima di risposte corrette.
+            Se raggiungi più soglie, guadagni tutti i relativi badge! I premi predefiniti sono
+            ⭐ <strong>Stella del quiz</strong> all’80% e 🏆 <strong>Senza errori</strong> al 100%.</p>
+        <p>Ogni premio si guadagna una sola volta per quiz. Rifare un quiz non toglie i badge già conquistati.
+            Per la costanza conta ogni giorno in cui completi almeno un quiz, anche se è un nuovo tentativo.
+            Non serve completare quiz in giorni consecutivi.</p>
+    </aside>
+</main>
+</body>
+</html>

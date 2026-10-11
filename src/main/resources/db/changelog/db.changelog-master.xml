@@ -39,5 +39,6 @@
     <include file="006-teacher-image-search-mode-preference.xml" relativeToChangelogFile="true"/>
     <include file="007-teacher-registration-approval.xml" relativeToChangelogFile="true"/>
     <include file="008-question-image-owner.xml" relativeToChangelogFile="true"/>
+    <include file="009-student-badges.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>
