@@ -25,6 +25,7 @@ import ai.djl.repository.zoo.Criteria;
 import ai.djl.repository.zoo.ModelNotFoundException;
 import ai.djl.repository.zoo.ZooModel;
 import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -41,7 +42,8 @@ public class EmbeddingModelConfig {
     @Bean(destroyMethod = "close")
     public ZooModel<String, float[]> textEmbeddingModel() throws ModelNotFoundException, MalformedModelException, IOException {
         log.debug("Caricamento modello: {}", embeddingModelUrl);
-        Criteria<String, float[]> criteria = Criteria.builder()
+
+        val criteria = Criteria.builder()
                 .setTypes(String.class, float[].class)
                 .optApplication(Application.NLP.TEXT_EMBEDDING)
                 .optEngine("PyTorch")

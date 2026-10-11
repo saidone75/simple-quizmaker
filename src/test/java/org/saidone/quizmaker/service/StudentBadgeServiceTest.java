@@ -1,6 +1,6 @@
 package org.saidone.quizmaker.service;
 
-import org.junit.jupiter.api.BeforeEach;
+import lombok.val;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -8,7 +8,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.saidone.quizmaker.dto.QuizBadgeDefinition;
 import org.saidone.quizmaker.dto.StudentBadgeDto;
-import org.saidone.quizmaker.entity.*;
+import org.saidone.quizmaker.entity.Quiz;
+import org.saidone.quizmaker.entity.Student;
+import org.saidone.quizmaker.entity.StudentQuizAttempt;
+import org.saidone.quizmaker.entity.Teacher;
 import org.saidone.quizmaker.repository.StudentQuizAttemptRepository;
 import org.saidone.quizmaker.repository.StudentRepository;
 import org.springframework.web.server.ResponseStatusException;
@@ -18,8 +21,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -38,7 +43,7 @@ class StudentBadgeServiceTest {
     @Test
     void recordsSnapshotsAndReturnsOnlyNewBadges() {
         when(attempts.findByStudentIdOrderByCompletedAtAscIdAsc(student.getId())).thenReturn(List.of());
-        var newBadges = service.recordCompletion(quiz, student, 5, 5, date);
+        val newBadges = service.recordCompletion(quiz, student, 5, 5, date);
         assertThat(newBadges).extracting(StudentBadgeDto.EarnedBadge::name)
                 .containsExactlyInAnyOrder("Cartografo provetto", "Primo passo");
         verify(attempts).save(argThat(a -> a.getQuizId().equals(quiz.getId())
@@ -48,7 +53,7 @@ class StudentBadgeServiceTest {
 
     @Test
     void repeatedCompletionDoesNotAnnouncePreviouslyEarnedBadgesAgain() {
-        var previous = StudentQuizAttempt.builder().id(UUID.randomUUID()).student(student)
+        val previous = StudentQuizAttempt.builder().id(UUID.randomUUID()).student(student)
                 .quizId(quiz.getId()).quizTitle("Geografia").quizBadges(quiz.getBadges())
                 .score(5).totalQuestions(5).completedAt(date).build();
         when(attempts.findByStudentIdOrderByCompletedAtAscIdAsc(student.getId())).thenReturn(List.of(previous));
@@ -69,7 +74,7 @@ class StudentBadgeServiceTest {
     void ownCollectionUsesTheAuthenticatedStudentOnly() {
         when(authentication.getCurrentStudent()).thenReturn(student);
         when(attempts.findByStudentIdOrderByCompletedAtAscIdAsc(student.getId())).thenReturn(List.of());
-        var collection = service.forCurrentStudent();
+        val collection = service.forCurrentStudent();
         assertThat(collection.studentId()).isEqualTo(student.getId());
         verify(attempts).findByStudentIdOrderByCompletedAtAscIdAsc(student.getId());
     }

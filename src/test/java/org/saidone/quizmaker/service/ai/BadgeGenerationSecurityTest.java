@@ -1,6 +1,7 @@
 package org.saidone.quizmaker.service.ai;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.val;
 import org.junit.jupiter.api.*;
 import org.saidone.quizmaker.config.StudentAuthenticationToken;
 import org.saidone.quizmaker.dto.QuizBadgeGenerationRequest;
@@ -52,7 +53,7 @@ class BadgeGenerationSecurityTest {
 
     @Test
     void teacherCannotImpersonateAnAiEnabledColleague() {
-        var colleague = Teacher.builder().id(UUID.randomUUID()).username("colleague").aiEnabled(true).build();
+        val colleague = Teacher.builder().id(UUID.randomUUID()).username("colleague").aiEnabled(true).build();
         assertThatThrownBy(() -> service.generate(request, colleague)).isInstanceOf(AccessDeniedException.class);
         verifyNoInteractions(client);
     }

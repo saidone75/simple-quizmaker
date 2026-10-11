@@ -2,6 +2,7 @@ package org.saidone.quizmaker.service;
 
 import ai.djl.repository.zoo.ZooModel;
 import jakarta.persistence.EntityManager;
+import lombok.val;
 import org.junit.jupiter.api.*;
 import org.saidone.quizmaker.config.StudentAuthenticationToken;
 import org.saidone.quizmaker.dto.QuizBadgeDefinition;
@@ -67,7 +68,7 @@ class StudentBadgeIntegrationTest {
         teacher = teachers.saveAndFlush(Teacher.builder().username("badge-teacher").password("unused").build());
         student = students.saveAndFlush(Student.builder().id(UUID.randomUUID()).fullName("Alice <student>")
                 .loginKeyword("BADGE").teacher(teacher).build());
-        var question = new Question();
+        val question = new Question();
         question.setText("Qual è la capitale d’Italia?");
         question.setOptions(List.of("Roma", "Parigi"));
         question.setAnswer(0);
@@ -85,7 +86,7 @@ class StudentBadgeIntegrationTest {
 
     @Test
     void badgesAndFrozenDefinitionsSurviveAnUnlockedWorseRetryAndQuizDeletion() {
-        var first = submissionService.submit(quiz.getId(), student, List.of(0));
+        val first = submissionService.submit(quiz.getId(), student, List.of(0));
         assertThat(first.getNewBadges()).extracting(StudentBadgeDto.EarnedBadge::name)
                 .contains("Cartografo provetto <premio>", "Grande esploratore");
         entityManager.flush();
@@ -93,10 +94,10 @@ class StudentBadgeIntegrationTest {
         assertThat(attempts.findByStudentIdOrderByCompletedAtAscIdAsc(student.getId()))
                 .singleElement().satisfies(a -> assertThat(a.getQuizBadges()).containsExactlyElementsOf(quiz.getBadges()));
 
-        var savedQuiz = quizzes.findById(quiz.getId()).orElseThrow();
+        val savedQuiz = quizzes.findById(quiz.getId()).orElseThrow();
         savedQuiz.setBadges(List.of());
         quizzes.save(savedQuiz);
-        var submission = submissions.findByStudentIdAndQuizId(student.getId(), quiz.getId()).orElseThrow();
+        val submission = submissions.findByStudentIdAndQuizId(student.getId(), quiz.getId()).orElseThrow();
         submission.setUnlocked(true);
         submissions.save(submission);
         assertThat(submissionService.submit(quiz.getId(), student, List.of(1)).getNewBadges()).isEmpty();
@@ -105,7 +106,7 @@ class StudentBadgeIntegrationTest {
         quizService.delete(quiz.getId(), teacher);
         entityManager.flush();
         entityManager.clear();
-        var collection = badgeService.forTeacher(student.getId(), teacher);
+        val collection = badgeService.forTeacher(student.getId(), teacher);
         assertThat(collection.badges()).extracting(StudentBadgeDto.EarnedBadge::name)
                 .contains("Cartografo provetto <premio>", "Grande esploratore");
         assertThat(collection.completedQuizzes()).isEqualTo(1);
@@ -151,7 +152,7 @@ class StudentBadgeIntegrationTest {
     @Test
     void deletingTeacherRemovesBadgeEvidenceBeforeTheirStudents() {
         submissionService.submit(quiz.getId(), student, List.of(0));
-        var admin = teachers.saveAndFlush(Teacher.builder().username("admin").password("unused").admin(true).build());
+        val admin = teachers.saveAndFlush(Teacher.builder().username("admin").password("unused").admin(true).build());
         SecurityContextHolder.getContext().setAuthentication(new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(
                 "admin", "", List.of(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_TEACHER"),
                 new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_ADMIN"))));
@@ -177,7 +178,7 @@ class StudentBadgeIntegrationTest {
 
     @Test
     void apiRejectsAiGenerationWhenTeacherIsDisabledAndRejectsStudentAccess() throws Exception {
-        var json = "{\"title\":\"Geografia\",\"questionTexts\":[]}";
+        val json = "{\"title\":\"Geografia\",\"questionTexts\":[]}";
         mvc.perform(post("/api/quizzes/badges/generate").with(user(teacher.getUsername()).roles("TEACHER"))
                         .with(csrf()).contentType("application/json").content(json))
                 .andExpect(status().isForbidden());

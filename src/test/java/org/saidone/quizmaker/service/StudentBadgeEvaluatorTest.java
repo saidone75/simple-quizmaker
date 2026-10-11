@@ -1,5 +1,6 @@
 package org.saidone.quizmaker.service;
 
+import lombok.val;
 import org.junit.jupiter.api.Test;
 import org.saidone.quizmaker.dto.QuizBadgeDefinition;
 import org.saidone.quizmaker.dto.StudentBadgeDto;
@@ -21,7 +22,7 @@ class StudentBadgeEvaluatorTest {
 
     @Test
     void aPerfectQuizEarnsBothDefaultBadgesAndFirstStep() {
-        var result = evaluate(List.of(attempt(quizId, 5, 5, start, null)));
+        val result = evaluate(List.of(attempt(quizId, 5, 5, start, null)));
         assertThat(result.badges()).extracting(StudentBadgeDto.EarnedBadge::code)
                 .containsExactlyInAnyOrder("QUIZ_STAR", "QUIZ_PERFECT", "FIRST_QUIZ");
         assertThat(result.completedQuizzes()).isEqualTo(1);
@@ -39,19 +40,19 @@ class StudentBadgeEvaluatorTest {
 
     @Test
     void themedBadgesUseTheirOwnNamesAndThresholds() {
-        var definitions = List.of(new QuizBadgeDefinition("cartographer", "Cartografo provetto", "🗺️", 70),
+        val definitions = List.of(new QuizBadgeDefinition("cartographer", "Cartografo provetto", "🗺️", 70),
                 new QuizBadgeDefinition("explorer", "Grande esploratore", "🧭", 100));
-        var partial = evaluate(List.of(attempt(quizId, 7, 10, start, definitions)));
+        val partial = evaluate(List.of(attempt(quizId, 7, 10, start, definitions)));
         assertThat(partial.badges()).extracting(StudentBadgeDto.EarnedBadge::name)
                 .contains("Cartografo provetto").doesNotContain("Grande esploratore", "Stella del quiz");
-        var perfect = evaluate(List.of(attempt(quizId, 10, 10, start, definitions)));
+        val perfect = evaluate(List.of(attempt(quizId, 10, 10, start, definitions)));
         assertThat(perfect.badges()).extracting(StudentBadgeDto.EarnedBadge::name)
                 .contains("Cartografo provetto", "Grande esploratore");
     }
 
     @Test
     void effortBadgeRewardsCompletionEvenWhenAllAnswersAreWrong() {
-        var result = evaluate(List.of(attempt(quizId, 0, 5, start,
+        val result = evaluate(List.of(attempt(quizId, 0, 5, start,
                 List.of(new QuizBadgeDefinition("effort", "Piccolo viaggiatore", "🌱", 0)))));
         assertThat(result.badges()).extracting(StudentBadgeDto.EarnedBadge::name)
                 .containsExactlyInAnyOrder("Piccolo viaggiatore", "Primo passo");
@@ -59,9 +60,9 @@ class StudentBadgeEvaluatorTest {
 
     @Test
     void earnedBadgeKeepsItsOriginalSnapshotAndDateAfterQuizEditsAndPoorerRetries() {
-        var original = List.of(new QuizBadgeDefinition("geography", "Cartografo provetto", "🗺️", 80));
-        var changed = List.of(new QuizBadgeDefinition("geography", "Nuovo nome", "🌍", 50));
-        var result = evaluate(List.of(attempt(quizId, 5, 5, start, original),
+        val original = List.of(new QuizBadgeDefinition("geography", "Cartografo provetto", "🗺️", 80));
+        val changed = List.of(new QuizBadgeDefinition("geography", "Nuovo nome", "🌍", 50));
+        val result = evaluate(List.of(attempt(quizId, 5, 5, start, original),
                 attempt(quizId, 4, 5, start.plusDays(1), changed),
                 attempt(quizId, 0, 5, start.plusDays(2), List.of())));
         assertThat(result.badges().stream().filter(b -> b.quizId() != null).toList())
@@ -75,7 +76,7 @@ class StudentBadgeEvaluatorTest {
 
     @Test
     void badgesAreUniquePerQuizAndSeparateBetweenQuizzes() {
-        var result = evaluate(List.of(attempt(quizId, 5, 5, start, null),
+        val result = evaluate(List.of(attempt(quizId, 5, 5, start, null),
                 attempt(quizId, 5, 5, start.plusHours(1), null),
                 attempt(UUID.randomUUID(), 5, 5, start.plusHours(2), null)));
         assertThat(result.badges().stream().filter(b -> b.quizId() != null)).hasSize(4);
@@ -87,8 +88,8 @@ class StudentBadgeEvaluatorTest {
 
     @Test
     void retriesCountForDaysButNotForDistinctQuizMilestones() {
-        var history = IntStream.range(0, 7).mapToObj(i -> attempt(quizId, 0, 5, start.plusDays(i), null)).toList();
-        var result = evaluate(history);
+        val history = IntStream.range(0, 7).mapToObj(i -> attempt(quizId, 0, 5, start.plusDays(i), null)).toList();
+        val result = evaluate(history);
         assertThat(result.completedQuizzes()).isEqualTo(1);
         assertThat(result.activeDays()).isEqualTo(7);
         assertThat(result.bestStreak()).isEqualTo(7);
@@ -99,12 +100,12 @@ class StudentBadgeEvaluatorTest {
 
     @Test
     void nonConsecutiveDaysEarnConsistencyBadgesAndDuplicateDaysCountOnce() {
-        var history = new ArrayList<StudentQuizAttempt>();
+        val history = new ArrayList<StudentQuizAttempt>();
         for (int day : new int[]{0, 0, 1, 3, 4, 5, 20}) {
             history.add(attempt(UUID.randomUUID(), 0, 5, start.plusDays(day), null));
         }
-        // Intentionally reverse the history: awards must use chronological evidence.
-        var result = evaluate(history.reversed());
+        // intentionally reverse the history: awards must use chronological evidence
+        val result = evaluate(history.reversed());
         assertThat(result.activeDays()).isEqualTo(6);
         assertThat(result.bestStreak()).isEqualTo(3);
         assertThat(result.badges().stream().filter(b -> b.code().equals("THREE_DAYS")))
@@ -117,7 +118,7 @@ class StudentBadgeEvaluatorTest {
 
     @Test
     void tenDistinctQuizzesUnlockBothJourneyMilestones() {
-        var result = evaluate(IntStream.range(0, 10)
+        val result = evaluate(IntStream.range(0, 10)
                 .mapToObj(i -> attempt(UUID.randomUUID(), 0, 5, start.plusHours(i), List.of())).toList());
         assertThat(result.badges()).extracting(StudentBadgeDto.EarnedBadge::code)
                 .containsExactlyInAnyOrder("FIRST_QUIZ", "FIVE_QUIZZES", "TEN_QUIZZES");
@@ -130,7 +131,7 @@ class StudentBadgeEvaluatorTest {
 
     @Test
     void emptyAndInvalidQuizzesDoNotEarnBadgesOrCountTowardsMilestones() {
-        var result = evaluate(List.of(attempt(quizId, 0, 0, start, null),
+        val result = evaluate(List.of(attempt(quizId, 0, 0, start, null),
                 attempt(quizId, -1, 5, start, null), attempt(quizId, 6, 5, start, null)));
         assertThat(result.badges()).isEmpty();
         assertThat(result.completedQuizzes()).isZero();

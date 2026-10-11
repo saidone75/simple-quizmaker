@@ -1,6 +1,7 @@
 package org.saidone.quizmaker.service.ai;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.val;
 import org.junit.jupiter.api.Test;
 import org.saidone.quizmaker.dto.QuizBadgeDefinition;
 import org.saidone.quizmaker.dto.QuizBadgeGenerationRequest;
@@ -23,9 +24,9 @@ class OpenAiBadgeGenerationServiceTest {
 
     @Test
     void generatesThemedEditableBadgesUsingStructuredOutputAndTheConfiguredModel() throws Exception {
-        var builder = RestClient.builder().baseUrl("https://api.openai.com/v1");
-        var server = MockRestServiceServer.bindTo(builder).build();
-        var service = new OpenAiBadgeGenerationService(mapper, builder.build());
+        val builder = RestClient.builder().baseUrl("https://api.openai.com/v1");
+        val server = MockRestServiceServer.bindTo(builder).build();
+        val service = new OpenAiBadgeGenerationService(mapper, builder.build());
         ReflectionTestUtils.setField(service, "apiKey", "test-key");
         ReflectionTestUtils.setField(service, "model", "configured-model");
         server.expect(requestTo("https://api.openai.com/v1/chat/completions"))
@@ -41,7 +42,7 @@ class OpenAiBadgeGenerationServiceTest {
                             {"name":"Grande esploratore","emoji":"🧭","minimumPercentage":100}
                         ]}
                         """), MediaType.APPLICATION_JSON));
-        var badges = service.generate(new QuizBadgeGenerationRequest("Geografia", List.of("Qual è la capitale d’Italia?")),
+        val badges = service.generate(new QuizBadgeGenerationRequest("Geografia", List.of("Qual è la capitale d’Italia?")),
                 Teacher.builder().aiEnabled(true).build());
         assertThat(badges).extracting(QuizBadgeDefinition::name)
                 .containsExactly("Piccolo viaggiatore", "Cartografo provetto", "Grande esploratore");
@@ -51,8 +52,8 @@ class OpenAiBadgeGenerationServiceTest {
 
     @Test
     void addsAnEffortRewardIfAiOmitsIt() throws Exception {
-        var service = new OpenAiBadgeGenerationService(mapper, null);
-        var badges = service.parseBadges(response("""
+        val service = new OpenAiBadgeGenerationService(mapper, null);
+        val badges = service.parseBadges(response("""
                 {"badges":[{"name":"Cartografo","emoji":"🗺️","minimumPercentage":80},
                 {"name":"Esploratore","emoji":"🧭","minimumPercentage":100}]}
                 """));
@@ -62,9 +63,9 @@ class OpenAiBadgeGenerationServiceTest {
 
     @Test
     void rejectsInvalidThresholdsAndRefusalsAndTruncatedResponses() throws Exception {
-        var service = new OpenAiBadgeGenerationService(mapper, null);
-        for (String threshold : List.of("101", "-1", "80.5", "2147483648")) {
-            var response = response("{\"badges\":[{\"name\":\"Badge\",\"emoji\":\"🏅\",\"minimumPercentage\":"
+        val service = new OpenAiBadgeGenerationService(mapper, null);
+        for (val threshold : List.of("101", "-1", "80.5", "2147483648")) {
+            val response = response("{\"badges\":[{\"name\":\"Badge\",\"emoji\":\"🏅\",\"minimumPercentage\":"
                     + threshold + "},{\"name\":\"Altro\",\"emoji\":\"🏅\",\"minimumPercentage\":100}]}");
             assertThatThrownBy(() -> service.parseBadges(response)).isInstanceOf(IllegalStateException.class);
         }
@@ -76,7 +77,7 @@ class OpenAiBadgeGenerationServiceTest {
 
     @Test
     void missingApiKeyFailsBeforeMakingAnHttpRequest() {
-        var service = new OpenAiBadgeGenerationService(mapper, null);
+        val service = new OpenAiBadgeGenerationService(mapper, null);
         assertThatThrownBy(() -> service.generate(new QuizBadgeGenerationRequest("Geografia", List.of()),
                 Teacher.builder().build())).isInstanceOf(IllegalStateException.class).hasMessageContaining("Chiave API");
     }

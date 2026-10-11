@@ -1,5 +1,6 @@
 package org.saidone.quizmaker.service;
 
+import lombok.val;
 import org.junit.jupiter.api.*;
 import org.saidone.quizmaker.config.StudentAuthenticationToken;
 import org.saidone.quizmaker.entity.*;
@@ -47,7 +48,7 @@ class StudentBadgeSecurityTest {
     @Test
     void studentCannotImpersonateAnotherStudentToAwardBadges() {
         SecurityContextHolder.getContext().setAuthentication(new StudentAuthenticationToken(student));
-        var other = Student.builder().id(UUID.randomUUID()).teacher(teacher).build();
+        val other = Student.builder().id(UUID.randomUUID()).teacher(teacher).build();
         assertThatThrownBy(() -> service.recordCompletion(Quiz.builder().build(), other, 1, 1, LocalDateTime.now()))
                 .isInstanceOf(AccessDeniedException.class);
         verifyNoInteractions(attempts);
@@ -63,7 +64,7 @@ class StudentBadgeSecurityTest {
     @Test
     void teacherCannotImpersonateAColleagueOrAwardBadgesDirectly() {
         teacherLogin();
-        var colleague = Teacher.builder().id(UUID.randomUUID()).username("colleague").build();
+        val colleague = Teacher.builder().id(UUID.randomUUID()).username("colleague").build();
         assertThatThrownBy(() -> service.forTeacher(student.getId(), colleague)).isInstanceOf(AccessDeniedException.class);
         assertThatThrownBy(() -> service.recordCompletion(Quiz.builder().build(), student, 1, 1, LocalDateTime.now()))
                 .isInstanceOf(AccessDeniedException.class);
@@ -90,7 +91,7 @@ class StudentBadgeSecurityTest {
     @Test
     void authenticatedStudentCanRecordTheirOwnCompletion() {
         SecurityContextHolder.getContext().setAuthentication(new StudentAuthenticationToken(student));
-        var quiz = Quiz.builder().id(UUID.randomUUID()).title("Geografia").teacher(teacher).build();
+        val quiz = Quiz.builder().id(UUID.randomUUID()).title("Geografia").teacher(teacher).build();
         service.recordCompletion(quiz, student, 1, 1, LocalDateTime.now());
         verify(attempts).save(any());
     }
