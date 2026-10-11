@@ -1,0 +1,20 @@
+# Alice's Simple Quiz Maker
+
+> Applicazione web libera e open source per creare e somministrare quiz scolastici in italiano.
+
+Gli insegnanti possono creare quiz manualmente o con AI opzionale, aggiungere immagini,
+condividere quiz e consultare risultati. Gli studenti accedono con una parola chiave
+e ricevono badge per risultati, partecipazione e costanza, anche in giorni non consecutivi.
+I badge a tema possono essere configurati dagli insegnanti o proposti dall'AI.
+
+## Fonti pubbliche
+
+- [Presentazione e domande frequenti](https://quiz.saidone.org/): funzionalità e accesso all'applicazione.
+- [Codice e documentazione](https://github.com/saidone75/simple-quizmaker): installazione e API.
+- [Licenza GPLv3](https://www.gnu.org/licenses/gpl-3.0.html).
+
+## Accesso
+
+La documentazione riguarda il prodotto, non i dati delle classi.
+Le aree insegnante e studente e le API richiedono autenticazione.
+La generazione AI richiede l'abilitazione dell'insegnante e una chiave OpenAI configurata.
