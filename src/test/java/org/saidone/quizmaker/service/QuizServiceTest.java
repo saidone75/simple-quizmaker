@@ -32,6 +32,9 @@ import org.saidone.quizmaker.entity.Quiz;
 import lombok.val;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.saidone.quizmaker.entity.QuestionType;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -72,7 +75,7 @@ class QuizServiceTest {
 
     @Test
     void createRejectsUnauthorizedImageBeforeSaving() {
-        var question = new QuestionDto();
+        var question = validQuestion(2);
         question.setImageId(UUID.randomUUID().toString());
         var request = QuizDto.Request.builder().title("Quiz").emoji("🧪").questions(List.of(question)).build();
         doThrow(new AccessDeniedException("Accesso immagine non consentito"))
@@ -84,7 +87,7 @@ class QuizServiceTest {
 
     @Test
     void updateRejectsUnauthorizedImageBeforeChangingQuiz() {
-        var question = new QuestionDto();
+        var question = validQuestion(2);
         question.setImageUrl("/api/quizzes/images/" + UUID.randomUUID());
         var request = QuizDto.Request.builder().title("Quiz").emoji("🧪").questions(List.of(question)).build();
         doThrow(new AccessDeniedException("Accesso immagine non consentito"))
@@ -235,6 +238,92 @@ class QuizServiceTest {
         assertThat(result.getPublished()).isFalse();
         assertThat(sampleQuiz.getPublished()).isFalse();
         verify(quizRepository, times(1)).save(sampleQuiz);
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = {2, 3, 4})
+    void acceptsUniformMultipleChoiceQuiz(int numberOfOptions) {
+        var question = validQuestion(numberOfOptions);
+        var request = QuizDto.Request.builder().questions(List.of(question, validQuestion(numberOfOptions))).build();
+        when(quizRepository.save(any())).thenReturn(sampleQuiz);
+        when(quizMapper.toResponse(sampleQuiz)).thenReturn(QuizDto.Response.builder().build());
+
+        quizService.create(request, teacher);
+
+        verify(quizRepository).save(any());
+    }
+
+    @Test
+    void acceptsTrueFalseQuizAndPreservesAnswer() {
+        var question = validQuestion(2);
+        question.setType(QuestionType.TRUE_FALSE);
+        question.setOptions(List.of("Vero", "Falso"));
+        question.setAnswer(1);
+        var request = QuizDto.Request.builder().questions(List.of(question)).build();
+        when(quizRepository.save(any())).thenReturn(sampleQuiz);
+        when(quizMapper.toResponse(sampleQuiz)).thenReturn(QuizDto.Response.builder().build());
+
+        quizService.create(request, teacher);
+
+        verify(questionMapper).toEntity(question);
+        assertThat(question.getAnswer()).isEqualTo(1);
+    }
+
+    @Test
+    void rejectsMixedFormatsBeforeSavingOrUpdating() {
+        var first = validQuestion(2);
+        var second = validQuestion(3);
+        var request = QuizDto.Request.builder().questions(List.of(first, second)).build();
+        assertThatThrownBy(() -> quizService.create(request, teacher)).hasMessageContaining("stesso tipo");
+        assertThatThrownBy(() -> quizService.update(sampleQuiz.getId(), request, teacher)).hasMessageContaining("stesso tipo");
+
+        second.setOptions(List.of("Vero", "Falso"));
+        second.setType(QuestionType.TRUE_FALSE);
+        assertThatThrownBy(() -> quizService.create(request, teacher)).hasMessageContaining("stesso tipo");
+        verify(quizRepository, never()).save(any());
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = {1, 5})
+    void rejectsUnsupportedOptionCounts(int numberOfOptions) {
+        var request = QuizDto.Request.builder().questions(List.of(validQuestion(numberOfOptions))).build();
+        assertThatThrownBy(() -> quizService.create(request, teacher)).isInstanceOf(IllegalArgumentException.class);
+        verify(quizRepository, never()).save(any());
+    }
+
+    @Test
+    void rejectsInvalidAnswerAndBlankOptions() {
+        var question = validQuestion(2);
+        var request = QuizDto.Request.builder().questions(List.of(question)).build();
+        question.setAnswer(2);
+        assertThatThrownBy(() -> quizService.create(request, teacher)).isInstanceOf(IllegalArgumentException.class);
+        question.setAnswer(0);
+        question.setOptions(List.of("Prima", " "));
+        assertThatThrownBy(() -> quizService.create(request, teacher)).isInstanceOf(IllegalArgumentException.class);
+        question.setType(QuestionType.TRUE_FALSE);
+        question.setOptions(List.of("Falso", "Vero"));
+        assertThatThrownBy(() -> quizService.create(request, teacher)).isInstanceOf(IllegalArgumentException.class);
+        verify(quizRepository, never()).save(any());
+    }
+
+    @Test
+    void rejectsMissingQuestionsAndNullQuestionBeforeImageValidation() {
+        var request = QuizDto.Request.builder().build();
+        assertThatThrownBy(() -> quizService.create(request, teacher)).isInstanceOf(IllegalArgumentException.class);
+        request.setQuestions(List.of());
+        assertThatThrownBy(() -> quizService.create(request, teacher)).isInstanceOf(IllegalArgumentException.class);
+        request.setQuestions(java.util.Arrays.asList((QuestionDto) null));
+        assertThatThrownBy(() -> quizService.create(request, teacher)).isInstanceOf(IllegalArgumentException.class);
+        verifyNoInteractions(questionImageAuthorizationPolicy, quizRepository);
+    }
+
+    private QuestionDto validQuestion(int numberOfOptions) {
+        var question = new QuestionDto();
+        question.setText("Domanda");
+        question.setOptions(java.util.stream.IntStream.range(0, numberOfOptions)
+                .mapToObj(index -> "Risposta " + index).toList());
+        question.setAnswer(0);
+        return question;
     }
 
 }

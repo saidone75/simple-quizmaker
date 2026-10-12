@@ -112,6 +112,7 @@ public class QuizSharingService {
         val copiedImages = new HashMap<UUID, QuestionImageUploadDto>();
         for (val sourceQuestion : sourceQuestions) {
             val clonedQuestion = new Question();
+            clonedQuestion.setType(sourceQuestion.getType());
             clonedQuestion.setText(sourceQuestion.getText());
             clonedQuestion.setEmoji(sourceQuestion.getEmoji());
             val imageId = uploadedImageId(sourceQuestion);

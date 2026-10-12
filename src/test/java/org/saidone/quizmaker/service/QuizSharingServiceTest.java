@@ -9,6 +9,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.saidone.quizmaker.dto.QuestionImageUploadDto;
 import org.saidone.quizmaker.dto.QuizBadgeDefinition;
 import org.saidone.quizmaker.entity.Question;
+import org.saidone.quizmaker.entity.QuestionType;
 import org.saidone.quizmaker.entity.Quiz;
 import org.saidone.quizmaker.entity.Teacher;
 import org.saidone.quizmaker.repository.QuizRepository;
@@ -49,6 +50,9 @@ class QuizSharingServiceTest {
 
     @Test
     void eachRecipientGetsOwnImageIdAndRepeatedReferencesReuseTheirCopy() {
+        source.getQuestions().getFirst().setType(QuestionType.TRUE_FALSE);
+        source.getQuestions().getFirst().setOptions(List.of("Vero", "Falso"));
+        source.getQuestions().getFirst().setAnswer(1);
         source.setBadges(List.of(new QuizBadgeDefinition("cartographer", "Cartografo provetto", "🗺️", 80)));
         source.setQuestions(List.of(source.getQuestions().getFirst(), source.getQuestions().getFirst()));
         when(teachers.findAllById(List.of(first.getId(), second.getId()))).thenReturn(List.of(first, second));
@@ -64,6 +68,9 @@ class QuizSharingServiceTest {
         var shared = captor.getAllValues();
         assertThat(shared).allSatisfy(q -> assertThat(q.getBadges()).isEqualTo(source.getBadges()));
         assertThat(shared.get(0).getQuestions()).allSatisfy(q -> {
+            assertThat(q.getType()).isEqualTo(QuestionType.TRUE_FALSE);
+            assertThat(q.getOptions()).containsExactly("Vero", "Falso");
+            assertThat(q.getAnswer()).isEqualTo(1);
             assertThat(q.getImageId()).isEqualTo(firstCopy.getId().toString());
             assertThat(q.getImageUrl()).isEqualTo(firstCopy.getUrl());
         });

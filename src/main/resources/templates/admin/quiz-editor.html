@@ -43,7 +43,16 @@
 
     <!-- BODY -->
     <div class="teacher-body">
-
+        <div class="editor-mode-card editor-mode-card-spaced">
+            <label class="q-row-label" for="quiz-format-input">Tipo di quiz</label>
+            <select id="quiz-format-input" class="input-field">
+                <option value="4">Scelta multipla — 4 risposte</option>
+                <option value="3">Scelta multipla — 3 risposte</option>
+                <option value="2">Scelta multipla — 2 risposte</option>
+                <option value="true-false">Vero o falso</option>
+            </select>
+            <p class="editor-mode-subtitle">Il formato scelto si applica a tutte le domande, anche generate con AI.</p>
+        </div>
 
         <div class="editor-mode-card editor-mode-card-ai" th:if="${aiEnabled and quiz == null}">
             <div class="editor-mode-header">

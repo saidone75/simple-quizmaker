@@ -19,6 +19,9 @@
 package org.saidone.quizmaker.dto;
 
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.NotNull;
+import org.saidone.quizmaker.entity.QuestionType;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
@@ -36,6 +39,14 @@ public class QuizGenerationRequestDto {
 
     @NotBlank(message = "Il tono è obbligatorio")
     private String tone;
+
+    @NotNull(message = "Il tipo di domanda è obbligatorio")
+    private QuestionType questionType = QuestionType.MULTIPLE_CHOICE;
+
+    @NotNull(message = "Il numero di risposte è obbligatorio")
+    @Min(value = 2, message = "Sono necessarie almeno 2 risposte")
+    @Max(value = 4, message = "Puoi impostare al massimo 4 risposte")
+    private Integer numberOfOptions = 4;
 
     private Boolean includeAiImages = false;
 
