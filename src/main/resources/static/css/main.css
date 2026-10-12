@@ -951,6 +951,22 @@ body[data-theme="dark"] .btn-archive-quiz:hover { background: var(--archive-bg-h
 }
 .login-title { font-size: 28px; font-weight: 900; color: var(--green-dark); text-align: center; margin-bottom: 4px; }
 .login-sub { font-size: 15px; color: var(--text-light); text-align: center; margin-bottom: 1.5rem; }
+.login-footer {
+    margin-top: 0.5rem;
+    text-align: center;
+    font-size: 14px;
+    color: var(--gray-muted);
+}
+.login-footer a,
+.public-link {
+    color: var(--gray-muted);
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+}
+.login-footer a:hover,
+.public-link:hover { text-decoration: underline; }
+.login-footer-links { margin-top: 1rem; }
 .form-group { margin-bottom: 1rem; }
 .form-label { font-size: 13px; font-weight: 700; color: var(--text-light); display: block; margin-bottom: 6px; }
 .form-group .cf-turnstile {

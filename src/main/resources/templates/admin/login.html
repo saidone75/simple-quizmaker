@@ -74,16 +74,17 @@
             </a>
         </p>
 
-        <p style="text-align:center;margin-top:0.5rem;">
-            <a th:href="@{/}" style="font-size:14px;color:var(--gray-muted);font-weight:700;text-decoration:none;">
+        <footer class="login-footer">
+            <a th:href="@{/student/login}">
                 → Accesso studenti
             </a>
-        </p>
-
-        <footer style="text-align:center;margin-top:1rem;font-size:12px;color:var(--gray-muted);">
-            <a href="https://raw.githubusercontent.com/saidone75/simple-quizmaker/refs/heads/main/LICENSE" target="_blank" rel="noopener noreferrer" style="color:var(--gray-muted);text-decoration:none;font-weight:700;">Licenza</a>
-            ·
-            <a href="https://github.com/saidone75/simple-quizmaker" target="_blank" rel="noopener noreferrer" style="color:var(--gray-muted);text-decoration:none;font-weight:700;">Codice sorgente</a>
+            <div class="login-footer-links">
+                <a th:href="@{/discover}">Scopri le funzionalità</a>
+                ·
+                <a href="https://raw.githubusercontent.com/saidone75/simple-quizmaker/refs/heads/main/LICENSE" target="_blank" rel="noopener noreferrer">Licenza</a>
+                ·
+                <a href="https://github.com/saidone75/simple-quizmaker" target="_blank" rel="noopener noreferrer">Codice sorgente</a>
+            </div>
         </footer>
     </div>
 </div>
