@@ -80,7 +80,7 @@ public class StudentWebController {
 
     @GetMapping("/student/login")
     public String studentLoginPage() {
-        return "redirect:/";
+        return "student-login";
     }
 
     @PostMapping("/student/login")
@@ -116,6 +116,6 @@ public class StudentWebController {
     @PostMapping("/student/logout")
     public String studentLogout(HttpSession session) {
         studentSessionService.logout(session);
-        return "redirect:/";
+        return "redirect:/student/login";
     }
 }
