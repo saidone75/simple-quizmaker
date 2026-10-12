@@ -121,7 +121,6 @@ summary {
 
 :root[data-theme="dark"],
 body[data-theme="dark"] {
-    --surface-soft: var(--gray-bg);
     --white: #263030;
     --gray-bg: #2F3939;
     --gray-border: #465656;
@@ -139,28 +138,16 @@ body[data-theme="dark"] {
     --red-text: #FFB7B7;
     --amber-light: #4A3B24;
     --amber-text: #FFDCA5;
-    --editor-ai-bg: var(--white);
-    --editor-manual-bg: var(--white);
-    --locked-bg: var(--surface-soft);
-    --locked-border: var(--gray-border);
     --locked-text: var(--gray-muted);
     --locked-opacity: 0.9;
-    --alert-bg: var(--amber-light);
-    --alert-border: var(--gray-border);
-    --share-bg: var(--blue-light);
-    --share-text: var(--blue-text);
     --share-bg-hover: var(--share-bg);
     --archive-bg: var(--alert-bg);
     --archive-bg-hover: var(--archive-bg);
-    --restore-bg: var(--green-light);
     --restore-bg-hover: var(--restore-bg);
     --restore-text: var(--green-text);
-    --blue-light-hover: var(--blue-light);
     --loading-overlay-bg: rgba(30, 40, 40, 0.78);
     --shadow: 0 8px 24px rgba(0,0,0,0.35);
     --shadow-lg: 0 10px 40px rgba(0,0,0,0.45);
-    --student-cancel-btn-bg: var(--blue-light);
-    --student-cancel-btn-fg: var(--blue-text);
 }
 
 :root[data-theme="zenburn"],
@@ -186,31 +173,18 @@ body[data-theme="zenburn"] {
     --text-light: #A9A98D;
     --text-on-accent: #1F1F1F;
     --white: #3A3A3A;
-    --surface-soft: var(--gray-bg);
-    --editor-ai-bg: var(--white);
-    --editor-manual-bg: var(--white);
     --locked-bg: var(--white);
-    --locked-border: var(--gray-border);
-    --locked-text: var(--text-light);
-    --alert-bg: var(--amber-light);
-    --alert-border: var(--gray-border);
-    --share-bg: var(--blue-light);
-    --share-text: var(--blue-text);
     --share-bg-hover: var(--share-bg);
     --archive-bg: var(--alert-bg);
     --archive-bg-hover: var(--archive-bg);
-    --restore-bg: var(--green-light);
     --restore-bg-hover: var(--restore-bg);
     --restore-text: var(--green-text);
-    --blue-light-hover: var(--blue-light);
     --loading-overlay-bg: rgba(35, 35, 35, 0.80);
     --log-console-bg: #1C1C1C;
     --log-console-text: var(--text);
     --log-console-border: var(--gray-border);
     --shadow: 0 8px 24px rgba(0,0,0,0.35);
     --shadow-lg: 0 10px 40px rgba(0,0,0,0.45);
-    --student-cancel-btn-bg: var(--blue-light);
-    --student-cancel-btn-fg: var(--blue-text);
 }
 
 :root[data-theme="true-summer"],
@@ -234,29 +208,13 @@ body[data-theme="true-summer"] {
     --gray-muted: #6C7F91;
     --text: #2A3E4F;
     --text-light: #4C6173;
-    --text-on-accent: #FFFFFF;
     --white: #F7FBFF;
-    --surface-soft: var(--gray-bg);
-    --editor-ai-bg: var(--white);
-    --editor-manual-bg: var(--white);
-    --locked-bg: var(--surface-soft);
-    --locked-border: var(--gray-border);
-    --locked-text: var(--text-light);
-    --alert-bg: var(--amber-light);
-    --alert-border: var(--gray-border);
-    --share-bg: var(--blue-light);
-    --share-text: var(--blue-text);
     --share-bg-hover: var(--share-bg);
     --archive-bg: var(--alert-bg);
     --archive-bg-hover: var(--archive-bg);
-    --publish-checkbox-accent: var(--green);
-    --publish-checkbox-bg: var(--white);
-    --blue-light-hover: var(--blue-light);
     --loading-overlay-bg: rgba(234, 244, 251, 0.86);
     --shadow: 0 8px 24px rgba(70, 112, 145, 0.16);
     --shadow-lg: 0 10px 40px rgba(70, 112, 145, 0.2);
-    --student-cancel-btn-bg: var(--blue-light);
-    --student-cancel-btn-fg: var(--blue-text);
 }
 
 /* ===== SCREENS ===== */
@@ -348,7 +306,9 @@ body[data-theme="true-summer"] {
 
 
 .ai-generator-card,
-.editor-mode-card {
+.editor-mode-card,
+.result-group-card,
+.about-card {
     background: var(--white);
     border: 1.5px solid var(--gray-border);
     border-radius: var(--radius);
@@ -358,13 +318,6 @@ body[data-theme="true-summer"] {
 .ai-generator-card { margin-bottom: 1rem; }
 .ai-grid { display: grid; gap: 10px; }
 .ai-textarea { min-height: 100px; resize: vertical; }
-
-:is(.result-group-card, .about-card) {
-    background: var(--white);
-    border: 1.5px solid var(--gray-border);
-    border-radius: var(--radius);
-    box-shadow: var(--shadow);
-}
 
 .editor-mode-card + .editor-mode-card { margin-top: 1rem; }
 .editor-mode-card-ai { margin-bottom: 0.75rem; border-color: var(--editor-ai-border); background: var(--editor-ai-bg); }
@@ -839,8 +792,6 @@ input[type="file"].input-field::-webkit-file-upload-button:hover {
 .btn-archive-quiz:hover { background: var(--archive-bg-hover); }
 .btn-restore-quiz { background: var(--restore-bg); color: var(--restore-text); }
 .btn-restore-quiz:hover { background: var(--restore-bg-hover); }
-body[data-theme="dark"] .btn-archive-quiz { background: var(--alert-bg); color: var(--amber-text); }
-body[data-theme="dark"] .btn-archive-quiz:hover { background: var(--archive-bg-hover); }
 .student-actions {
     display: inline-flex;
     align-items: center;
@@ -1361,9 +1312,6 @@ body[data-theme="dark"] #toast {
     display: grid;
     gap: 14px;
 }
-.result-group-card {
-    padding: 14px;
-}
 .result-group-header {
     display: flex;
     align-items: center;
@@ -1637,22 +1585,32 @@ body[data-theme="dark"] #toast {
     gap: 12px;
 }
 
-.about-card {
-    padding: 14px;
-}
-
 .about-card h2 {
     margin-bottom: 10px;
     font-size: 17px;
     color: var(--green-dark);
 }
 
+.about-card p,
+.about-list {
+    color: var(--text-light);
+    font-weight: 600;
+    line-height: 1.5;
+}
+
 .about-list {
     list-style: none;
     display: grid;
     gap: 6px;
-    color: var(--text-light);
-    font-weight: 600;
+}
+
+/* ===== DISCOVER ===== */
+.discover-body { max-width: 900px; }
+.discover-intro { margin-bottom: 1rem; }
+.discover-intro .profile-subtitle { margin-bottom: 0; line-height: 1.5; }
+.discover-footer { margin-top: 1.5rem; }
+@media (min-width: 640px) {
+    .discover-body .about-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 .admin-about-footer {
