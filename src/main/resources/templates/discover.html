@@ -63,10 +63,13 @@
     <link rel="stylesheet" th:href="@{/css/main.css}">
 </head>
 <body>
-<main class="teacher-body" id="discover">
-    <h1 class="profile-heading">Crea quiz scolastici e accompagna ogni studente</h1>
-    <p class="profile-subtitle">Alice's Simple Quiz Maker è un'applicazione web libera e open source per insegnanti
-        e studenti. Prepara quiz didattici, condividi materiali con i colleghi e segui i progressi della classe.</p>
+<main class="teacher-body discover-body" id="discover">
+    <div class="editor-mode-card discover-intro">
+        <p class="section-label">Scopri le funzionalità</p>
+        <h1 class="profile-heading">Crea quiz scolastici e accompagna ogni studente</h1>
+        <p class="profile-subtitle">Alice's Simple Quiz Maker è un'applicazione web libera e open source per insegnanti
+            e studenti. Prepara quiz didattici, condividi materiali con i colleghi e segui i progressi della classe.</p>
+    </div>
     <div class="about-grid">
         <section class="about-card">
             <h2>Quiz personalizzati, anche con intelligenza artificiale</h2>
@@ -103,7 +106,9 @@
                 <a class="public-link" href="https://github.com/saidone75/simple-quizmaker">Codice sorgente e istruzioni di installazione</a>.</p>
         </section>
     </div>
-    <footer class="login-footer admin-about-footer"><a th:href="@{/teacher/login}">→ Accesso insegnanti</a></footer>
+    <footer class="login-footer discover-footer">
+        <a th:href="@{/teacher/login}">→ Accesso insegnanti</a>
+    </footer>
 </main>
 </body>
 </html>
