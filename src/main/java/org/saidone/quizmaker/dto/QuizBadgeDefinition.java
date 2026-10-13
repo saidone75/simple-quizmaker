@@ -1,5 +1,7 @@
 package org.saidone.quizmaker.dto;
 
+import lombok.val;
+
 import jakarta.validation.constraints.*;
 
 import java.util.HashSet;
@@ -20,7 +22,7 @@ public record QuizBadgeDefinition(
     public static List<QuizBadgeDefinition> normalize(List<QuizBadgeDefinition> definitions) {
         if (definitions == null) return defaults();
         if (definitions.size() > 8) throw new IllegalArgumentException("Puoi impostare al massimo 8 badge per quiz");
-        var ids = new HashSet<String>();
+        val ids = new HashSet<String>();
         return definitions.stream().map(badge -> {
             if (badge == null || badge.id() == null || !badge.id().matches("[A-Za-z0-9_-]{1,64}")
                     || badge.name() == null || badge.name().isBlank() || badge.name().length() > 80

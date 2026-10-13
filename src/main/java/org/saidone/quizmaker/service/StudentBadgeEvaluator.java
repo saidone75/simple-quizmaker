@@ -1,5 +1,7 @@
 package org.saidone.quizmaker.service;
 
+import lombok.val;
+
 import org.saidone.quizmaker.dto.StudentBadgeDto;
 import org.saidone.quizmaker.dto.QuizBadgeDefinition;
 import org.saidone.quizmaker.entity.Student;
@@ -35,28 +37,28 @@ public final class StudentBadgeEvaluator {
     }
 
     public static StudentBadgeDto.Collection evaluate(Student student, List<StudentQuizAttempt> history) {
-        var attempts = history.stream()
+        val attempts = history.stream()
                 .filter(a -> a.getTotalQuestions() > 0 && a.getScore() >= 0
                         && a.getScore() <= a.getTotalQuestions() && a.getCompletedAt() != null)
                 .sorted(Comparator.comparing(StudentQuizAttempt::getCompletedAt)
                         .thenComparing(a -> a.getId().toString()))
                 .toList();
-        var earned = new LinkedHashMap<String, StudentBadgeDto.EarnedBadge>();
-        var quizzes = new HashSet<UUID>();
-        var days = new HashSet<LocalDate>();
+        val earned = new LinkedHashMap<String, StudentBadgeDto.EarnedBadge>();
+        val quizzes = new HashSet<UUID>();
+        val days = new HashSet<LocalDate>();
         LocalDate previousDay = null;
         int streak = 0;
         int bestStreak = 0;
 
-        for (var attempt : attempts) {
+        for (val attempt : attempts) {
             quizzes.add(attempt.getQuizId());
-            var day = attempt.getCompletedAt().toLocalDate();
+            val day = attempt.getCompletedAt().toLocalDate();
             if (days.add(day)) {
                 streak = previousDay != null && day.equals(previousDay.plusDays(1)) ? streak + 1 : 1;
                 previousDay = day;
                 bestStreak = Math.max(bestStreak, streak);
             }
-            for (var definition : QuizBadgeDefinition.normalize(attempt.getQuizBadges())) {
+            for (val definition : QuizBadgeDefinition.normalize(attempt.getQuizBadges())) {
                 if ((long) attempt.getScore() * 100 >= (long) attempt.getTotalQuestions() * definition.minimumPercentage()) {
                     String key = "QUIZ:" + attempt.getQuizId() + ":" + definition.id();
                     earned.putIfAbsent(key, new StudentBadgeDto.EarnedBadge(key, definition.id(), definition.name(),
@@ -64,19 +66,19 @@ public final class StudentBadgeEvaluator {
                             attempt.getQuizTitle(), attempt.getCompletedAt()));
                 }
             }
-            for (var badge : Badge.values()) {
+            for (val badge : Badge.values()) {
                 if (progress(badge, quizzes.size(), days.size()) >= badge.target) {
                     award(earned, badge, attempt);
                 }
             }
         }
 
-        var milestones = Arrays.stream(Badge.values())
+        val milestones = Arrays.stream(Badge.values())
                 .map(b -> new StudentBadgeDto.Milestone(b.name(), b.name, b.emoji, b.description,
                         Math.min(progress(b, quizzes.size(), days.size()), b.target),
                         b.target, earned.containsKey(b.name())))
                 .toList();
-        var badges = earned.values().stream()
+        val badges = earned.values().stream()
                 .sorted(Comparator.comparing(StudentBadgeDto.EarnedBadge::earnedAt).reversed()
                         .thenComparing(StudentBadgeDto.EarnedBadge::key))
                 .toList();

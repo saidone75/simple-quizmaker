@@ -132,12 +132,12 @@ class OpenAiQuizGenerationServiceTest {
     @ParameterizedTest
     @ValueSource(ints = {2, 3, 4})
     void schemaAndShuffleSupportSelectedOptionCount(int numberOfOptions) {
-        var mapper = new ObjectMapper();
-        var service = new OpenAiQuizGenerationService(mapper, null, null);
-        var request = generationRequest();
+        val mapper = new ObjectMapper();
+        val service = new OpenAiQuizGenerationService(mapper, null, null);
+        val request = generationRequest();
         request.setNumberOfOptions(numberOfOptions);
-        var payload = mapper.valueToTree(service.buildPayload(request, null));
-        var properties = payload.path("response_format").path("json_schema").path("schema")
+        val payload = mapper.valueToTree(service.buildPayload(request, null));
+        val properties = payload.path("response_format").path("json_schema").path("schema")
                 .path("properties").path("questions").path("items").path("properties");
         assertThat(properties.path("options").path("minItems").asInt()).isEqualTo(numberOfOptions);
         assertThat(properties.path("options").path("maxItems").asInt()).isEqualTo(numberOfOptions);
@@ -145,7 +145,7 @@ class OpenAiQuizGenerationServiceTest {
         assertThat(payload.path("messages").path(1).path("content").asText())
                 .contains("esattamente " + numberOfOptions + " risposte");
 
-        var question = new QuestionDto();
+        val question = new QuestionDto();
         question.setOptions(new ArrayList<>(List.of("Marte", "Venere", "Giove", "Mercurio").subList(0, numberOfOptions)));
         question.setAnswer(0);
         service.randomizeAnswerPositions(QuizDto.Request.builder().questions(List.of(question)).build(), new Random(1));
@@ -155,19 +155,19 @@ class OpenAiQuizGenerationServiceTest {
 
     @Test
     void trueFalseSchemaUsesTwoOptionsAndNeverShufflesThem() {
-        var mapper = new ObjectMapper();
-        var service = new OpenAiQuizGenerationService(mapper, null, null);
-        var request = generationRequest();
+        val mapper = new ObjectMapper();
+        val service = new OpenAiQuizGenerationService(mapper, null, null);
+        val request = generationRequest();
         request.setQuestionType(QuestionType.TRUE_FALSE);
-        var payload = mapper.valueToTree(service.buildPayload(request, null));
-        var properties = payload.path("response_format").path("json_schema").path("schema")
+        val payload = mapper.valueToTree(service.buildPayload(request, null));
+        val properties = payload.path("response_format").path("json_schema").path("schema")
                 .path("properties").path("questions").path("items").path("properties");
         assertThat(properties.path("type").path("enum").path(0).asText()).isEqualTo("TRUE_FALSE");
         assertThat(properties.path("options").path("maxItems").asInt()).isEqualTo(2);
         assertThat(properties.path("answer").path("maximum").asInt()).isEqualTo(1);
         assertThat(payload.path("messages").path(1).path("content").asText()).contains("un'affermazione", "Vero", "Falso");
 
-        var question = new QuestionDto();
+        val question = new QuestionDto();
         question.setType(QuestionType.TRUE_FALSE);
         question.setOptions(new ArrayList<>(List.of("Vero", "Falso")));
         question.setAnswer(1);
@@ -177,14 +177,14 @@ class OpenAiQuizGenerationServiceTest {
 
         request.setQuestionType(QuestionType.MULTIPLE_CHOICE);
         request.setNumberOfOptions(3);
-        var nextPayload = mapper.valueToTree(service.buildPayload(request, null));
+        val nextPayload = mapper.valueToTree(service.buildPayload(request, null));
         assertThat(nextPayload.path("response_format").path("json_schema").path("schema")
                 .path("properties").path("questions").path("items").path("properties")
                 .path("options").path("maxItems").asInt()).isEqualTo(3);
     }
 
     private QuizGenerationRequestDto generationRequest() {
-        var request = new QuizGenerationRequestDto();
+        val request = new QuizGenerationRequestDto();
         request.setTopic("Spazio");
         request.setNumberOfQuestions(3);
         request.setDifficulty("Medio");

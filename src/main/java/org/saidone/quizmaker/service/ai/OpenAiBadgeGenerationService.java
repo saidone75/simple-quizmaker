@@ -1,5 +1,7 @@
 package org.saidone.quizmaker.service.ai;
 
+import lombok.val;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -37,9 +39,9 @@ public class OpenAiBadgeGenerationService {
         if (!StringUtils.hasText(apiKey)) {
             throw new IllegalStateException("Chiave API di OpenAI non configurata.");
         }
-        var payload = buildPayload(request);
+        val payload = buildPayload(request);
         try {
-            var response = openAiRestClient.post().uri("/chat/completions")
+            val response = openAiRestClient.post().uri("/chat/completions")
                     .header(HttpHeaders.AUTHORIZATION, "Bearer " + apiKey)
                     .contentType(MediaType.APPLICATION_JSON).body(payload).retrieve().body(String.class);
             return parseBadges(response);
@@ -49,7 +51,7 @@ public class OpenAiBadgeGenerationService {
     }
 
     private Map<String, Object> buildPayload(QuizBadgeGenerationRequest request) {
-        var userPrompt = """
+        val userPrompt = """
                 Proponi da 2 a 4 badge a tema per un quiz didattico per bambini, in italiano.
                 Rispondi SOLO con JSON valido contenente il campo badges (array).
                 Ogni badge deve avere: name (string), emoji (string), minimumPercentage (intero 0-100).
@@ -68,7 +70,7 @@ public class OpenAiBadgeGenerationService {
                 %s
                 """.formatted(referenceText(request));
 
-        var payload = new HashMap<String, Object>();
+        val payload = new HashMap<String, Object>();
         payload.put("model", model);
         payload.put("response_format", responseFormat());
         payload.put("messages", List.of(
@@ -102,17 +104,17 @@ public class OpenAiBadgeGenerationService {
 
     List<QuizBadgeDefinition> parseBadges(String response) {
         try {
-            var choice = objectMapper.readTree(response).path("choices").path(0);
-            var message = choice.path("message");
+            val choice = objectMapper.readTree(response).path("choices").path(0);
+            val message = choice.path("message");
             if ("length".equals(choice.path("finish_reason").asText()) || !message.path("refusal").asText("").isBlank()) {
                 throw new IllegalArgumentException("Risposta incompleta o non disponibile");
             }
-            var nodes = objectMapper.readTree(message.path("content").asText()).path("badges");
+            val nodes = objectMapper.readTree(message.path("content").asText()).path("badges");
             if (!nodes.isArray() || nodes.size() < 2 || nodes.size() > 4) {
                 throw new IllegalArgumentException("Numero di badge non valido");
             }
-            var badges = new ArrayList<QuizBadgeDefinition>();
-            for (var node : nodes) {
+            val badges = new ArrayList<QuizBadgeDefinition>();
+            for (val node : nodes) {
                 if (!node.path("minimumPercentage").isIntegralNumber() || !node.path("minimumPercentage").canConvertToInt()) {
                     throw new IllegalArgumentException("Soglia non valida");
                 }

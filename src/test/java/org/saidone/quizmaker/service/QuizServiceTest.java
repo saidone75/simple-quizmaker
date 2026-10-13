@@ -75,9 +75,9 @@ class QuizServiceTest {
 
     @Test
     void createRejectsUnauthorizedImageBeforeSaving() {
-        var question = validQuestion(2);
+        val question = validQuestion(2);
         question.setImageId(UUID.randomUUID().toString());
-        var request = QuizDto.Request.builder().title("Quiz").emoji("🧪").questions(List.of(question)).build();
+        val request = QuizDto.Request.builder().title("Quiz").emoji("🧪").questions(List.of(question)).build();
         doThrow(new AccessDeniedException("Accesso immagine non consentito"))
                 .when(questionImageAuthorizationPolicy).validateQuestions(request.getQuestions(), teacher);
 
@@ -87,9 +87,9 @@ class QuizServiceTest {
 
     @Test
     void updateRejectsUnauthorizedImageBeforeChangingQuiz() {
-        var question = validQuestion(2);
+        val question = validQuestion(2);
         question.setImageUrl("/api/quizzes/images/" + UUID.randomUUID());
-        var request = QuizDto.Request.builder().title("Quiz").emoji("🧪").questions(List.of(question)).build();
+        val request = QuizDto.Request.builder().title("Quiz").emoji("🧪").questions(List.of(question)).build();
         doThrow(new AccessDeniedException("Accesso immagine non consentito"))
                 .when(questionImageAuthorizationPolicy).validateQuestions(request.getQuestions(), teacher);
 
@@ -243,8 +243,8 @@ class QuizServiceTest {
     @ParameterizedTest
     @ValueSource(ints = {2, 3, 4})
     void acceptsUniformMultipleChoiceQuiz(int numberOfOptions) {
-        var question = validQuestion(numberOfOptions);
-        var request = QuizDto.Request.builder().questions(List.of(question, validQuestion(numberOfOptions))).build();
+        val question = validQuestion(numberOfOptions);
+        val request = QuizDto.Request.builder().questions(List.of(question, validQuestion(numberOfOptions))).build();
         when(quizRepository.save(any())).thenReturn(sampleQuiz);
         when(quizMapper.toResponse(sampleQuiz)).thenReturn(QuizDto.Response.builder().build());
 
@@ -255,11 +255,11 @@ class QuizServiceTest {
 
     @Test
     void acceptsTrueFalseQuizAndPreservesAnswer() {
-        var question = validQuestion(2);
+        val question = validQuestion(2);
         question.setType(QuestionType.TRUE_FALSE);
         question.setOptions(List.of("Vero", "Falso"));
         question.setAnswer(1);
-        var request = QuizDto.Request.builder().questions(List.of(question)).build();
+        val request = QuizDto.Request.builder().questions(List.of(question)).build();
         when(quizRepository.save(any())).thenReturn(sampleQuiz);
         when(quizMapper.toResponse(sampleQuiz)).thenReturn(QuizDto.Response.builder().build());
 
@@ -271,9 +271,9 @@ class QuizServiceTest {
 
     @Test
     void rejectsMixedFormatsBeforeSavingOrUpdating() {
-        var first = validQuestion(2);
-        var second = validQuestion(3);
-        var request = QuizDto.Request.builder().questions(List.of(first, second)).build();
+        val first = validQuestion(2);
+        val second = validQuestion(3);
+        val request = QuizDto.Request.builder().questions(List.of(first, second)).build();
         assertThatThrownBy(() -> quizService.create(request, teacher)).hasMessageContaining("stesso tipo");
         assertThatThrownBy(() -> quizService.update(sampleQuiz.getId(), request, teacher)).hasMessageContaining("stesso tipo");
 
@@ -286,15 +286,15 @@ class QuizServiceTest {
     @ParameterizedTest
     @ValueSource(ints = {1, 5})
     void rejectsUnsupportedOptionCounts(int numberOfOptions) {
-        var request = QuizDto.Request.builder().questions(List.of(validQuestion(numberOfOptions))).build();
+        val request = QuizDto.Request.builder().questions(List.of(validQuestion(numberOfOptions))).build();
         assertThatThrownBy(() -> quizService.create(request, teacher)).isInstanceOf(IllegalArgumentException.class);
         verify(quizRepository, never()).save(any());
     }
 
     @Test
     void rejectsInvalidAnswerAndBlankOptions() {
-        var question = validQuestion(2);
-        var request = QuizDto.Request.builder().questions(List.of(question)).build();
+        val question = validQuestion(2);
+        val request = QuizDto.Request.builder().questions(List.of(question)).build();
         question.setAnswer(2);
         assertThatThrownBy(() -> quizService.create(request, teacher)).isInstanceOf(IllegalArgumentException.class);
         question.setAnswer(0);
@@ -308,7 +308,7 @@ class QuizServiceTest {
 
     @Test
     void rejectsMissingQuestionsAndNullQuestionBeforeImageValidation() {
-        var request = QuizDto.Request.builder().build();
+        val request = QuizDto.Request.builder().build();
         assertThatThrownBy(() -> quizService.create(request, teacher)).isInstanceOf(IllegalArgumentException.class);
         request.setQuestions(List.of());
         assertThatThrownBy(() -> quizService.create(request, teacher)).isInstanceOf(IllegalArgumentException.class);
@@ -318,7 +318,7 @@ class QuizServiceTest {
     }
 
     private QuestionDto validQuestion(int numberOfOptions) {
-        var question = new QuestionDto();
+        val question = new QuestionDto();
         question.setText("Domanda");
         question.setOptions(java.util.stream.IntStream.range(0, numberOfOptions)
                 .mapToObj(index -> "Risposta " + index).toList());

@@ -1,5 +1,7 @@
 package org.saidone.quizmaker.service;
 
+import lombok.val;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -33,7 +35,7 @@ class QuizSubmissionServiceTest {
             .questions(List.of(question(1), question(0))).build();
 
     private static Question question(int answer) {
-        var question = new Question();
+        val question = new Question();
         question.setAnswer(answer);
         return question;
     }
@@ -46,12 +48,12 @@ class QuizSubmissionServiceTest {
 
     @Test
     void badgesUseServerCalculatedScoreAndAreIncludedInTheSubmissionResponse() {
-        var earned = new StudentBadgeDto.EarnedBadge("key", "cartographer", "Cartografo provetto", "🗺️",
+        val earned = new StudentBadgeDto.EarnedBadge("key", "cartographer", "Cartografo provetto", "🗺️",
                 "Risposte corrette", "Quiz", quiz.getId(), quiz.getTitle(), LocalDateTime.now());
         when(badges.recordCompletion(eq(quiz), eq(student), eq(1), eq(2), any()))
                 .thenReturn(List.of(earned));
 
-        var response = service.submit(quiz.getId(), student, List.of(1, 1));
+        val response = service.submit(quiz.getId(), student, List.of(1, 1));
 
         assertThat(response.getScore()).isEqualTo(1);
         assertThat(response.getNewBadges()).containsExactly(earned);
@@ -70,7 +72,7 @@ class QuizSubmissionServiceTest {
 
     @Test
     void unlockedRetryUpdatesItsDateAndRecordsAnotherAttempt() {
-        var previous = QuizSubmission.builder().id(UUID.randomUUID()).student(student).quiz(quiz)
+        val previous = QuizSubmission.builder().id(UUID.randomUUID()).student(student).quiz(quiz)
                 .submittedAt(LocalDateTime.of(2026, 1, 1, 12, 0)).unlocked(true).build();
         when(submissions.findByStudentIdAndQuizId(student.getId(), quiz.getId()))
                 .thenReturn(Optional.of(previous));

@@ -1,5 +1,7 @@
 package org.saidone.quizmaker.service;
 
+import lombok.val;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -39,7 +41,7 @@ class QuizSharingServiceTest {
     @BeforeEach
     void setUp() {
         sharing = new QuizSharingService(quizzes, teachers, images);
-        var question = new Question();
+        val question = new Question();
         question.setText("Domanda");
         question.setImageId(imageId.toString());
         question.setImageUrl("/api/quizzes/images/" + imageId);
@@ -56,16 +58,16 @@ class QuizSharingServiceTest {
         source.setBadges(List.of(new QuizBadgeDefinition("cartographer", "Cartografo provetto", "🗺️", 80)));
         source.setQuestions(List.of(source.getQuestions().getFirst(), source.getQuestions().getFirst()));
         when(teachers.findAllById(List.of(first.getId(), second.getId()))).thenReturn(List.of(first, second));
-        var firstCopy = copy();
-        var secondCopy = copy();
+        val firstCopy = copy();
+        val secondCopy = copy();
         when(images.duplicateForTeacher(imageId, first)).thenReturn(firstCopy);
         when(images.duplicateForTeacher(imageId, second)).thenReturn(secondCopy);
 
         assertThat(sharing.shareQuizToTeachers(source.getId(), List.of(first.getId(), second.getId()), owner)).isEqualTo(2);
 
-        var captor = ArgumentCaptor.forClass(Quiz.class);
+        val captor = ArgumentCaptor.forClass(Quiz.class);
         verify(quizzes, times(2)).save(captor.capture());
-        var shared = captor.getAllValues();
+        val shared = captor.getAllValues();
         assertThat(shared).allSatisfy(q -> assertThat(q.getBadges()).isEqualTo(source.getBadges()));
         assertThat(shared.get(0).getQuestions()).allSatisfy(q -> {
             assertThat(q.getType()).isEqualTo(QuestionType.TRUE_FALSE);
@@ -84,16 +86,16 @@ class QuizSharingServiceTest {
     @Test
     void urlOnlyUploadIsDuplicatedAndExternalUrlIsPreserved() {
         source.getQuestions().getFirst().setImageId(null);
-        var external = new Question();
+        val external = new Question();
         external.setImageUrl("https://upload.wikimedia.org/example.png");
         source.setQuestions(List.of(source.getQuestions().getFirst(), external));
         when(teachers.findAllById(List.of(first.getId()))).thenReturn(List.of(first));
-        var copy = copy();
+        val copy = copy();
         when(images.duplicateForTeacher(imageId, first)).thenReturn(copy);
 
         sharing.shareQuizToTeachers(source.getId(), List.of(first.getId()), owner);
 
-        var captor = ArgumentCaptor.forClass(Quiz.class);
+        val captor = ArgumentCaptor.forClass(Quiz.class);
         verify(quizzes).save(captor.capture());
         assertThat(captor.getValue().getQuestions().get(0).getImageId()).isEqualTo(copy.getId().toString());
         assertThat(captor.getValue().getQuestions().get(1).getImageUrl()).isEqualTo(external.getImageUrl());
@@ -110,7 +112,7 @@ class QuizSharingServiceTest {
     }
 
     private QuestionImageUploadDto copy() {
-        var id = UUID.randomUUID();
+        val id = UUID.randomUUID();
         return QuestionImageUploadDto.builder().id(id).url("/api/quizzes/images/" + id).build();
     }
 }

@@ -18,6 +18,8 @@
 
 package org.saidone.quizmaker.config;
 
+import lombok.val;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -104,11 +106,11 @@ public class SecurityConfig {
                 )
                 .headers(headers -> headers
                         .addHeaderWriter((request, response) -> {
-                            var authentication = org.springframework.security.core.context.SecurityContextHolder
+                            val authentication = org.springframework.security.core.context.SecurityContextHolder
                                     .getContext().getAuthentication();
                             boolean signedIn = authentication != null && authentication.isAuthenticated()
                                     && !(authentication instanceof org.springframework.security.authentication.AnonymousAuthenticationToken);
-                            var path = request.getRequestURI().substring(request.getContextPath().length());
+                            val path = request.getRequestURI().substring(request.getContextPath().length());
                             boolean publicPage = "GET".equals(request.getMethod())
                                     && ("/discover".equals(path) || ("/".equals(path) && !signedIn));
                             boolean publicResource = path.startsWith("/css/") || path.startsWith("/js/")

@@ -215,8 +215,8 @@ class StudentBadgeIntegrationTest {
     @ParameterizedTest
     @ValueSource(strings = {"2", "3", "4", "true-false"})
     void quizFormatsSurviveApiSaveReloadAndStudentSubmission(String format) throws Exception {
-        var mapper = new ObjectMapper();
-        var question = new QuestionDto();
+        val mapper = new ObjectMapper();
+        val question = new QuestionDto();
         question.setText("Il Sole è un pianeta.");
         if (format.equals("true-false")) {
             question.setType(QuestionType.TRUE_FALSE);
@@ -226,14 +226,14 @@ class StudentBadgeIntegrationTest {
                     .mapToObj(index -> "Risposta " + index).toList());
         }
         question.setAnswer(question.getOptions().size() - 1);
-        var request = QuizDto.Request.builder().title("Quiz " + format).emoji("☀️").questions(List.of(question)).build();
-        var body = mvc.perform(post("/api/quizzes").with(user(teacher.getUsername()).roles("TEACHER"))
+        val request = QuizDto.Request.builder().title("Quiz " + format).emoji("☀️").questions(List.of(question)).build();
+        val body = mvc.perform(post("/api/quizzes").with(user(teacher.getUsername()).roles("TEACHER"))
                         .with(csrf()).contentType("application/json").content(mapper.writeValueAsString(request)))
                 .andExpect(status().isCreated()).andReturn().getResponse().getContentAsString();
-        var id = UUID.fromString(mapper.readTree(body).path("id").asText());
+        val id = UUID.fromString(mapper.readTree(body).path("id").asText());
         entityManager.flush();
         entityManager.clear();
-        var restored = quizzes.findById(id).orElseThrow().getQuestions().getFirst();
+        val restored = quizzes.findById(id).orElseThrow().getQuestions().getFirst();
         assertThat(restored.getType()).isEqualTo(question.getType());
         assertThat(restored.getOptions()).containsExactlyElementsOf(question.getOptions());
         assertThat(restored.getAnswer()).isEqualTo(question.getAnswer());

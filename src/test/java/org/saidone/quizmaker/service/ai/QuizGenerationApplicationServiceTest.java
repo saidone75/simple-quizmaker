@@ -18,6 +18,8 @@
 
 package org.saidone.quizmaker.service.ai;
 
+import lombok.val;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -54,7 +56,7 @@ class QuizGenerationApplicationServiceTest {
     @ValueSource(ints = {2, 3, 4})
     void acceptsRequestedNumberOfOptions(int numberOfOptions) {
         request.setNumberOfOptions(numberOfOptions);
-        var question = question(numberOfOptions);
+        val question = question(numberOfOptions);
         when(generator.generateQuiz(request, null))
                 .thenReturn(QuizDto.Request.builder().questions(List.of(question)).build());
         assertThat(service.generateQuiz(request, null).getQuestions()).containsExactly(question);
@@ -63,7 +65,7 @@ class QuizGenerationApplicationServiceTest {
     @Test
     void acceptsTrueFalseQuiz() {
         request.setQuestionType(QuestionType.TRUE_FALSE);
-        var question = question(2);
+        val question = question(2);
         question.setType(QuestionType.TRUE_FALSE);
         question.setOptions(List.of("Vero", "Falso"));
         question.setAnswer(1);
@@ -75,7 +77,7 @@ class QuizGenerationApplicationServiceTest {
     @Test
     void rejectsAnswersThatDoNotMatchRequestedFormat() {
         request.setNumberOfOptions(2);
-        var question = question(3);
+        val question = question(3);
         when(generator.generateQuiz(request, null))
                 .thenAnswer(invocation -> QuizDto.Request.builder().questions(List.of(question)).build());
         assertThatThrownBy(() -> service.generateQuiz(request, null)).isInstanceOf(IllegalStateException.class);
@@ -96,7 +98,7 @@ class QuizGenerationApplicationServiceTest {
     }
 
     private QuestionDto question(int numberOfOptions) {
-        var question = new QuestionDto();
+        val question = new QuestionDto();
         question.setText("Il Sole è una stella?");
         question.setEmoji("☀️");
         question.setFeedback("Il Sole è la stella del nostro sistema.");

@@ -167,8 +167,8 @@ public class QuizService {
         if (request.getQuestions() == null || request.getQuestions().isEmpty()) {
             throw new IllegalArgumentException("Aggiungi almeno una domanda al quiz.");
         }
-        var first = request.getQuestions().getFirst();
-        for (var question : request.getQuestions()) {
+        val first = request.getQuestions().getFirst();
+        for (val question : request.getQuestions()) {
             if (question == null || question.getText() == null || question.getText().isBlank()
                     || !question.hasValidAnswers()) {
                 throw new IllegalArgumentException("Ogni domanda deve avere un testo, da 2 a 4 risposte e una risposta corretta valida. Per vero/falso usa Vero e Falso, in questo ordine.");
