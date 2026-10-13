@@ -1,5 +1,7 @@
 package org.saidone.quizmaker.service;
 
+import lombok.val;
+
 import lombok.RequiredArgsConstructor;
 import org.saidone.quizmaker.dto.StudentBadgeDto;
 import org.saidone.quizmaker.dto.QuizBadgeDefinition;
@@ -31,14 +33,14 @@ public class StudentBadgeService {
     @Transactional(readOnly = true)
     @PreAuthorize("hasRole('STUDENT')")
     public StudentBadgeDto.Collection forCurrentStudent() {
-        var student = studentAuthenticationService.getCurrentStudent();
+        val student = studentAuthenticationService.getCurrentStudent();
         return collection(student);
     }
 
     @Transactional(readOnly = true)
     @PreAuthorize("@teacherAuthorizationPolicy.isTeacher(#teacher)")
     public StudentBadgeDto.Collection forTeacher(UUID studentId, Teacher teacher) {
-        var student = studentRepository.findByIdAndTeacher(studentId, teacher)
+        val student = studentRepository.findByIdAndTeacher(studentId, teacher)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Studente non trovato"));
         return collection(student);
     }
@@ -48,10 +50,10 @@ public class StudentBadgeService {
     @PreAuthorize("hasRole('STUDENT') && #student.id == authentication.principal.id")
     public List<StudentBadgeDto.EarnedBadge> recordCompletion(Quiz quiz, Student student,
                                                              int score, int total, LocalDateTime completedAt) {
-        var history = new ArrayList<>(attemptRepository.findByStudentIdOrderByCompletedAtAscIdAsc(student.getId()));
-        var previousKeys = StudentBadgeEvaluator.evaluate(student, history).badges().stream()
+        val history = new ArrayList<>(attemptRepository.findByStudentIdOrderByCompletedAtAscIdAsc(student.getId()));
+        val previousKeys = StudentBadgeEvaluator.evaluate(student, history).badges().stream()
                 .map(StudentBadgeDto.EarnedBadge::key).collect(Collectors.toSet());
-        var attempt = StudentQuizAttempt.builder()
+        val attempt = StudentQuizAttempt.builder()
                 .id(UUID.randomUUID()).student(student).quizId(quiz.getId()).quizTitle(quiz.getTitle())
                 .quizBadges(QuizBadgeDefinition.normalize(quiz.getBadges()))
                 .score(score).totalQuestions(total).completedAt(completedAt).build();

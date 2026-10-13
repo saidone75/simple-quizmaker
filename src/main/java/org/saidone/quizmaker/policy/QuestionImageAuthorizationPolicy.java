@@ -1,5 +1,7 @@
 package org.saidone.quizmaker.policy;
 
+import lombok.val;
+
 import lombok.RequiredArgsConstructor;
 import org.saidone.quizmaker.config.StudentAuthenticationToken;
 import org.saidone.quizmaker.dto.QuestionDto;
@@ -29,10 +31,10 @@ public class QuestionImageAuthorizationPolicy {
     private final TeacherAuthorizationPolicy teacherAuthorizationPolicy;
 
     public boolean canRead(UUID imageId) {
-        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        val authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated()) return false;
         if (authentication instanceof StudentAuthenticationToken studentToken) {
-            var student = studentToken.getPrincipal();
+            val student = studentToken.getPrincipal();
             return student != null && references(
                     quizRepository.findByTeacherAndPublishedTrueAndArchivedFalseOrderByCreatedAtDesc(student.getTeacher()), imageId);
         }
@@ -50,7 +52,7 @@ public class QuestionImageAuthorizationPolicy {
     }
 
     public void validateQuestions(List<QuestionDto> questions, Teacher teacher) {
-        for (var question : questions) {
+        for (val question : questions) {
             validateReference(question.getImageId(), teacher);
             validateReference(imageIdFromUrl(question.getImageUrl()), teacher);
         }
@@ -97,7 +99,7 @@ public class QuestionImageAuthorizationPolicy {
     private String imageIdFromUrl(String url) {
         if (url == null || url.isBlank()) return null;
         try {
-            var path = URI.create(url.trim()).getPath();
+            val path = URI.create(url.trim()).getPath();
             return path != null && path.startsWith(IMAGE_PATH) ? path.substring(IMAGE_PATH.length()) : null;
         } catch (IllegalArgumentException ex) {
             return null;

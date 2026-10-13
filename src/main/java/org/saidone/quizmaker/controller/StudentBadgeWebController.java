@@ -1,5 +1,7 @@
 package org.saidone.quizmaker.controller;
 
+import lombok.val;
+
 import lombok.RequiredArgsConstructor;
 import org.saidone.quizmaker.service.StudentBadgeService;
 import org.saidone.quizmaker.service.TeacherAuthenticationService;
@@ -25,7 +27,7 @@ public class StudentBadgeWebController {
 
     @GetMapping("/teacher/students/{studentId}/badges")
     public String studentBadges(@PathVariable UUID studentId, Model model) {
-        var teacher = teacherAuthenticationService.getCurrentTeacher();
+        val teacher = teacherAuthenticationService.getCurrentTeacher();
         model.addAttribute("collection", studentBadgeService.forTeacher(studentId, teacher));
         model.addAttribute("teacherView", true);
         model.addAttribute("teacherThemePreference", teacher.getThemePreference());
