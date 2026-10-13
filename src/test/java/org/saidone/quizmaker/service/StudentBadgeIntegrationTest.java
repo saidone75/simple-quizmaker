@@ -137,7 +137,7 @@ class StudentBadgeIntegrationTest {
                         .with(authentication(new StudentAuthenticationToken(student))))
                 .andExpect(status().isForbidden());
         mvc.perform(get("/student/badges").with(anonymous())).andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/student/login"));
+                .andExpect(redirectedUrl("/"));
     }
 
     @Test
