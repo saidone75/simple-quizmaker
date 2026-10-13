@@ -70,7 +70,7 @@ function emptyQuestion() {
         imageUrl: '',
         imageId: '',
         type: quizFormat === 'true-false' ? 'TRUE_FALSE' : 'MULTIPLE_CHOICE',
-        options: quizFormat === 'true-false' ? ['Vero', 'Falso'] : Array(Number(quizFormat)).fill(''),
+        options: quizFormat === 'true-false' ? ['Vero', 'Falso'] : new Array(Number(quizFormat)).fill(''),
         answer: 0,
         feedback: ''
     };
