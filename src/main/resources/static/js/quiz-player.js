@@ -345,7 +345,7 @@ function renderPlay() {
     document.getElementById('play-progress-fill').style.width = pct + '%';
 
     if (current >= total) {
-        showResult();
+        void showResult();
         return;
     }
 
@@ -430,7 +430,7 @@ function pickAnswer(idx, restoring) {
 function nextQuestion() {
     playState.current++;
     persistQuizProgress();
-    if (playState.current >= playState.quiz.questions.length) showResult();
+    if (playState.current >= playState.quiz.questions.length) void showResult();
     else renderPlay();
 }
 
