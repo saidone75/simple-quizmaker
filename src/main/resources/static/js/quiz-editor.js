@@ -21,6 +21,7 @@ const EDITOR_EMOJIS = ['❓', '🦕', '🔥', '🌍', '🎨', '📚', '🧪', '�
 const IMAGE_UPLOAD_ENABLED = document.querySelector('meta[name="quizmaker-image-upload-enabled"]')?.content === 'true';
 let currentQuestions = [];
 let quizId = null;
+let quizFormat = '4';
 let editorEventBindingsInitialized = false;
 
 function initEditor(id, questionsJson) {
@@ -37,6 +38,28 @@ function initEditor(id, questionsJson) {
     } else {
         currentQuestions = [emptyQuestion()];
     }
+    if (currentQuestions.length > 0) {
+        const first = currentQuestions[0];
+        quizFormat = first.type === 'TRUE_FALSE' ? 'true-false' : String(first.options.length);
+    }
+    const formatInput = document.getElementById('quiz-format-input');
+    if (formatInput) {
+        formatInput.value = quizFormat;
+        formatInput.addEventListener('change', () => changeQuizFormat(formatInput.value));
+    }
+    renderQuestions();
+}
+
+function changeQuizFormat(format) {
+    if (!['2', '3', '4', 'true-false'].includes(format)) return;
+    quizFormat = format;
+    currentQuestions.forEach(q => {
+        q.type = format === 'true-false' ? 'TRUE_FALSE' : 'MULTIPLE_CHOICE';
+        q.options = format === 'true-false'
+            ? ['Vero', 'Falso']
+            : Array.from({length: Number(format)}, (_, index) => q.options[index] || '');
+        if (!Number.isInteger(q.answer) || q.answer >= q.options.length || q.answer < 0) q.answer = 0;
+    });
     renderQuestions();
 }
 
@@ -46,7 +69,8 @@ function emptyQuestion() {
         emoji: EDITOR_EMOJIS[currentQuestions.length % EDITOR_EMOJIS.length] || '❓',
         imageUrl: '',
         imageId: '',
-        options: ['', '', '', ''],
+        type: quizFormat === 'true-false' ? 'TRUE_FALSE' : 'MULTIPLE_CHOICE',
+        options: quizFormat === 'true-false' ? ['Vero', 'Falso'] : Array(Number(quizFormat)).fill(''),
         answer: 0,
         feedback: ''
     };
@@ -60,15 +84,7 @@ function updateBadge() {
 }
 
 function addQuestion() {
-    currentQuestions.push({
-        text: '',
-        emoji: EDITOR_EMOJIS[currentQuestions.length % EDITOR_EMOJIS.length],
-        imageUrl: '',
-        imageId: '',
-        options: ['', '', '', ''],
-        answer: 0,
-        feedback: ''
-    });
+    currentQuestions.push(emptyQuestion());
     renderQuestions();
     setTimeout(() => {
         const cards = document.querySelectorAll('.q-card');
@@ -198,7 +214,8 @@ function renderQuestions() {
                                      data-question-index="${i}"
                                      data-option-index="${j}"
                                      title="Segna come corretta">${EDITOR_LETTERS[j]}</div>
-                                <input type="text" class="input-field"
+                                <input type="text" class="input-field" ${quizFormat === 'true-false' ? 'readonly' : ''}
+                                       aria-label="Risposta ${EDITOR_LETTERS[j]}"
                                        placeholder="Risposta ${EDITOR_LETTERS[j]}..."
                                        value="${escHtml(opt)}"
                                        data-action="sync-option"
@@ -207,7 +224,7 @@ function renderQuestions() {
                             </div>
                         `).join('')}
                     </div>
-                    <div class="correct-hint">Risposta corretta: <span>${EDITOR_LETTERS[q.answer]}</span> — clicca una lettera per cambiarla</div>
+                    <div class="correct-hint">Risposta corretta: <span>${quizFormat === 'true-false' ? escHtml(q.options[q.answer]) : EDITOR_LETTERS[q.answer]}</span> — clicca una lettera per cambiarla</div>
                 </div>
                 <div class="q-row">
                     <div class="q-row-label">Spiegazione (mostrata dopo la risposta)</div>
@@ -403,20 +420,20 @@ async function saveQuiz() {
         return;
     }
 
-    const valid = currentQuestions.filter(q =>
-        q.text.trim() && q.options.filter(o => o.trim()).length >= 2
-    );
-    if (valid.length === 0) {
-        showValidation('Aggiungi almeno una domanda con testo e almeno 2 risposte!');
+    const optionCount = quizFormat === 'true-false' ? 2 : Number(quizFormat);
+    const invalidIndex = currentQuestions.findIndex(q => !q.text.trim()
+        || q.options.length !== optionCount || q.options.some(option => !option.trim())
+        || !Number.isInteger(q.answer) || q.answer < 0 || q.answer >= optionCount);
+    if (currentQuestions.length === 0 || invalidIndex !== -1) {
+        showValidation(`Completa il testo e tutte le ${optionCount} risposte della domanda ${invalidIndex + 1 || 1}, e scegli la risposta corretta.`);
         return;
     }
 
-    const finalQuestions = valid.map(q => {
-        const filledOpts = q.options.filter(o => o.trim());
-        const answerText = q.options[q.answer];
-        const newAnswerIdx = filledOpts.indexOf(answerText);
-        return {...q, options: filledOpts, answer: Math.max(0, newAnswerIdx)};
-    });
+    const finalQuestions = currentQuestions.map(q => ({
+        ...q,
+        type: quizFormat === 'true-false' ? 'TRUE_FALSE' : 'MULTIPLE_CHOICE',
+        options: q.options.map(option => option.trim())
+    }));
 
     msgEl.style.display = 'none';
     showLoading(quizId ? 'Salvataggio modifiche...' : 'Salvataggio in corso...');
@@ -469,6 +486,7 @@ function applyGeneratedQuiz(quiz) {
     document.getElementById('quiz-title-input').value = quiz.title || 'Quiz generato con AI';
     document.getElementById('quiz-emoji-input').value = quiz.emoji || '🤖';
     currentQuestions = (quiz.questions || []).map((q, idx) => ({
+        type: q.type || 'MULTIPLE_CHOICE',
         text: q.text || '',
         emoji: q.emoji || EDITOR_EMOJIS[idx % EDITOR_EMOJIS.length],
         imageUrl: q.imageUrl || '',
@@ -502,12 +520,16 @@ async function generateQuizWithAi() {
     formData.append('numberOfQuestions', numberOfQuestions);
     formData.append('difficulty', difficulty);
     formData.append('tone', tone);
+    formData.append('questionType', quizFormat === 'true-false' ? 'TRUE_FALSE' : 'MULTIPLE_CHOICE');
+    formData.append('numberOfOptions', quizFormat === 'true-false' ? '2' : quizFormat);
     formData.append('includeAiImages', includeAiImages ? 'true' : 'false');
     if (fileInput.files && fileInput.files.length > 0) {
         formData.append('file', fileInput.files[0]);
     }
 
     msgEl.style.display = 'none';
+    const formatInput = document.getElementById('quiz-format-input');
+    formatInput.disabled = true;
     showLoading('Generazione quiz con AI in corso...');
 
     try {
@@ -528,5 +550,7 @@ async function generateQuizWithAi() {
         hideLoading();
         msgEl.textContent = 'Errore AI: ' + e.message;
         msgEl.style.display = 'block';
+    } finally {
+        formatInput.disabled = false;
     }
 }

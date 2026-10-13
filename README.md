@@ -41,6 +41,7 @@ Alice's Simple Quiz Maker è pensato per chi desidera:
 - Software libero e open source con licenza [GPLv3](https://www.gnu.org/licenses/gpl-3.0).
 - Accesso **insegnante** con registrazione self-service e dashboard dedicata (`/teacher/...`).
 - Gestione **multi-insegnante** con ruoli amministratore/non-amministratore, abilitazione account, reset password e cancellazione account (solo amministratore).
+- Quiz a scelta multipla con **2, 3 o 4 risposte** oppure **vero/falso**, con un unico formato scelto per tutte le domande.
 - Generazione quiz con **OpenAI** (opzionale) e supporto allegati (`.pdf`, `.docx`, testo).
 - Ricerca immagini Wikimedia con modalità **advanced** e **simple**, configurabile globalmente e per insegnante.
 - Condivisione quiz verso più insegnanti.
