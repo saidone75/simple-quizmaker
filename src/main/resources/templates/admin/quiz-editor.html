@@ -44,14 +44,16 @@
     <!-- BODY -->
     <div class="teacher-body">
         <div class="editor-mode-card editor-mode-card-spaced">
-            <label class="q-row-label" for="quiz-format-input">Tipo di quiz</label>
-            <select id="quiz-format-input" class="input-field">
-                <option value="4">Scelta multipla — 4 risposte</option>
-                <option value="3">Scelta multipla — 3 risposte</option>
-                <option value="2">Scelta multipla — 2 risposte</option>
-                <option value="true-false">Vero o falso</option>
-            </select>
-            <p class="editor-mode-subtitle">Il formato scelto si applica a tutte le domande, anche generate con AI.</p>
+            <div class="form-group">
+                <label class="form-label" for="quiz-format-input">Tipo di quiz</label>
+                <select id="quiz-format-input" class="input-field" aria-describedby="quiz-format-help">
+                    <option value="4">Scelta multipla — 4 risposte</option>
+                    <option value="3">Scelta multipla — 3 risposte</option>
+                    <option value="2">Scelta multipla — 2 risposte</option>
+                    <option value="true-false">Vero o falso</option>
+                </select>
+            </div>
+            <p id="quiz-format-help" class="editor-mode-subtitle">Il formato scelto si applica a tutte le domande, anche generate con AI.</p>
         </div>
 
         <div class="editor-mode-card editor-mode-card-ai" th:if="${aiEnabled and quiz == null}">
@@ -61,19 +63,19 @@
             </div>
             <div class="ai-grid">
                 <div>
-                    <label class="q-row-label" for="ai-topic-input">Argomento / testo</label>
+                    <label class="form-label" for="ai-topic-input">Argomento / testo</label>
                     <textarea id="ai-topic-input" class="input-field ai-textarea" placeholder="Es: Rivoluzione francese, personaggi principali e conseguenze..."></textarea>
                 </div>
                 <div>
-                    <label class="q-row-label" for="ai-file-input">Documento (PDF, DOCX o TXT)</label>
+                    <label class="form-label" for="ai-file-input">Documento (PDF, DOCX o TXT)</label>
                     <input type="file" id="ai-file-input" class="input-field" accept=".pdf,.docx,.txt,.md,.csv">
                 </div>
                 <div>
-                    <label class="q-row-label" for="ai-number-input">Numero di domande</label>
+                    <label class="form-label" for="ai-number-input">Numero di domande</label>
                     <input type="number" id="ai-number-input" class="input-field" min="1" max="30" value="10">
                 </div>
                 <div>
-                    <label class="q-row-label" for="ai-difficulty-input">Difficoltà</label>
+                    <label class="form-label" for="ai-difficulty-input">Difficoltà</label>
                     <select id="ai-difficulty-input" class="input-field">
                         <option>Facile</option>
                         <option selected>Medio</option>
@@ -81,7 +83,7 @@
                     </select>
                 </div>
                 <div>
-                    <label class="q-row-label" for="ai-tone-input">Tono</label>
+                    <label class="form-label" for="ai-tone-input">Tono</label>
                     <select id="ai-tone-input" class="input-field">
                         <option selected>Professionale</option>
                         <option>Giocoso</option>
@@ -110,13 +112,13 @@
                 <div class="editor-mode-subtitle" th:text="${quiz != null ? 'Aggiorna titolo, emoji e domande del quiz.' : 'Inserisci titolo, emoji e domande personalizzate una per una.'}">Inserisci titolo, emoji e domande personalizzate una per una.</div>
             </div>
 
-            <div class="section-label">Nome del quiz</div>
+            <label class="form-label" for="quiz-title-input">Nome del quiz</label>
             <input type="text" id="quiz-title-input" class="input-field"
                    placeholder="Es: Quiz sulla Preistoria 🦕"
                    th:value="${quiz?.title}"
                   >
 
-            <div class="section-label" style="margin-top:1.25rem">Emoji del quiz</div>
+            <label class="form-label" for="quiz-emoji-input" style="margin-top:1.25rem">Emoji del quiz</label>
             <input type="text" id="quiz-emoji-input" class="input-field"
                    placeholder="Es: 🦕" maxlength="4" style="width:80px"
                    th:value="${quiz?.emoji}">

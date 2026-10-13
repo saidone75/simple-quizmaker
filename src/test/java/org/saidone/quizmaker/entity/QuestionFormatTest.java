@@ -19,6 +19,7 @@
 package org.saidone.quizmaker.entity;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.val;
 import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
 import org.saidone.quizmaker.dto.QuestionDto;
@@ -34,11 +35,11 @@ class QuestionFormatTest {
 
     @Test
     void oldQuestionsWithoutTypeRemainMultipleChoice() throws Exception {
-        var json = """
+        val json = """
                 {"text":"Domanda", "options":["A","B","C","D"], "answer":2}
                 """;
-        var entity = objectMapper.readValue(json, Question.class);
-        var dto = objectMapper.readValue(json, QuestionDto.class);
+        val entity = objectMapper.readValue(json, Question.class);
+        val dto = objectMapper.readValue(json, QuestionDto.class);
         assertThat(entity.getType()).isEqualTo(QuestionType.MULTIPLE_CHOICE);
         assertThat(dto.hasValidAnswers()).isTrue();
         assertThat(questionMapper.toDto(entity).getAnswer()).isEqualTo(2);
@@ -46,13 +47,13 @@ class QuestionFormatTest {
 
     @Test
     void trueFalseTypeAndCorrectAnswerSurviveMappingAndJsonStorage() throws Exception {
-        var dto = new QuestionDto();
+        val dto = new QuestionDto();
         dto.setText("Il Sole è un pianeta.");
         dto.setType(QuestionType.TRUE_FALSE);
         dto.setOptions(List.of("Vero", "Falso"));
         dto.setAnswer(1);
-        var stored = objectMapper.writeValueAsString(questionMapper.toEntity(dto));
-        var restored = questionMapper.toDto(objectMapper.readValue(stored, Question.class));
+        val stored = objectMapper.writeValueAsString(questionMapper.toEntity(dto));
+        val restored = questionMapper.toDto(objectMapper.readValue(stored, Question.class));
         assertThat(restored).isEqualTo(dto);
         assertThat(restored.hasValidAnswers()).isTrue();
         assertThat(stored).doesNotContain("validAnswers");
