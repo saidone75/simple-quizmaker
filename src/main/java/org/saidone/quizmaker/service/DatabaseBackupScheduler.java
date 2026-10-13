@@ -18,6 +18,7 @@
 
 package org.saidone.quizmaker.service;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.springframework.beans.factory.annotation.Value;
@@ -29,19 +30,25 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.nio.file.attribute.FileTime;
+import javax.sql.DataSource;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.util.UUID;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 
 @Slf4j
+@RequiredArgsConstructor
 @Component
 @ConditionalOnProperty(prefix = "app.db-backup", name = "enabled", havingValue = "true")
 public class DatabaseBackupScheduler {
 
     private static final String SQLITE_JDBC_PREFIX = "jdbc:sqlite:";
-    private static final DateTimeFormatter TIMESTAMP_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss");
+    private static final DateTimeFormatter TIMESTAMP_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss-SSS");
+
+    private final DataSource dataSource;
 
     @Value("${spring.datasource.url:}")
     private String datasourceUrl;
@@ -54,6 +61,7 @@ public class DatabaseBackupScheduler {
 
     @Scheduled(cron = "${app.db-backup.cron:0 0 2 * * *}")
     public void backupDatabase() {
+        Path temporaryBackup = null;
         try {
             val sourceDbPath = resolveSqliteFilePath();
             if (sourceDbPath == null) {
@@ -74,15 +82,45 @@ public class DatabaseBackupScheduler {
                     : sourceFileName;
 
             val timestamp = LocalDateTime.now(ZoneId.systemDefault()).format(TIMESTAMP_FORMATTER);
-            val backupFile = backupDirPath.resolve(String.format("%s-%s.db", baseName, timestamp));
+            val backupFile = backupDirPath.resolve(String.format("%s-%s-%s.db", baseName, timestamp, UUID.randomUUID()));
+            temporaryBackup = Files.createTempFile(backupDirPath, baseName + "-", ".tmp");
 
-            Files.copy(sourceDbPath, backupFile, StandardCopyOption.REPLACE_EXISTING);
-            Files.setLastModifiedTime(backupFile, FileTime.fromMillis(System.currentTimeMillis()));
+            // Use a dedicated pool checkout, outside any Spring-managed transaction.
+            try (val connection = dataSource.getConnection()) {
+                if (!connection.getAutoCommit()) {
+                    throw new SQLException("Il backup richiede una connessione fuori da una transazione.");
+                }
+                try (val statement = connection.prepareStatement("VACUUM main INTO ?")) {
+                    statement.setString(1, temporaryBackup.toString());
+                    statement.execute();
+                }
+            }
+            validateBackup(temporaryBackup);
+            Files.move(temporaryBackup, backupFile, StandardCopyOption.ATOMIC_MOVE);
+            temporaryBackup = null;
             log.info("Backup del database completato: {}", backupFile);
 
             cleanupOldBackups(backupDirPath, baseName);
         } catch (Exception ex) {
             log.error("Backup del database fallito.", ex);
+        } finally {
+            if (temporaryBackup != null) {
+                try {
+                    Files.deleteIfExists(temporaryBackup);
+                } catch (IOException ex) {
+                    log.warn("Impossibile eliminare il backup temporaneo {}", temporaryBackup, ex);
+                }
+            }
+        }
+    }
+
+    void validateBackup(Path backupFile) throws SQLException {
+        try (val connection = DriverManager.getConnection(SQLITE_JDBC_PREFIX + backupFile);
+             val statement = connection.createStatement();
+             val result = statement.executeQuery("PRAGMA integrity_check")) {
+            if (!result.next() || !"ok".equalsIgnoreCase(result.getString(1)) || result.next()) {
+                throw new SQLException("Controllo di integrità del backup SQLite fallito.");
+            }
         }
     }
 
