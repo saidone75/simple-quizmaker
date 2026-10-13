@@ -4,6 +4,11 @@ import ai.djl.repository.zoo.ZooModel;
 import jakarta.persistence.EntityManager;
 import lombok.val;
 import org.junit.jupiter.api.*;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.saidone.quizmaker.dto.QuestionDto;
+import org.saidone.quizmaker.dto.QuizDto;
 import org.saidone.quizmaker.config.StudentAuthenticationToken;
 import org.saidone.quizmaker.dto.QuizBadgeDefinition;
 import org.saidone.quizmaker.dto.StudentBadgeDto;
@@ -190,7 +195,7 @@ class StudentBadgeIntegrationTest {
     @Test
     void apiSavesThemedBadgesAndRejectsInvalidThresholds() throws Exception {
         String json = """
-                {"title":"Geografia","emoji":"🌍","questions":[],
+                {"title":"Geografia","emoji":"🌍","questions":[{"text":"Capitale d’Italia?","options":["Roma","Parigi"],"answer":0}],
                  "badges":[{"id":"traveler","name":"Piccolo viaggiatore","emoji":"🌱","minimumPercentage":%d}]}
                 """;
         mvc.perform(put("/api/quizzes/{id}", quiz.getId()).with(user(teacher.getUsername()).roles("TEACHER"))
@@ -205,6 +210,44 @@ class StudentBadgeIntegrationTest {
         entityManager.clear();
         assertThat(quizzes.findById(quiz.getId()).orElseThrow().getBadges())
                 .containsExactly(new QuizBadgeDefinition("traveler", "Piccolo viaggiatore", "🌱", 0));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"2", "3", "4", "true-false"})
+    void quizFormatsSurviveApiSaveReloadAndStudentSubmission(String format) throws Exception {
+        val mapper = new ObjectMapper();
+        val question = new QuestionDto();
+        question.setText("Il Sole è un pianeta.");
+        if (format.equals("true-false")) {
+            question.setType(QuestionType.TRUE_FALSE);
+            question.setOptions(List.of("Vero", "Falso"));
+        } else {
+            question.setOptions(java.util.stream.IntStream.range(0, Integer.parseInt(format))
+                    .mapToObj(index -> "Risposta " + index).toList());
+        }
+        question.setAnswer(question.getOptions().size() - 1);
+        val request = QuizDto.Request.builder().title("Quiz " + format).emoji("☀️").questions(List.of(question)).build();
+        val body = mvc.perform(post("/api/quizzes").with(user(teacher.getUsername()).roles("TEACHER"))
+                        .with(csrf()).contentType("application/json").content(mapper.writeValueAsString(request)))
+                .andExpect(status().isCreated()).andReturn().getResponse().getContentAsString();
+        val id = UUID.fromString(mapper.readTree(body).path("id").asText());
+        entityManager.flush();
+        entityManager.clear();
+        val restored = quizzes.findById(id).orElseThrow().getQuestions().getFirst();
+        assertThat(restored.getType()).isEqualTo(question.getType());
+        assertThat(restored.getOptions()).containsExactlyElementsOf(question.getOptions());
+        assertThat(restored.getAnswer()).isEqualTo(question.getAnswer());
+        mvc.perform(get("/teacher/quiz/{id}/edit", id).with(user(teacher.getUsername()).roles("TEACHER")))
+                .andExpect(status().isOk()).andExpect(content().string(containsString("id=\"quiz-format-input\"")));
+        mvc.perform(put("/api/quizzes/{id}", id).with(user(teacher.getUsername()).roles("TEACHER"))
+                        .with(csrf()).contentType("application/json").content(mapper.writeValueAsString(request)))
+                .andExpect(status().isOk());
+        mvc.perform(put("/api/quizzes/{id}/publication", id).with(user(teacher.getUsername()).roles("TEACHER"))
+                        .with(csrf()).contentType("application/json").content("{\"published\":true}"))
+                .andExpect(status().isOk());
+        mvc.perform(post("/api/quizzes/{id}/submit", id).with(authentication(new StudentAuthenticationToken(student)))
+                        .with(csrf()).contentType("application/json").content("{\"answers\":[" + question.getAnswer() + "]}"))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.score").value(1));
     }
 
     private org.springframework.security.core.Authentication teacherAuthentication() {

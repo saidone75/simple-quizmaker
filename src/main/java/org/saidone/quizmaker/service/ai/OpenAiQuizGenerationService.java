@@ -28,6 +28,7 @@ import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.apache.logging.log4j.util.Strings;
 import org.saidone.quizmaker.dto.QuestionDto;
+import org.saidone.quizmaker.entity.QuestionType;
 import org.saidone.quizmaker.dto.QuizDto;
 import org.saidone.quizmaker.dto.QuizGenerationRequestDto;
 import org.saidone.quizmaker.service.WikimediaImageSearchService;
@@ -59,8 +60,6 @@ public class OpenAiQuizGenerationService implements QuizGenerationService {
     @Value("${app.openai.model:gpt-5.4-mini}")
     private String model;
 
-    private Map<String, Object> cachedQuizSchema;
-
     private static final String QUIZ_JSON_SCHEMA_TEMPLATE = """
             {
               "type": "object",
@@ -75,19 +74,20 @@ public class OpenAiQuizGenerationService implements QuizGenerationService {
                   "items": {
                     "type": "object",
                     "additionalProperties": false,
-                    "required": ["text", "emoji", "imageKeywords", "imageUrl", "options", "answer", "feedback"],
+                    "required": ["type", "text", "emoji", "imageKeywords", "imageUrl", "options", "answer", "feedback"],
                     "properties": {
+                      "type": { "type": "string", "enum": ["%s"] },
                       "text": { "type": "string" },
                       "emoji": { "type": "string" },
                       "imageKeywords": { "type": "string" },
                       "imageUrl": { "type": "string" },
                       "options": {
                         "type": "array",
-                        "minItems": 4,
-                        "maxItems": 4,
+                        "minItems": %d,
+                        "maxItems": %d,
                         "items": { "type": "string" }
                       },
-                      "answer": { "type": "integer", "minimum": 0, "maximum": 3 },
+                      "answer": { "type": "integer", "minimum": 0, "maximum": %d },
                       "feedback": { "type": "string" }
                     }
                   }
@@ -99,7 +99,7 @@ public class OpenAiQuizGenerationService implements QuizGenerationService {
     @PostConstruct
     void initSchema() {
         try {
-            objectMapper.readTree(QUIZ_JSON_SCHEMA_TEMPLATE);
+            objectMapper.readTree(QUIZ_JSON_SCHEMA_TEMPLATE.formatted("MULTIPLE_CHOICE", 4, 4, 3));
         } catch (JsonProcessingException e) {
             throw new IllegalStateException("Schema JSON di OpenAI non valido.", e);
         }
@@ -209,7 +209,8 @@ public class OpenAiQuizGenerationService implements QuizGenerationService {
         }
 
         for (val question : quiz.getQuestions()) {
-            if (question == null || question.getOptions() == null || question.getOptions().size() != 4) {
+            if (question == null || question.getType() == QuestionType.TRUE_FALSE
+                    || question.getOptions() == null || question.getOptions().size() < 2 || question.getOptions().size() > 4) {
                 continue;
             }
             if (question.getAnswer() == null || question.getAnswer() < 0 || question.getAnswer() >= question.getOptions().size()) {
@@ -224,11 +225,17 @@ public class OpenAiQuizGenerationService implements QuizGenerationService {
         }
     }
 
-    private Map<String, Object> buildPayload(QuizGenerationRequestDto request, String attachmentText) {
+    Map<String, Object> buildPayload(QuizGenerationRequestDto request, String attachmentText) {
+        val numberOfOptions = request.getQuestionType() == QuestionType.TRUE_FALSE ? 2 : request.getNumberOfOptions();
+        val formatInstruction = request.getQuestionType() == QuestionType.TRUE_FALSE
+                ? "Ogni domanda deve essere un'affermazione da valutare. options deve essere esattamente [\"Vero\", \"Falso\"], in questo ordine. Usa answer 0 per vero e 1 per falso. Alterna affermazioni vere e false."
+                : "Ogni domanda deve avere esattamente " + numberOfOptions + " risposte a scelta multipla.";
         val userPrompt = """
                 Crea un quiz in italiano e rispondi SOLO con JSON valido compatibile con QuizDto.Request.
                 Campi obbligatori: title (string), emoji (string), questions (array).
-                Ogni question deve avere: text, emoji, imageKeywords, imageUrl, options (4 risposte), answer (indice corretto 0-3), feedback.
+                Ogni question deve avere: type, text, emoji, imageKeywords, imageUrl, options, answer (indice della risposta corretta), feedback.
+                type deve essere %s.
+                %s
                 imageKeywords deve contenere 2-6 keyword in inglese, separate da virgola, in ordine di importanza (la più importante per prima), pensate per cercare immagini su Wikimedia Commons.
                 imageUrl deve essere sempre stringa vuota: verrà valorizzato dal backend.
                 
@@ -246,6 +253,8 @@ public class OpenAiQuizGenerationService implements QuizGenerationService {
                 Testo di riferimento allegato (se presente):
                 %s
                 """.formatted(
+                request.getQuestionType().name(),
+                formatInstruction,
                 request.getTopic(),
                 request.getNumberOfQuestions(),
                 request.getDifficulty(),
@@ -258,7 +267,7 @@ public class OpenAiQuizGenerationService implements QuizGenerationService {
 
         val payload = new HashMap<String, Object>();
         payload.put("model", model);
-        payload.put("response_format", responseFormat());
+        payload.put("response_format", responseFormat(request));
         payload.put("messages", List.of(
                 Map.of("role", "system", "content", "Sei un assistente che crea quiz didattici accurati in italiano."),
                 Map.of("role", "user", "content", userPrompt)
@@ -266,29 +275,27 @@ public class OpenAiQuizGenerationService implements QuizGenerationService {
         return payload;
     }
 
-    private Map<String, Object> responseFormat() {
+    private Map<String, Object> responseFormat(QuizGenerationRequestDto request) {
         return Map.of(
                 "type", "json_schema",
                 "json_schema", Map.of(
                         "name", "quiz_dto_request",
                         "strict", true,
-                        "schema", parseQuizSchema()
+                        "schema", parseQuizSchema(request)
                 )
         );
     }
 
-    private Map<String, Object> parseQuizSchema() {
-        if (cachedQuizSchema != null) {
-            return cachedQuizSchema;
-        }
+    private Map<String, Object> parseQuizSchema(QuizGenerationRequestDto request) {
+        val numberOfOptions = request.getQuestionType() == QuestionType.TRUE_FALSE ? 2 : request.getNumberOfOptions();
         try {
-            val schema = objectMapper.readValue(QUIZ_JSON_SCHEMA_TEMPLATE, new TypeReference<Map<String, Object>>() {
+            val schema = objectMapper.readValue(QUIZ_JSON_SCHEMA_TEMPLATE.formatted(
+                    request.getQuestionType().name(), numberOfOptions, numberOfOptions, numberOfOptions - 1), new TypeReference<Map<String, Object>>() {
             });
             if (!"object".equals(schema.get("type"))) {
                 throw new IllegalStateException("Schema OpenAI non valido: type deve essere 'object'.");
             }
-            cachedQuizSchema = schema;
-            return cachedQuizSchema;
+            return schema;
         } catch (Exception e) {
             throw new IllegalStateException("Schema JSON di OpenAI non valido.", e);
         }

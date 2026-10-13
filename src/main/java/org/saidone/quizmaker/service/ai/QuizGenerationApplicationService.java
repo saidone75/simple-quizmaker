@@ -22,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.saidone.quizmaker.dto.QuestionDto;
+import org.saidone.quizmaker.entity.QuestionType;
 import org.saidone.quizmaker.dto.QuizDto;
 import org.saidone.quizmaker.dto.QuizGenerationRequestDto;
 import org.springframework.beans.factory.annotation.Value;
@@ -54,7 +55,7 @@ public class QuizGenerationApplicationService {
         for (int i = 1; i <= attempts; i++) {
             try {
                 val generated = quizGenerationService.generateQuiz(request, safeAttachmentText);
-                sanitize(generated, request.getNumberOfQuestions());
+                sanitize(generated, request);
                 return generated;
             } catch (RuntimeException ex) {
                 lastError = ex;
@@ -65,7 +66,9 @@ public class QuizGenerationApplicationService {
     }
 
     private void validateRequestLimits(QuizGenerationRequestDto request) {
-        if (request == null || request.getNumberOfQuestions() == null) {
+        if (request == null || request.getNumberOfQuestions() == null || request.getNumberOfQuestions() < 1
+                || request.getQuestionType() == null || request.getNumberOfOptions() == null
+                || request.getNumberOfOptions() < 2 || request.getNumberOfOptions() > 4) {
             throw new IllegalStateException("Richiesta di generazione non valida.");
         }
 
@@ -83,7 +86,7 @@ public class QuizGenerationApplicationService {
         return attachmentText.substring(0, Math.min(effectiveMaxAttachmentChars, attachmentText.length()));
     }
 
-    private void sanitize(QuizDto.Request generated, int maxQuestions) {
+    private void sanitize(QuizDto.Request generated, QuizGenerationRequestDto request) {
         if (generated == null || generated.getQuestions() == null || generated.getQuestions().isEmpty()) {
             throw new IllegalStateException("L'IA non ha generato domande valide.");
         }
@@ -95,8 +98,8 @@ public class QuizGenerationApplicationService {
         }
 
         generated.setQuestions(generated.getQuestions().stream()
-                .filter(this::hasValidQuestion)
-                .limit(maxQuestions)
+                .filter(question -> hasValidQuestion(question, request))
+                .limit(request.getNumberOfQuestions())
                 .toList());
 
         if (generated.getQuestions().isEmpty()) {
@@ -104,17 +107,15 @@ public class QuizGenerationApplicationService {
         }
     }
 
-    private boolean hasValidQuestion(QuestionDto question) {
+    private boolean hasValidQuestion(QuestionDto question, QuizGenerationRequestDto request) {
         return question != null
                 && StringUtils.hasText(question.getText())
                 && StringUtils.hasText(question.getEmoji())
                 && StringUtils.hasText(question.getFeedback())
-                && question.getOptions() != null
-                && question.getOptions().size() == 4
-                && question.getOptions().stream().allMatch(StringUtils::hasText)
-                && question.getAnswer() != null
-                && question.getAnswer() >= 0
-                && question.getAnswer() < 4;
+                && question.hasValidAnswers()
+                && question.getType() == request.getQuestionType()
+                && question.getOptions().size() == (request.getQuestionType() == QuestionType.TRUE_FALSE
+                    ? 2 : request.getNumberOfOptions());
     }
 
 }

@@ -86,6 +86,7 @@ public class QuizService {
     @Transactional
     @PreAuthorize("@teacherAuthorizationPolicy.isTeacher(#teacher)")
     public QuizDto.Response create(QuizDto.Request request, Teacher teacher) {
+        validateQuestions(request);
         questionImageAuthorizationPolicy.validateQuestions(request.getQuestions(), teacher);
         val quiz = Quiz.builder()
                 .title(request.getTitle())
@@ -105,6 +106,7 @@ public class QuizService {
     @Transactional
     @PreAuthorize("@teacherAuthorizationPolicy.canManageQuiz(#id, #teacher)")
     public QuizDto.Response update(UUID id, QuizDto.Request request, Teacher teacher) {
+        validateQuestions(request);
         questionImageAuthorizationPolicy.validateQuestions(request.getQuestions(), teacher);
         val quiz = quizRepository.findByIdAndTeacher(id, teacher)
                 .orElseThrow(() -> new EntityNotFoundException(String.format(QUIZ_NOT_FOUND_MESSAGE, id)));
@@ -159,6 +161,22 @@ public class QuizService {
         val saved = quizRepository.save(quiz);
         log.info("Stato archiviazione del quiz aggiornato: {} ({}) => {}", saved.getTitle(), saved.getId(), saved.getArchived());
         return toResponse(saved);
+    }
+
+    private void validateQuestions(QuizDto.Request request) {
+        if (request.getQuestions() == null || request.getQuestions().isEmpty()) {
+            throw new IllegalArgumentException("Aggiungi almeno una domanda al quiz.");
+        }
+        val first = request.getQuestions().getFirst();
+        for (val question : request.getQuestions()) {
+            if (question == null || question.getText() == null || question.getText().isBlank()
+                    || !question.hasValidAnswers()) {
+                throw new IllegalArgumentException("Ogni domanda deve avere un testo, da 2 a 4 risposte e una risposta corretta valida. Per vero/falso usa Vero e Falso, in questo ordine.");
+            }
+            if (question.getType() != first.getType() || question.getOptions().size() != first.getOptions().size()) {
+                throw new IllegalArgumentException("Tutte le domande devono usare lo stesso tipo e numero di risposte.");
+            }
+        }
     }
 
     private QuizDto.Response toResponse(Quiz quiz) {

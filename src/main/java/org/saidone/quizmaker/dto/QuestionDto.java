@@ -19,11 +19,13 @@
 package org.saidone.quizmaker.dto;
 
 import lombok.Data;
+import org.saidone.quizmaker.entity.QuestionType;
 
 import java.util.List;
 
 @Data
 public class QuestionDto {
+    private QuestionType type = QuestionType.MULTIPLE_CHOICE;
     private String text;
     private String emoji;
     private String imageKeywords;
@@ -32,4 +34,13 @@ public class QuestionDto {
     private List<String> options;
     private Integer answer;
     private String feedback;
+
+    public boolean hasValidAnswers() {
+        return type != null
+                && options != null
+                && options.size() >= 2 && options.size() <= 4
+                && options.stream().allMatch(option -> option != null && !option.isBlank())
+                && answer != null && answer >= 0 && answer < options.size()
+                && (type != QuestionType.TRUE_FALSE || options.equals(List.of("Vero", "Falso")));
+    }
 }

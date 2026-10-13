@@ -1,5 +1,7 @@
 package org.saidone.quizmaker.policy;
 
+import lombok.val;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -119,7 +121,7 @@ class QuestionImageAuthorizationPolicyTest {
     @Test
     void cannotAttachForeignImageByIdOrUrl() {
         when(images.findById(imageId)).thenReturn(Optional.of(image));
-        var question = new QuestionDto();
+        val question = new QuestionDto();
         question.setImageId(imageId.toString());
         assertThatThrownBy(() -> policy.validateQuestions(List.of(question), other))
                 .isInstanceOf(AccessDeniedException.class);
@@ -132,7 +134,7 @@ class QuestionImageAuthorizationPolicyTest {
     @Test
     void ownerCanAttachOwnUploadAndExternalImagesRemainAllowed() {
         when(images.findById(imageId)).thenReturn(Optional.of(image));
-        var question = new QuestionDto();
+        val question = new QuestionDto();
         question.setImageId(imageId.toString());
         question.setImageUrl("https://upload.wikimedia.org/example.png");
         assertThatCode(() -> policy.validateQuestions(List.of(question), owner)).doesNotThrowAnyException();
@@ -145,7 +147,7 @@ class QuestionImageAuthorizationPolicyTest {
     }
 
     private Quiz quiz(Teacher teacher, boolean urlOnly) {
-        var question = new Question();
+        val question = new Question();
         if (urlOnly) question.setImageUrl("/api/quizzes/images/" + imageId);
         else question.setImageId(imageId.toString());
         return Quiz.builder().teacher(teacher).questions(List.of(question)).published(true).build();

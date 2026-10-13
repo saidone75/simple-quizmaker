@@ -24,6 +24,7 @@ import java.util.List;
 
 @Data
 public class Question {
+    private QuestionType type = QuestionType.MULTIPLE_CHOICE;
     private String text;
     private String emoji;
     private String imageUrl;
