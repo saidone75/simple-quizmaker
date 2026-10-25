@@ -11,6 +11,8 @@ in **Non rilasciato**.
 
 ## [Non rilasciato]
 
+## [1.2.0] - 2026-10-25
+
 ### Aggiunto
 
 - Selezione del formato dei quiz: scelta multipla con 2, 3 o 4 risposte oppure vero/falso.
@@ -119,7 +121,8 @@ in **Non rilasciato**.
 - Database H2 per `dev`/`docker`, SQLite per `prod`.
 - Runtime embedded Jetty.
 
-[Non rilasciato]: https://github.com/saidone75/simple-quizmaker/compare/v1.1.0...HEAD
+[Non rilasciato]: https://github.com/saidone75/simple-quizmaker/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/saidone75/simple-quizmaker/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/saidone75/simple-quizmaker/compare/v1.0.5...v1.1.0
 [1.0.5]: https://github.com/saidone75/simple-quizmaker/compare/v1.0.4...v1.0.5
 [1.0.4]: https://github.com/saidone75/simple-quizmaker/compare/v1.0.3...v1.0.4
