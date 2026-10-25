@@ -11,6 +11,10 @@ in **Non rilasciato**.
 
 ## [Non rilasciato]
 
+### Modificato
+
+- Riscritto lo smoke test end-to-end in Clojure con Babashka, con verifica del risultato e pulizia dei dati creati.
+
 ### Corretto
 
 - Risolto il conflitto di convergenza tra Liquibase e Apache POI allineando `commons-collections4` alla versione 4.6.0.
