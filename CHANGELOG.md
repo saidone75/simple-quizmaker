@@ -18,8 +18,10 @@ in **Non rilasciato**.
 ### Modificato
 
 - Migliorata la spaziatura dei campi nell'editor dei quiz.
-- Semplificato il codice Java e JavaScript e aggiornate le verifiche del reindirizzamento al login per i badge studente.
-
+- Semplificato il codice Java e JavaScript.
+- Aggiornato il nome dell'applicazione Spring da `quizmaker` a `simple-quizmaker`.
+- Aggiornati Deep Java Library (DJL) alla versione 0.39.0, PyTorch JNI alla versione 2.7.1-0.39.0 e Apache POI alla versione 6.0.0.
+- Aggiornati Error Prone Annotations alla versione 2.50.0, Versions Maven Plugin alla versione 2.23.0 e il workflow CodeQL alla versione 4.39.0.
 
 ### Corretto
 
