@@ -1,6 +1,6 @@
 spring:
   application:
-    name: quizmaker
+    name: simple-quizmaker
   output:
     ansi:
       enabled: always

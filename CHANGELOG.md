@@ -17,8 +17,9 @@ in **Non rilasciato**.
 
 ### Modificato
 
+- Aggiornato il nome dell'applicazione Spring da `quizmaker` a `simple-quizmaker`.
 - Migliorata la spaziatura dei campi nell'editor dei quiz.
-- Semplificato il codice Java e JavaScript e aggiornate le verifiche del reindirizzamento al login per i badge studente.
+- Semplificato il codice Java e JavaScript.
 
 ### Corretto
 
@@ -43,6 +44,7 @@ in **Non rilasciato**.
 ### Corretto
 
 - Migliorata la normalizzazione delle parole chiave per le immagini nella generazione AI dei quiz.
+- Aggiornate le verifiche del reindirizzamento al login per i badge studente.
 
 ## [1.0.5] - 2026-10-10
 
