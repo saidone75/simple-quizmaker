@@ -11,6 +11,10 @@ in **Non rilasciato**.
 
 ## [Non rilasciato]
 
+### Corretto
+
+- Risolto il conflitto di convergenza tra Liquibase e Apache POI allineando `commons-collections4` alla versione 4.6.0.
+
 ## [1.2.0] - 2026-10-25
 
 ### Aggiunto
