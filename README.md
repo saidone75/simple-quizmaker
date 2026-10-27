@@ -213,7 +213,7 @@ Quando aggiorni lo schema del database, avvia con `LIQUIBASE_ENABLED=true`
 | `PROD_SQLITE_DB_URL`                 | `jdbc:sqlite:./data/quizmaker.db`                 | Path DB SQLite in produzione                  |
 | `OPENAI_API_KEY`                     | vuota                                             | API key OpenAI                                |
 | `OPENAI_MODEL`                       | `gpt-5.4-mini`                                    | Modello per generazione quiz                  |
-| `AI_EMBEDDING_MODEL_URL`             | `djl://.../paraphrase-multilingual-MiniLM-L12-v2` | Modello locale per embedding                  |
+| `AI_EMBEDDING_MODEL_URL`             | `djl://.../all-MiniLM-L6-v2` | Modello locale per embedding                  |
 | `AI_GENERATION_MAX_QUESTIONS`        | `20`                                              | Numero massimo domande generate               |
 | `AI_GENERATION_MAX_ATTACHMENT_CHARS` | `60000`                                           | Max caratteri estratti da allegato            |
 | `AI_GENERATION_MAX_ATTEMPTS`         | `2`                                               | Tentativi massimi di generazione/validazione  |

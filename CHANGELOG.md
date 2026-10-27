@@ -11,8 +11,11 @@ in **Non rilasciato**.
 
 ## [Non rilasciato]
 
+## [1.2.1] - 2026-10-27
+
 ### Modificato
 
+- Impostato `all-MiniLM-L6-v2` come modello predefinito per la ricerca semantica delle immagini, al posto di `paraphrase-multilingual-MiniLM-L12-v2`.
 - Riscritto lo smoke test end-to-end in Clojure con Babashka, con verifica del risultato e pulizia dei dati creati.
 
 ### Corretto
@@ -129,7 +132,8 @@ in **Non rilasciato**.
 - Database H2 per `dev`/`docker`, SQLite per `prod`.
 - Runtime embedded Jetty.
 
-[Non rilasciato]: https://github.com/saidone75/simple-quizmaker/compare/v1.2.0...HEAD
+[Non rilasciato]: https://github.com/saidone75/simple-quizmaker/compare/v1.2.1...HEAD
+[1.2.1]: https://github.com/saidone75/simple-quizmaker/compare/v1.2.0...v1.2.1
 [1.2.0]: https://github.com/saidone75/simple-quizmaker/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/saidone75/simple-quizmaker/compare/v1.0.5...v1.1.0
 [1.0.5]: https://github.com/saidone75/simple-quizmaker/compare/v1.0.4...v1.0.5
