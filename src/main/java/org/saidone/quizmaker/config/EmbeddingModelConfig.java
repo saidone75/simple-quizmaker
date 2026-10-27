@@ -36,7 +36,7 @@ import java.io.IOException;
 @Slf4j
 public class EmbeddingModelConfig {
 
-    @Value("${app.ai.embedding.model-url:djl://ai.djl.huggingface.pytorch/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2}")
+    @Value("${app.ai.embedding.model-url:djl://ai.djl.huggingface.pytorch/sentence-transformers/all-MiniLM-L6-v2}")
     private String embeddingModelUrl;
 
     @Bean(destroyMethod = "close")

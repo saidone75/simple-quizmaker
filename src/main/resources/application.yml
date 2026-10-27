@@ -27,7 +27,7 @@ app:
     model: ${OPENAI_MODEL:gpt-6-luna}
   ai:
     embedding:
-      model-url: ${AI_EMBEDDING_MODEL_URL:djl://ai.djl.huggingface.pytorch/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2}
+      model-url: ${AI_EMBEDDING_MODEL_URL:djl://ai.djl.huggingface.pytorch/sentence-transformers/all-MiniLM-L6-v2}
     generation:
       max-questions: ${AI_GENERATION_MAX_QUESTIONS:20}
       max-attachment-chars: ${AI_GENERATION_MAX_ATTACHMENT_CHARS:60000}

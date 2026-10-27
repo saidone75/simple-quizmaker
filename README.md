@@ -135,7 +135,7 @@ mvn test
 Per validare rapidamente il flusso completo (teacher login, creazione studente, creazione quiz, pubblicazione, login studente e submit):
 
 ```bash
-./scripts/smoke-e2e.sh
+bb smoke
 ```
 
 Variabili utili:
@@ -144,6 +144,14 @@ Variabili utili:
 - `ADMIN_USERNAME` (default `admin`)
 - `ADMIN_PASSWORD` (default `changeme`)
 - `SPRING_PROFILE` (default `dev`)
+- `START_APP=0` per verificare un'applicazione già avviata; altrimenti il test avvia Maven e arresta l'app al termine.
+- `DISABLE_TURNSTILE` (default `1`, applicato solo all'app avviata dal test)
+
+Richiede Babashka (verificato con 1.0.164), `curl` e, per l'avvio automatico, Maven e Java 21.
+Lo script Clojure è in `scripts/smoke-e2e.clj`; `scripts/smoke-e2e.sh` resta un collegamento allo stesso test.
+Il test usa sessioni separate per insegnante e studente, verifica la presenza del quiz pubblicato,
+il punteggio e il blocco dopo la consegna, e rimuove il quiz e lo studente creati anche in caso di errore.
+Per un'app già avviata, impostare credenziali valide: non vengono registrati nuovi insegnanti.
 
 ## 🔐 Credenziali iniziali
 
@@ -205,7 +213,7 @@ Quando aggiorni lo schema del database, avvia con `LIQUIBASE_ENABLED=true`
 | `PROD_SQLITE_DB_URL`                 | `jdbc:sqlite:./data/quizmaker.db`                 | Path DB SQLite in produzione                  |
 | `OPENAI_API_KEY`                     | vuota                                             | API key OpenAI                                |
 | `OPENAI_MODEL`                       | `gpt-5.4-mini`                                    | Modello per generazione quiz                  |
-| `AI_EMBEDDING_MODEL_URL`             | `djl://.../paraphrase-multilingual-MiniLM-L12-v2` | Modello locale per embedding                  |
+| `AI_EMBEDDING_MODEL_URL`             | `djl://.../all-MiniLM-L6-v2` | Modello locale per embedding                  |
 | `AI_GENERATION_MAX_QUESTIONS`        | `20`                                              | Numero massimo domande generate               |
 | `AI_GENERATION_MAX_ATTACHMENT_CHARS` | `60000`                                           | Max caratteri estratti da allegato            |
 | `AI_GENERATION_MAX_ATTEMPTS`         | `2`                                               | Tentativi massimi di generazione/validazione  |

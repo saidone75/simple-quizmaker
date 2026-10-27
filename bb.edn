@@ -1,0 +1,3 @@
+{:tasks
+ {smoke {:doc "Smoke test end-to-end contro l'applicazione Spring"
+         :task (load-file "scripts/smoke-e2e.clj")}}}
