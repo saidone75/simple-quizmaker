@@ -26,14 +26,13 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import javax.sql.DataSource;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import javax.sql.DataSource;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.UUID;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -82,7 +81,7 @@ public class DatabaseBackupScheduler {
                     : sourceFileName;
 
             val timestamp = LocalDateTime.now(ZoneId.systemDefault()).format(TIMESTAMP_FORMATTER);
-            val backupFile = backupDirPath.resolve(String.format("%s-%s-%s.db", baseName, timestamp, UUID.randomUUID()));
+            val backupFile = backupDirPath.resolve(String.format("%s-%s.db", baseName, timestamp));
             temporaryBackup = Files.createTempFile(backupDirPath, baseName + "-", ".tmp");
 
             // Use a dedicated pool checkout, outside any Spring-managed transaction.
