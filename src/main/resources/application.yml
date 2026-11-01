@@ -37,7 +37,7 @@ app:
   db-backup:
     enabled: ${DB_BACKUP_ENABLED:false}
     cron: ${DB_BACKUP_CRON:0 0 2 * * *}
-    directory: ${DB_BACKUP_DIRECTORY:./backups}
+    directory: ${DB_BACKUP_DIRECTORY:./backup}
     retention-count: ${DB_BACKUP_RETENTION_COUNT:30}
   image-cleanup:
     enabled: ${IMAGE_CLEANUP_ENABLED:true}
