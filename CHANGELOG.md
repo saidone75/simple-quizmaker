@@ -11,9 +11,17 @@ in **Non rilasciato**.
 
 ## [Non rilasciato]
 
+### Aggiunto
+
+- Possibilità per gli studenti di rivedere i quiz completati e le risposte consegnate in sola lettura, mantenendo lo sblocco dell'insegnante necessario per un nuovo tentativo.
+
 ### Modificato
 
 - Riuniti introduzione e contenuti della pagina Discover in un'unica card, con sezioni disposte in una sola colonna.
+
+### Corretto
+
+- Mostrati messaggi comprensibili durante la generazione AI per allegati troppo grandi, sessioni scadute, timeout e risposte non JSON del server.
 
 ## [1.2.1] - 2026-10-27
 

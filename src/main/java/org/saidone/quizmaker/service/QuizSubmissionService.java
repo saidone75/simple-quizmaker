@@ -55,6 +55,15 @@ public class QuizSubmissionService {
                 .collect(java.util.stream.Collectors.toSet());
     }
 
+    @Transactional(readOnly = true)
+    public QuizSubmissionDto.Review review(UUID quizId, Student student) {
+        quizRepository.findByIdAndTeacherAndPublishedTrueAndArchivedFalse(quizId, student.getTeacher())
+                .orElseThrow(() -> new EntityNotFoundException("Quiz non trovato"));
+        val submission = quizSubmissionRepository.findByStudentIdAndQuizId(student.getId(), quizId)
+                .orElseThrow(() -> new EntityNotFoundException("Quiz non ancora completato"));
+        return new QuizSubmissionDto.Review(submission.getAnswers(), submission.getScore(), submission.getTotalQuestions());
+    }
+
     @Transactional
     public QuizSubmissionDto.Response submit(UUID quizId, Student student, List<Integer> answers) {
         val quiz = quizRepository.findByIdAndTeacherAndPublishedTrueAndArchivedFalse(quizId, student.getTeacher())

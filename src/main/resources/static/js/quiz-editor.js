@@ -538,9 +538,26 @@ async function generateQuizWithAi() {
             body: formData
         });
 
-        const payload = await res.json();
+        if (res.status === 413) {
+            throw new Error("L'allegato supera la dimensione massima consentita. Riduci le dimensioni del file e riprova.");
+        }
+        if (res.redirected && new URL(res.url).pathname === '/teacher/login') {
+            throw new Error('La sessione è scaduta. Accedi di nuovo e riprova.');
+        }
+        if (res.status === 504) {
+            throw new Error('La generazione ha impiegato troppo tempo. Riprova con meno domande o un allegato più piccolo.');
+        }
+
+        let payload;
+        try {
+            payload = await res.json();
+        } catch {
+            throw new Error(res.ok
+                ? 'Il server ha restituito una risposta non valida. Riprova tra poco.'
+                : `Il server non ha completato la richiesta (HTTP ${res.status}). Riprova tra poco.`);
+        }
         if (!res.ok) {
-            throw new Error(payload.message || 'Errore durante la generazione AI');
+            throw new Error(payload?.message || 'Errore durante la generazione AI');
         }
 
         applyGeneratedQuiz(payload);

@@ -470,7 +470,7 @@ input[type="file"].input-field::-webkit-file-upload-button:hover {
 }
 .quiz-pick-item.is-locked,
 .quiz-pick-item.is-locked * {
-    cursor: default;
+    cursor: pointer;
 }
 .quiz-pick-item.is-locked:hover {
     transform: none;
