@@ -90,6 +90,26 @@ class StudentBadgeIntegrationTest {
     }
 
     @Test
+    void submissionAndBadgeCollectionWorkWithDetachedAuthenticationPrincipal() {
+        entityManager.flush();
+        entityManager.clear();
+        val principal = students.findById(student.getId()).orElseThrow();
+        assertThat(org.hibernate.Hibernate.isInitialized(principal.getTeacher())).isFalse();
+        entityManager.clear();
+        SecurityContextHolder.getContext().setAuthentication(new StudentAuthenticationToken(principal));
+
+        val response = submissionService.submit(quiz.getId(), principal, List.of(0));
+        assertThat(response.getScore()).isEqualTo(1);
+        assertThat(response.getNewBadges()).extracting(StudentBadgeDto.EarnedBadge::code)
+                .contains("FIRST_QUIZ");
+        entityManager.flush();
+        entityManager.clear();
+        assertThat(submissions.findByStudentIdAndQuizId(principal.getId(), quiz.getId())).isPresent();
+        assertThat(attempts.findByStudentIdOrderByCompletedAtAscIdAsc(principal.getId())).hasSize(1);
+        assertThat(badgeService.forCurrentStudent().completedQuizzes()).isEqualTo(1);
+    }
+
+    @Test
     void classBadgePanelSavesOnlyCurrentTeachersSettingsAndSnapshotsNewAttempts() throws Exception {
         val other = teachers.saveAndFlush(Teacher.builder().username("badge-other").password("unused").build());
         mvc.perform(get("/teacher/students").with(user(teacher.getUsername()).roles("TEACHER")))

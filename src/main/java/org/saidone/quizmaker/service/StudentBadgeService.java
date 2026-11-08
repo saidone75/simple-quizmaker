@@ -34,7 +34,7 @@ public class StudentBadgeService {
     @Transactional(readOnly = true)
     @PreAuthorize("hasRole('STUDENT')")
     public StudentBadgeDto.Collection forCurrentStudent() {
-        val student = studentAuthenticationService.getCurrentStudent();
+        val student = managedStudent(studentAuthenticationService.getCurrentStudent());
         return collection(student);
     }
 
@@ -51,6 +51,7 @@ public class StudentBadgeService {
     @PreAuthorize("hasRole('STUDENT') && #student.id == authentication.principal.id")
     public List<StudentBadgeDto.EarnedBadge> recordCompletion(Quiz quiz, Student student,
                                                              int score, int total, LocalDateTime completedAt) {
+        student = managedStudent(student);
         val history = new ArrayList<>(attemptRepository.findByStudentIdOrderByCompletedAtAscIdAsc(student.getId()));
         val previousKeys = StudentBadgeEvaluator.evaluate(student, history).badges().stream()
                 .map(StudentBadgeDto.EarnedBadge::key).collect(Collectors.toSet());
@@ -63,6 +64,12 @@ public class StudentBadgeService {
         history.add(attempt);
         return StudentBadgeEvaluator.evaluate(student, history).badges().stream()
                 .filter(badge -> !previousKeys.contains(badge.key())).toList();
+    }
+
+    // Authentication principals can outlive the persistence context that loaded them.
+    private Student managedStudent(Student student) {
+        return studentRepository.findById(student.getId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Studente non trovato"));
     }
 
     private StudentBadgeDto.Collection collection(Student student) {

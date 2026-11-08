@@ -42,6 +42,7 @@ class StudentBadgeServiceTest {
 
     @Test
     void recordsSnapshotsAndReturnsOnlyNewBadges() {
+        when(students.findById(student.getId())).thenReturn(Optional.of(student));
         when(attempts.findByStudentIdOrderByCompletedAtAscIdAsc(student.getId())).thenReturn(List.of());
         val newBadges = service.recordCompletion(quiz, student, 5, 5, date);
         assertThat(newBadges).extracting(StudentBadgeDto.EarnedBadge::name)
@@ -53,6 +54,7 @@ class StudentBadgeServiceTest {
 
     @Test
     void repeatedCompletionDoesNotAnnouncePreviouslyEarnedBadgesAgain() {
+        when(students.findById(student.getId())).thenReturn(Optional.of(student));
         val previous = StudentQuizAttempt.builder().id(UUID.randomUUID()).student(student)
                 .quizId(quiz.getId()).quizTitle("Geografia").quizBadges(quiz.getBadges())
                 .score(5).totalQuestions(5).completedAt(date).build();
@@ -72,6 +74,7 @@ class StudentBadgeServiceTest {
 
     @Test
     void ownCollectionUsesTheAuthenticatedStudentOnly() {
+        when(students.findById(student.getId())).thenReturn(Optional.of(student));
         when(authentication.getCurrentStudent()).thenReturn(student);
         when(attempts.findByStudentIdOrderByCompletedAtAscIdAsc(student.getId())).thenReturn(List.of());
         val collection = service.forCurrentStudent();
