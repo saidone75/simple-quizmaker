@@ -250,7 +250,7 @@ globalThis.resumeQuizIfNeeded = resumeQuizIfNeeded;
 function startQuizFromCard(el) {
     const id = el.dataset.id;
     if (globalThis.LOCKED_QUIZ_IDS?.has(String(id)) || el.dataset.locked === 'true') {
-        showStudentAlert();
+        void reviewQuiz(id);
         return;
     }
 
@@ -288,6 +288,57 @@ function startQuizFromCard(el) {
 
 globalThis.startQuizFromCard = startQuizFromCard;
 
+async function reviewQuiz(id) {
+    try {
+        const responses = await Promise.all([
+            apiFetch('/api/quizzes/' + id),
+            apiFetch('/api/quizzes/' + id + '/review')
+        ]);
+        if (responses.some(response => !response.ok || response.redirected)) {
+            throw new Error('Impossibile caricare le risposte consegnate.');
+        }
+        const [quiz, review] = await Promise.all(responses.map(response => response.json()));
+        let current = 0;
+        disableQuizNavigationLock();
+        goTo('quiz');
+        function renderReview() {
+            const q = quiz.questions[current];
+            const selected = review.answers?.[current];
+            document.getElementById('play-title').textContent = `${quiz.emoji || ''} ${quiz.title} · Sola lettura`;
+            document.getElementById('play-score').textContent = `⭐ ${review.score} / ${review.total}`;
+            document.getElementById('play-progress-text').textContent = `Domanda ${current + 1} di ${quiz.questions.length}`;
+            const pct = Math.round(((current + 1) / quiz.questions.length) * 100);
+            document.getElementById('play-pct').textContent = pct + '%';
+            document.getElementById('play-progress-fill').style.width = pct + '%';
+            const imageUrl = resolveQuestionImageUrl(q);
+            document.getElementById('play-area').innerHTML = `
+                <div class="quiz-card">
+                    <p>Quiz completato: puoi rivedere le tue risposte. Per rifarlo, chiedi alla maestra di sbloccarlo.</p>
+                    <p class="quiz-question">${escHtml(q.text)}</p>
+                    ${imageUrl ? `<div class="quiz-media-box"><img src="${escHtml(imageUrl)}" alt="Immagine domanda" class="quiz-media-img" loading="lazy" referrerpolicy="no-referrer"></div>` : ''}
+                    <div class="quiz-options">${q.options.map((option, index) => `
+                        <button type="button" disabled class="quiz-opt${index === q.answer ? ' correct' : index === selected ? ' wrong' : ''}">
+                            <span class="ql">${LETTERS[index]}</span> ${escHtml(option)}
+                            ${index === selected ? ' · La tua risposta' : ''}
+                            ${index === q.answer ? ' · Risposta corretta' : ''}
+                        </button>`).join('')}
+                    </div>
+                    ${!Number.isInteger(selected) ? '<p>Non hai risposto a questa domanda.</p>' : ''}
+                    ${q.feedback ? `<p>${escHtml(q.feedback)}</p>` : ''}
+                </div>
+                <button type="button" class="quiz-next" id="review-prev" ${current === 0 ? 'disabled' : ''}>← Precedente</button>
+                <button type="button" class="quiz-next" id="review-next" ${current === quiz.questions.length - 1 ? 'disabled' : ''}>Successiva →</button>
+                <button type="button" class="quiz-next" id="review-home">🎒 Torna ai quiz</button>`;
+            document.getElementById('review-prev').onclick = () => { current--; renderReview(); };
+            document.getElementById('review-next').onclick = () => { current++; renderReview(); };
+            document.getElementById('review-home').onclick = () => goTo('student');
+        }
+        renderReview();
+    } catch (error) {
+        showStudentAlert('Errore nel caricamento del quiz', 'Riprova tra poco o avvisa la maestra.');
+    }
+}
+
 
 function markQuizCardAsLocked(quizId) {
     const quizCard = document.querySelector('.quiz-picker .quiz-pick-item[data-id="' + String(quizId) + '"]');
@@ -295,6 +346,12 @@ function markQuizCardAsLocked(quizId) {
 
     quizCard.dataset.locked = 'true';
     quizCard.classList.add('is-locked');
+    quizCard.title = 'Quiz completato: clicca per rivedere le tue risposte';
+    const count = quizCard.querySelector('.quiz-pick-count');
+    if (count && !count.dataset.reviewLabel) {
+        count.textContent += ' · Rivedi le risposte';
+        count.dataset.reviewLabel = 'true';
+    }
 
 }
 

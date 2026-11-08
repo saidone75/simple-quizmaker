@@ -47,6 +47,39 @@ class QuizSubmissionServiceTest {
     }
 
     @Test
+    void reviewReturnsSavedAnswersWithoutChangingOrUnlockingSubmission() {
+        val saved = QuizSubmission.builder().answers(List.of(1, 1)).score(1)
+                .totalQuestions(2).unlocked(false).build();
+        when(submissions.findByStudentIdAndQuizId(student.getId(), quiz.getId()))
+                .thenReturn(Optional.of(saved));
+        val review = service.review(quiz.getId(), student);
+        assertThat(review.answers()).containsExactly(1, 1);
+        assertThat(review.score()).isEqualTo(1);
+        assertThat(review.total()).isEqualTo(2);
+        assertThat(saved.getUnlocked()).isFalse();
+        verify(submissions, never()).save(any());
+        verifyNoInteractions(badges);
+    }
+
+    @Test
+    void reviewRejectsQuizOutsideStudentsPublishedAvailableQuizzes() {
+        when(quizzes.findByIdAndTeacherAndPublishedTrueAndArchivedFalse(quiz.getId(), teacher))
+                .thenReturn(Optional.empty());
+        assertThatThrownBy(() -> service.review(quiz.getId(), student))
+                .isInstanceOf(jakarta.persistence.EntityNotFoundException.class);
+        verifyNoInteractions(submissions, badges);
+    }
+
+    @Test
+    void reviewRequiresStudentsOwnSubmission() {
+        when(submissions.findByStudentIdAndQuizId(student.getId(), quiz.getId()))
+                .thenReturn(Optional.empty());
+        assertThatThrownBy(() -> service.review(quiz.getId(), student))
+                .isInstanceOf(jakarta.persistence.EntityNotFoundException.class);
+        verify(submissions, never()).save(any());
+    }
+
+    @Test
     void badgesUseServerCalculatedScoreAndAreIncludedInTheSubmissionResponse() {
         val earned = new StudentBadgeDto.EarnedBadge("key", "cartographer", "Cartografo provetto", "🗺️",
                 "Risposte corrette", "Quiz", quiz.getId(), quiz.getTitle(), LocalDateTime.now());

@@ -30,6 +30,8 @@ import java.util.UUID;
 @UtilityClass
 public class QuizSubmissionDto {
 
+    public record Review(List<Integer> answers, Integer score, Integer total) {}
+
     @Data
     @NoArgsConstructor
     @AllArgsConstructor

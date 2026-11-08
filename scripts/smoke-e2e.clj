@@ -18,7 +18,7 @@
   (when-not condition (throw (ex-info message {}))))
 
 (defn request! [session method path & [options]]
-  (let [{:keys [form data headers]} options
+  (let [{:keys [form data headers expected-status]} options
         cookie (str (io/file workdir (str (name session) ".cookies")))
         body-file (str (io/file workdir (str (random-uuid) ".body")))
         args (vec (concat ["curl" "--silent" "--show-error" "--connect-timeout" "3"
@@ -34,7 +34,8 @@
     (let [status (parse-long (:out result))
           body (slurp body-file)]
       (io/delete-file body-file)
-      (check! (<= 200 status 399) (str method " " path ": HTTP " status))
+      (check! (if expected-status (= expected-status status) (<= 200 status 399))
+              (str method " " path ": HTTP " status))
       {:status status :body body})))
 
 (defn attribute [tag attr]
@@ -115,7 +116,16 @@
         (check! (= {:quizId id :score 1 :total 1 :locked true}
                    (select-keys result [:quizId :score :total :locked]))
                 (str "Risultato inatteso: " (pr-str result)))
-        (println "Punteggio verificato: 1/1, quiz bloccato.")))))
+        (println "Punteggio verificato: 1/1, quiz bloccato."))
+      (let [review (api! :student :GET (str "/api/quizzes/" id "/review"))]
+        (check! (= {:answers [1] :score 1 :total 1} review)
+                "La revisione non contiene le risposte consegnate"))
+      (let [retry (request! :student :POST (str "/api/quizzes/" id "/submit")
+                            {:headers (csrf-headers :student "/") :data {:answers [0]} :expected-status 400})]
+        (check! (= 400 (:status retry)) "Il quiz completato consente un nuovo invio"))
+      (check! (= [1] (:answers (api! :student :GET (str "/api/quizzes/" id "/review"))))
+              "Le risposte consegnate sono state modificate")
+      (println "Revisione verificata: risposte invariate e nuovo invio bloccato."))))
 
 (defn cleanup! []
   (let [errors (atom [])]

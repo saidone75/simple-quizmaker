@@ -80,6 +80,11 @@ public class QuizApiController {
         return ResponseEntity.ok(quizService.findPublishedByIdForTeacher(id, student.getTeacher()));
     }
 
+    @GetMapping("/{id}/review")
+    public ResponseEntity<QuizSubmissionDto.Review> review(@PathVariable UUID id) {
+        return ResponseEntity.ok(quizSubmissionService.review(id, studentAuthenticationService.getCurrentStudent()));
+    }
+
     @PostMapping("/{id}/submit")
     public ResponseEntity<QuizSubmissionDto.Response> submit(
             @PathVariable UUID id,
