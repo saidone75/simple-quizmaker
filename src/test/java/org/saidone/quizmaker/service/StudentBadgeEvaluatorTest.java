@@ -21,6 +21,24 @@ class StudentBadgeEvaluatorTest {
     private final LocalDateTime start = LocalDateTime.of(2026, 10, 1, 12, 0);
 
     @Test
+    void changedSettingsPreserveEarnedBadgesAndDoNotRetroactivelyAwardNewOnes() {
+        val old = attempt(quizId, 1, 5, start, List.of());
+        val rules = org.saidone.quizmaker.dto.ClassBadgeRule.defaults().stream()
+                .map(r -> new org.saidone.quizmaker.dto.ClassBadgeRule(r.id(), !r.id().equals("FIRST_QUIZ"), 1)).toList();
+        val before = StudentBadgeEvaluator.evaluate(student, List.of(old), rules);
+        assertThat(before.badges()).extracting(StudentBadgeDto.EarnedBadge::code).containsExactly("FIRST_QUIZ");
+        assertThat(before.milestones()).extracting(StudentBadgeDto.Milestone::code).doesNotContain("FIRST_QUIZ");
+        val next = StudentQuizAttempt.builder().id(UUID.randomUUID()).student(student).quizId(quizId)
+                .quizTitle("Quiz").score(1).totalQuestions(5).completedAt(start.plusDays(1))
+                .quizBadges(List.of()).classBadgeRules(rules).build();
+        val after = StudentBadgeEvaluator.evaluate(student, List.of(old, next), rules);
+        assertThat(after.badges()).extracting(StudentBadgeDto.EarnedBadge::code)
+                .contains("FIRST_QUIZ", "FIVE_QUIZZES", "TEN_QUIZZES", "THREE_DAYS", "SEVEN_DAYS");
+        assertThat(after.badges().stream().filter(b -> b.code().equals("FIVE_QUIZZES")))
+                .singleElement().satisfies(b -> assertThat(b.earnedAt()).isEqualTo(start.plusDays(1)));
+    }
+
+    @Test
     void aPerfectQuizEarnsBothDefaultBadgesAndFirstStep() {
         val result = evaluate(List.of(attempt(quizId, 5, 5, start, null)));
         assertThat(result.badges()).extracting(StudentBadgeDto.EarnedBadge::code)

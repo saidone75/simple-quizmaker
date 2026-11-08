@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+    <changeSet id="010-class-badge-settings" author="quizmaker">
+        <addColumn tableName="teachers">
+            <column name="class_badge_rules" type="${json.type}"/>
+        </addColumn>
+        <addColumn tableName="student_quiz_attempts">
+            <column name="class_badge_rules" type="${json.type}"/>
+        </addColumn>
+        <rollback>
+            <dropColumn tableName="student_quiz_attempts" columnName="class_badge_rules"/>
+            <dropColumn tableName="teachers" columnName="class_badge_rules"/>
+        </rollback>
+    </changeSet>
+</databaseChangeLog>

@@ -1510,7 +1510,8 @@ body[data-theme="dark"] #toast {
     border-top: 1px dashed var(--gray-border);
     padding-top: 12px;
 }
-.results-analytics summary {
+.results-analytics summary,
+.accordion-summary {
     list-style: none;
     display: flex;
     align-items: center;
@@ -1521,7 +1522,8 @@ body[data-theme="dark"] #toast {
     color: var(--green-dark);
     font-weight: 800;
 }
-.results-analytics summary::-webkit-details-marker {
+.results-analytics summary::-webkit-details-marker,
+.accordion-summary::-webkit-details-marker {
     display: none;
 }
 .results-analytics-content {
@@ -1532,7 +1534,8 @@ body[data-theme="dark"] #toast {
     color: var(--gray-muted);
     transition: transform 0.2s;
 }
-.results-analytics[open] .analytics-accordion-icon {
+.results-analytics[open] .analytics-accordion-icon,
+.class-badges-card[open] .analytics-accordion-icon {
     transform: rotate(180deg);
 }
 .results-analytics-grid {
@@ -1602,6 +1605,25 @@ body[data-theme="dark"] #toast {
     list-style: none;
     display: grid;
     gap: 6px;
+}
+
+/* ===== CLASS BADGE SETTINGS ===== */
+.students-page { display: flex; flex-direction: column; gap: 16px; }
+.students-page > .students-print-card { padding: 0; }
+.students-password-header { padding: 14px; margin-bottom: 0; border-bottom: 1px solid var(--gray-border); }
+.class-badges-content { display: grid; gap: 12px; margin-top: 16px; }
+.class-badges-content > p { color: var(--text-light); }
+.class-badges-content form { gap: 16px; }
+.class-badges-content .alert { margin-bottom: 0; }
+.class-badges-card fieldset { min-width: 0; margin: 0; }
+.class-badges-card legend { font-weight: 800; color: var(--green-dark); padding: 0 6px; }
+.class-badge-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: center; gap: 12px; padding: 12px 0; }
+.class-badge-row + .class-badge-row { border-top: 1px solid var(--gray-border); }
+.class-badge-target { display: flex; align-items: center; justify-content: space-between; gap: 10px; color: var(--text-light); font-size: 13px; }
+.class-badge-target input { width: 80px; min-width: 0; flex-shrink: 0; }
+.class-badges-content .quiz-next { margin-top: 0; }
+@media (max-width: 480px) {
+    .class-badge-row { grid-template-columns: minmax(0, 1fr); }
 }
 
 /* ===== DISCOVER ===== */

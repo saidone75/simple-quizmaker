@@ -5,6 +5,7 @@ import lombok.val;
 import lombok.RequiredArgsConstructor;
 import org.saidone.quizmaker.dto.StudentBadgeDto;
 import org.saidone.quizmaker.dto.QuizBadgeDefinition;
+import org.saidone.quizmaker.dto.ClassBadgeRule;
 import org.saidone.quizmaker.entity.Quiz;
 import org.saidone.quizmaker.entity.Student;
 import org.saidone.quizmaker.entity.StudentQuizAttempt;
@@ -33,7 +34,7 @@ public class StudentBadgeService {
     @Transactional(readOnly = true)
     @PreAuthorize("hasRole('STUDENT')")
     public StudentBadgeDto.Collection forCurrentStudent() {
-        val student = studentAuthenticationService.getCurrentStudent();
+        val student = managedStudent(studentAuthenticationService.getCurrentStudent());
         return collection(student);
     }
 
@@ -50,12 +51,14 @@ public class StudentBadgeService {
     @PreAuthorize("hasRole('STUDENT') && #student.id == authentication.principal.id")
     public List<StudentBadgeDto.EarnedBadge> recordCompletion(Quiz quiz, Student student,
                                                              int score, int total, LocalDateTime completedAt) {
+        student = managedStudent(student);
         val history = new ArrayList<>(attemptRepository.findByStudentIdOrderByCompletedAtAscIdAsc(student.getId()));
         val previousKeys = StudentBadgeEvaluator.evaluate(student, history).badges().stream()
                 .map(StudentBadgeDto.EarnedBadge::key).collect(Collectors.toSet());
         val attempt = StudentQuizAttempt.builder()
                 .id(UUID.randomUUID()).student(student).quizId(quiz.getId()).quizTitle(quiz.getTitle())
                 .quizBadges(QuizBadgeDefinition.normalize(quiz.getBadges()))
+                .classBadgeRules(ClassBadgeRule.normalize(student.getTeacher().getClassBadgeRules()))
                 .score(score).totalQuestions(total).completedAt(completedAt).build();
         attemptRepository.save(attempt);
         history.add(attempt);
@@ -63,8 +66,15 @@ public class StudentBadgeService {
                 .filter(badge -> !previousKeys.contains(badge.key())).toList();
     }
 
+    // Authentication principals can outlive the persistence context that loaded them.
+    private Student managedStudent(Student student) {
+        return studentRepository.findById(student.getId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Studente non trovato"));
+    }
+
     private StudentBadgeDto.Collection collection(Student student) {
         return StudentBadgeEvaluator.evaluate(student,
-                attemptRepository.findByStudentIdOrderByCompletedAtAscIdAsc(student.getId()));
+                attemptRepository.findByStudentIdOrderByCompletedAtAscIdAsc(student.getId()),
+                ClassBadgeRule.normalize(student.getTeacher().getClassBadgeRules()));
     }
 }

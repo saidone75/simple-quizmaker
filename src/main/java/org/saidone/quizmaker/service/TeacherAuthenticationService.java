@@ -18,6 +18,7 @@
 
 package org.saidone.quizmaker.service;
 
+import org.saidone.quizmaker.dto.ClassBadgeRule;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 import org.jspecify.annotations.NullMarked;
@@ -46,6 +47,14 @@ public class TeacherAuthenticationService implements UserDetailsService {
 
     private final TeacherRepository teacherRepository;
     private final PasswordEncoder passwordEncoder;
+
+    @Transactional
+    public void updateClassBadgeRules(List<ClassBadgeRule> rules) {
+        val normalized = ClassBadgeRule.normalize(rules);
+        val teacher = getCurrentTeacher();
+        teacher.setClassBadgeRules(normalized);
+        teacherRepository.save(teacher);
+    }
 
     @Override
     @NullMarked
