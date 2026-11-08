@@ -64,51 +64,53 @@
 </head>
 <body>
 <main class="teacher-body discover-body" id="discover">
-    <div class="editor-mode-card discover-intro">
-        <p class="section-label">Scopri le funzionalità</p>
-        <h1 class="profile-heading">Crea quiz scolastici e accompagna ogni studente</h1>
-        <p class="profile-subtitle">Alice's Simple Quiz Maker è un'applicazione web libera e open source per insegnanti
-            e studenti. Prepara quiz didattici, condividi materiali con i colleghi e segui i progressi della classe.</p>
-    </div>
-    <div class="about-grid">
-        <section class="about-card">
-            <h2>Quiz personalizzati, anche con intelligenza artificiale</h2>
-            <p>Crea quiz a scelta multipla con 2, 3 o 4 risposte oppure quiz vero/falso, con immagini e curiosità sulla risposta corretta.
-                Puoi preparare il quiz manualmente oppure usare la generazione AI, se abilitata, partendo
-                da un argomento o da un allegato PDF, Word o di testo. Cerca immagini su Wikimedia o caricale quando consentito.</p>
-        </section>
-        <section class="about-card">
-            <h2>Badge e incoraggiamenti per gli studenti</h2>
-            <p>Ogni quiz può assegnare premi a tema.
-                L'insegnante sceglie le soglie e può premiare anche la partecipazione.
-                I badge di percorso e costanza valorizzano i quiz completati e i giorni di attività,
-                senza richiedere sfide quotidiane. Anche chi sbaglia riceve incoraggiamenti.</p>
-        </section>
-        <section class="about-card">
-            <h2>Risultati e condivisione tra insegnanti</h2>
-            <p>Pubblica i quiz per la tua classe, consulta risultati e progressi, sblocca nuovi tentativi
-                e condividi i quiz con altri insegnanti. Ogni studente ha una raccolta personale dei badge,
-                consultabile anche dal suo insegnante.</p>
-        </section>
-        <section class="about-card">
-            <h2>Come accedono gli studenti?</h2>
-            <p>L'insegnante crea gli studenti e assegna a ciascuno una parola chiave di cinque caratteri.
-                Gli studenti la inseriscono nella pagina di accesso per trovare i quiz della propria classe.</p>
-        </section>
-        <section class="about-card">
-            <h2>L'intelligenza artificiale è obbligatoria?</h2>
-            <p>No. Puoi creare quiz e configurare badge manualmente. La generazione di quiz e proposte di badge
-                con OpenAI è opzionale e richiede l'abilitazione dell'insegnante.</p>
-        </section>
-        <section class="about-card">
-            <h2>Il software è libero?</h2>
-            <p>Sì. Il progetto è distribuito con licenza GPLv3 e può essere installato sul proprio server.
-                <a class="public-link" href="https://github.com/saidone75/simple-quizmaker">Codice sorgente e istruzioni di installazione</a>.</p>
-        </section>
-    </div>
-    <footer class="login-footer discover-footer">
-        <a th:href="@{/teacher/login}">→ Accesso insegnanti</a>
-    </footer>
+    <article class="about-card discover-card">
+        <header class="discover-intro">
+            <p class="section-label">Scopri le funzionalità</p>
+            <h1 class="profile-heading">Crea quiz scolastici e accompagna ogni studente</h1>
+            <p class="profile-subtitle">Alice's Simple Quiz Maker è un'applicazione web libera e open source per insegnanti
+                e studenti. Prepara quiz didattici, condividi materiali con i colleghi e segui i progressi della classe.</p>
+        </header>
+        <div class="discover-sections">
+            <section>
+                <h2>Quiz personalizzati, anche con intelligenza artificiale</h2>
+                <p>Crea quiz a scelta multipla con 2, 3 o 4 risposte oppure quiz vero/falso, con immagini e curiosità sulla risposta corretta.
+                    Puoi preparare il quiz manualmente oppure usare la generazione AI, se abilitata, partendo
+                    da un argomento o da un allegato PDF, Word o di testo. Cerca immagini su Wikimedia o caricale quando consentito.</p>
+            </section>
+            <section>
+                <h2>Badge e incoraggiamenti per gli studenti</h2>
+                <p>Ogni quiz può assegnare premi a tema.
+                    L'insegnante sceglie le soglie e può premiare anche la partecipazione.
+                    I badge di percorso e costanza valorizzano i quiz completati e i giorni di attività,
+                    senza richiedere sfide quotidiane. Anche chi sbaglia riceve incoraggiamenti.</p>
+            </section>
+            <section>
+                <h2>Risultati e condivisione tra insegnanti</h2>
+                <p>Pubblica i quiz per la tua classe, consulta risultati e progressi, sblocca nuovi tentativi
+                    e condividi i quiz con altri insegnanti. Ogni studente ha una raccolta personale dei badge,
+                    consultabile anche dal suo insegnante.</p>
+            </section>
+            <section>
+                <h2>Come accedono gli studenti?</h2>
+                <p>L'insegnante crea gli studenti e assegna a ciascuno una parola chiave di cinque caratteri.
+                    Gli studenti la inseriscono nella pagina di accesso per trovare i quiz della propria classe.</p>
+            </section>
+            <section>
+                <h2>L'intelligenza artificiale è obbligatoria?</h2>
+                <p>No. Puoi creare quiz e configurare badge manualmente. La generazione di quiz e proposte di badge
+                    con OpenAI è opzionale e richiede l'abilitazione dell'insegnante.</p>
+            </section>
+            <section>
+                <h2>Il software è libero?</h2>
+                <p>Sì. Il progetto è distribuito con licenza GPLv3 e può essere installato sul proprio server.
+                    <a class="public-link" href="https://github.com/saidone75/simple-quizmaker">Codice sorgente e istruzioni di installazione</a>.</p>
+            </section>
+        </div>
+        <footer class="login-footer discover-footer">
+            <a th:href="@{/teacher/login}">→ Accesso insegnanti</a>
+        </footer>
+    </article>
 </main>
 </body>
 </html>
