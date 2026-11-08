@@ -1606,12 +1606,11 @@ body[data-theme="dark"] #toast {
 
 /* ===== DISCOVER ===== */
 .discover-body { max-width: 900px; }
-.discover-intro { margin-bottom: 1rem; }
+.discover-card { padding: clamp(18px, 4vw, 32px); }
+.discover-intro { margin-bottom: 1.75rem; }
 .discover-intro .profile-subtitle { margin-bottom: 0; line-height: 1.5; }
+.discover-sections { display: grid; gap: 1.5rem; }
 .discover-footer { margin-top: 1.5rem; }
-@media (min-width: 640px) {
-    .discover-body .about-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-}
 
 .admin-about-footer {
     margin-top: 18px;

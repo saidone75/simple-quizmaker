@@ -11,6 +11,10 @@ in **Non rilasciato**.
 
 ## [Non rilasciato]
 
+### Modificato
+
+- Riuniti introduzione e contenuti della pagina Discover in un'unica card, con sezioni disposte in una sola colonna.
+
 ## [1.2.1] - 2026-10-27
 
 ### Modificato
