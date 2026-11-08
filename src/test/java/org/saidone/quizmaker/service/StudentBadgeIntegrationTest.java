@@ -90,6 +90,57 @@ class StudentBadgeIntegrationTest {
     }
 
     @Test
+    void classBadgePanelSavesOnlyCurrentTeachersSettingsAndSnapshotsNewAttempts() throws Exception {
+        val other = teachers.saveAndFlush(Teacher.builder().username("badge-other").password("unused").build());
+        mvc.perform(get("/teacher/students").with(user(teacher.getUsername()).roles("TEACHER")))
+                .andExpect(status().isOk()).andExpect(content().string(containsString("Badge della classe")))
+                .andExpect(content().string(containsString("Giorni diversi di attività")));
+        mvc.perform(post("/teacher/students/badges").with(user(teacher.getUsername()).roles("TEACHER")).with(csrf())
+                        .param("badgeId", "FIRST_QUIZ", "FIVE_QUIZZES", "TEN_QUIZZES", "THREE_DAYS", "SEVEN_DAYS")
+                        .param("target", "2", "6", "12", "4", "8").param("enabled", "FIRST_QUIZ"))
+                .andExpect(status().is3xxRedirection()).andExpect(flash().attributeExists("badgeSettingsSuccess"));
+        entityManager.flush();
+        entityManager.clear();
+        val savedTeacher = teachers.findById(teacher.getId()).orElseThrow();
+        assertThat(savedTeacher.getClassBadgeRules()).hasSize(5);
+        assertThat(savedTeacher.getClassBadgeRules().getFirst().target()).isEqualTo(2);
+        assertThat(teachers.findById(other.getId()).orElseThrow().getClassBadgeRules()).isNull();
+        val savedStudent = students.findById(student.getId()).orElseThrow();
+        SecurityContextHolder.getContext().setAuthentication(new StudentAuthenticationToken(savedStudent));
+        submissionService.submit(quiz.getId(), savedStudent, List.of(0));
+        entityManager.flush();
+        entityManager.clear();
+        val history = attempts.findByStudentIdOrderByCompletedAtAscIdAsc(student.getId());
+        assertThat(history).hasSize(1);
+        assertThat(history.getFirst().getClassBadgeRules()).isEqualTo(savedTeacher.getClassBadgeRules());
+        assertThat(StudentBadgeEvaluator.evaluate(savedStudent, history).badges())
+                .extracting(StudentBadgeDto.EarnedBadge::code).doesNotContain("FIRST_QUIZ");
+    }
+
+    @Test
+    void allClassBadgesCanBeDisabledWithoutAnEnabledFormParameter() throws Exception {
+        mvc.perform(post("/teacher/students/badges").with(user(teacher.getUsername()).roles("TEACHER")).with(csrf())
+                        .param("badgeId", "FIRST_QUIZ", "FIVE_QUIZZES", "TEN_QUIZZES", "THREE_DAYS", "SEVEN_DAYS")
+                        .param("target", "1", "5", "10", "3", "7"))
+                .andExpect(status().is3xxRedirection()).andExpect(flash().attributeExists("badgeSettingsSuccess"));
+        entityManager.flush();
+        entityManager.clear();
+        assertThat(teachers.findById(teacher.getId()).orElseThrow().getClassBadgeRules())
+                .hasSize(5).allSatisfy(rule -> assertThat(rule.enabled()).isFalse());
+    }
+
+    @Test
+    void classBadgeSettingsRejectInvalidThresholdsAndMissingCsrf() throws Exception {
+        mvc.perform(post("/teacher/students/badges").with(user(teacher.getUsername()).roles("TEACHER")))
+                .andExpect(status().isForbidden());
+        mvc.perform(post("/teacher/students/badges").with(user(teacher.getUsername()).roles("TEACHER")).with(csrf())
+                        .param("badgeId", "FIRST_QUIZ", "FIVE_QUIZZES", "TEN_QUIZZES", "THREE_DAYS", "SEVEN_DAYS")
+                        .param("target", "0", "5", "10", "3", "7"))
+                .andExpect(status().is3xxRedirection()).andExpect(flash().attributeExists("badgeSettingsError"));
+        assertThat(teachers.findById(teacher.getId()).orElseThrow().getClassBadgeRules()).isNull();
+    }
+
+    @Test
     void badgesAndFrozenDefinitionsSurviveAnUnlockedWorseRetryAndQuizDeletion() {
         val first = submissionService.submit(quiz.getId(), student, List.of(0));
         assertThat(first.getNewBadges()).extracting(StudentBadgeDto.EarnedBadge::name)

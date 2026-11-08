@@ -13,6 +13,7 @@ in **Non rilasciato**.
 
 ### Aggiunto
 
+- Pannello collassabile “Badge della classe” nella gestione studenti per abilitare i badge di Percorso e Costanza e personalizzarne le soglie, conservando i premi già acquisiti.
 - Possibilità per gli studenti di rivedere i quiz completati e le risposte consegnate in sola lettura, mantenendo lo sblocco dell'insegnante necessario per un nuovo tentativo.
 
 ### Modificato

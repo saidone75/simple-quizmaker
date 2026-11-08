@@ -4,6 +4,7 @@ import lombok.val;
 
 import org.saidone.quizmaker.dto.StudentBadgeDto;
 import org.saidone.quizmaker.dto.QuizBadgeDefinition;
+import org.saidone.quizmaker.dto.ClassBadgeRule;
 import org.saidone.quizmaker.entity.Student;
 import org.saidone.quizmaker.entity.StudentQuizAttempt;
 
@@ -15,28 +16,39 @@ public final class StudentBadgeEvaluator {
     private StudentBadgeEvaluator() { }
 
     private enum Badge {
-        FIRST_QUIZ("Primo passo", "🌱", "Completa il tuo primo quiz.", "Percorso", 1),
-        FIVE_QUIZZES("Esploratore", "🧭", "Completa 5 quiz diversi.", "Percorso", 5),
-        TEN_QUIZZES("Grande esploratore", "🚀", "Completa 10 quiz diversi.", "Percorso", 10),
-        THREE_DAYS("Presenza costante", "📅", "Completa quiz in 3 giorni diversi.", "Costanza", 3),
-        SEVEN_DAYS("Con impegno", "💪", "Completa quiz in 7 giorni diversi.", "Costanza", 7);
+        FIRST_QUIZ("Primo passo", "🌱", "Percorso"),
+        FIVE_QUIZZES("Esploratore", "🧭", "Percorso"),
+        TEN_QUIZZES("Grande esploratore", "🚀", "Percorso"),
+        THREE_DAYS("Presenza costante", "📅", "Costanza"),
+        SEVEN_DAYS("Con impegno", "💪", "Costanza");
 
         final String name;
         final String emoji;
-        final String description;
         final String category;
-        final int target;
 
-        Badge(String name, String emoji, String description, String category, int target) {
+        Badge(String name, String emoji, String category) {
             this.name = name;
             this.emoji = emoji;
-            this.description = description;
             this.category = category;
-            this.target = target;
         }
     }
 
     public static StudentBadgeDto.Collection evaluate(Student student, List<StudentQuizAttempt> history) {
+        return evaluate(student, history, ClassBadgeRule.defaults());
+    }
+
+    public static List<SettingRow> settings(List<ClassBadgeRule> rules) {
+        return ClassBadgeRule.normalize(rules).stream().map(rule -> {
+            val badge = Badge.valueOf(rule.id());
+            return new SettingRow(rule.id(), badge.name, badge.emoji, badge.category,
+                    rule.enabled(), rule.target());
+        }).toList();
+    }
+
+    public record SettingRow(String id, String name, String emoji, String category, boolean enabled, int target) {}
+
+    public static StudentBadgeDto.Collection evaluate(Student student, List<StudentQuizAttempt> history,
+                                                       List<ClassBadgeRule> currentRules) {
         val attempts = history.stream()
                 .filter(a -> a.getTotalQuestions() > 0 && a.getScore() >= 0
                         && a.getScore() <= a.getTotalQuestions() && a.getCompletedAt() != null)
@@ -66,17 +78,21 @@ public final class StudentBadgeEvaluator {
                             attempt.getQuizTitle(), attempt.getCompletedAt()));
                 }
             }
-            for (val badge : Badge.values()) {
-                if (progress(badge, quizzes.size(), days.size()) >= badge.target) {
-                    award(earned, badge, attempt);
+            for (val rule : ClassBadgeRule.normalize(attempt.getClassBadgeRules())) {
+                val badge = Badge.valueOf(rule.id());
+                if (rule.enabled() && progress(badge, quizzes.size(), days.size()) >= rule.target()) {
+                    award(earned, badge, rule.target(), attempt);
                 }
             }
         }
 
-        val milestones = Arrays.stream(Badge.values())
-                .map(b -> new StudentBadgeDto.Milestone(b.name(), b.name, b.emoji, b.description,
-                        Math.min(progress(b, quizzes.size(), days.size()), b.target),
-                        b.target, earned.containsKey(b.name())))
+        val milestones = ClassBadgeRule.normalize(currentRules).stream().filter(ClassBadgeRule::enabled)
+                .map(rule -> {
+                    val b = Badge.valueOf(rule.id());
+                    return new StudentBadgeDto.Milestone(b.name(), b.name, b.emoji, description(b, rule.target()),
+                        Math.min(progress(b, quizzes.size(), days.size()), rule.target()),
+                        rule.target(), earned.containsKey(b.name()));
+                })
                 .toList();
         val badges = earned.values().stream()
                 .sorted(Comparator.comparing(StudentBadgeDto.EarnedBadge::earnedAt).reversed()
@@ -93,10 +109,16 @@ public final class StudentBadgeEvaluator {
         };
     }
 
-    private static void award(Map<String, StudentBadgeDto.EarnedBadge> earned, Badge badge,
+    private static String description(Badge badge, int target) {
+        return badge.category.equals("Percorso")
+                ? "Completa " + target + (target == 1 ? " quiz." : " quiz diversi.")
+                : "Completa quiz in " + target + (target == 1 ? " giorno." : " giorni diversi.");
+    }
+
+    private static void award(Map<String, StudentBadgeDto.EarnedBadge> earned, Badge badge, int target,
                               StudentQuizAttempt attempt) {
         String key = badge.name();
         earned.putIfAbsent(key, new StudentBadgeDto.EarnedBadge(key, badge.name(), badge.name,
-                badge.emoji, badge.description, badge.category, null, null, attempt.getCompletedAt()));
+                badge.emoji, description(badge, target), badge.category, null, null, attempt.getCompletedAt()));
     }
 }

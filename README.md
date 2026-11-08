@@ -48,6 +48,7 @@ Alice's Simple Quiz Maker è pensato per chi desidera:
 - Gestione risultati con analytics e sblocco tentativi singolo studente o massivo.
 - Badge per risultati, percorso e costanza, con premi a tema personalizzabili per ogni quiz.
 - Raccolta personale dei badge per ogni studente, consultabile anche dal suo insegnante.
+- Card “Badge della classe” in `/teacher/students`, sotto le password: abilita o disabilita i premi di Percorso e Costanza e modifica le soglie per tutti i propri studenti. Le nuove regole valgono dalle consegne successive e i badge già guadagnati restano acquisiti.
 - Profilo insegnante con preferenze tema, ricerca immagini e gestione password.
 - Architettura Spring con migrazioni schema DB versionate via Liquibase.
 - Backup schedulato database SQLite in produzione con retention configurabile.

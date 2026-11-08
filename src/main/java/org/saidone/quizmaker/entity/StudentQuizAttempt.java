@@ -1,5 +1,6 @@
 package org.saidone.quizmaker.entity;
 
+import org.saidone.quizmaker.dto.ClassBadgeRule;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
@@ -20,6 +21,10 @@ import java.util.UUID;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 public class StudentQuizAttempt {
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "class_badge_rules", updatable = false, columnDefinition = "jsonb")
+    private List<ClassBadgeRule> classBadgeRules;
+
     @Id
     @JdbcTypeCode(java.sql.Types.VARCHAR)
     @Column(nullable = false, updatable = false)

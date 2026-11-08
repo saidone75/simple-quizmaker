@@ -5,6 +5,7 @@ import lombok.val;
 import lombok.RequiredArgsConstructor;
 import org.saidone.quizmaker.dto.StudentBadgeDto;
 import org.saidone.quizmaker.dto.QuizBadgeDefinition;
+import org.saidone.quizmaker.dto.ClassBadgeRule;
 import org.saidone.quizmaker.entity.Quiz;
 import org.saidone.quizmaker.entity.Student;
 import org.saidone.quizmaker.entity.StudentQuizAttempt;
@@ -56,6 +57,7 @@ public class StudentBadgeService {
         val attempt = StudentQuizAttempt.builder()
                 .id(UUID.randomUUID()).student(student).quizId(quiz.getId()).quizTitle(quiz.getTitle())
                 .quizBadges(QuizBadgeDefinition.normalize(quiz.getBadges()))
+                .classBadgeRules(ClassBadgeRule.normalize(student.getTeacher().getClassBadgeRules()))
                 .score(score).totalQuestions(total).completedAt(completedAt).build();
         attemptRepository.save(attempt);
         history.add(attempt);
@@ -65,6 +67,7 @@ public class StudentBadgeService {
 
     private StudentBadgeDto.Collection collection(Student student) {
         return StudentBadgeEvaluator.evaluate(student,
-                attemptRepository.findByStudentIdOrderByCompletedAtAscIdAsc(student.getId()));
+                attemptRepository.findByStudentIdOrderByCompletedAtAscIdAsc(student.getId()),
+                ClassBadgeRule.normalize(student.getTeacher().getClassBadgeRules()));
     }
 }

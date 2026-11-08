@@ -64,8 +64,8 @@
         </div>
     </div>
 
-    <div class="teacher-body">
-        <div class="quiz-card no-print" style="margin-bottom:14px;">
+    <div class="teacher-body students-page">
+        <div class="editor-mode-card no-print">
             <form id="create-student-form" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
                 <input id="new-student-name" class="input-field" style="max-width:320px" placeholder="Nome studente" required>
                 <button class="quiz-next" style="display:block;padding:10px 18px;">Aggiungi studente</button>
@@ -73,8 +73,8 @@
             <p style="margin-top:8px;color:var(--text-soft)">Verrà generata automaticamente una parola chiave univoca di 5 caratteri.</p>
         </div>
 
-        <div class="students-print-card" th:if="${!students.isEmpty()}">
-            <div class="result-group-header no-print" style="padding:10px 12px;border-bottom:1px solid var(--border-color);">
+        <div class="students-print-card about-card" th:if="${!students.isEmpty()}">
+            <div class="result-group-header students-password-header no-print">
                 <h2 style="font-size:1rem;">
                     <span>🔐</span>
                     <span>Password studenti</span>
@@ -120,6 +120,33 @@
                 </tbody>
             </table>
         </div>
+        <details class="about-card class-badges-card no-print" th:open="${badgeSettingsSuccess != null or badgeSettingsError != null}">
+            <summary class="accordion-summary"><span>🏅 Badge della classe</span><span class="analytics-accordion-icon" aria-hidden="true">▼</span></summary>
+            <div class="class-badges-content">
+                <p>Personalizza i premi di Percorso e Costanza per tutti i tuoi studenti.</p>
+                <p>I giorni non devono essere consecutivi. Le modifiche valgono dalle prossime consegne;
+                    i badge già guadagnati restano acquisiti.</p>
+                <div class="alert alert-success" role="status" th:if="${badgeSettingsSuccess}" th:text="${badgeSettingsSuccess}"></div>
+                <div class="alert alert-error" role="alert" th:if="${badgeSettingsError}" th:text="${badgeSettingsError}"></div>
+                <form class="ai-grid" method="post" th:action="@{/teacher/students/badges}">
+                    <fieldset class="editor-mode-card" th:each="category : ${ {'Percorso', 'Costanza'} }">
+                        <legend th:text="${category}">Percorso</legend>
+                        <div class="class-badge-row" th:each="badge : ${classBadgeSettings}" th:if="${badge.category == category}">
+                            <input type="hidden" name="badgeId" th:value="${badge.id}">
+                            <label class="share-option">
+                                <input type="checkbox" name="enabled" th:value="${badge.id}" th:checked="${badge.enabled}">
+                                <span th:text="${badge.emoji + ' ' + badge.name}">Badge</span>
+                            </label>
+                            <label class="class-badge-target">
+                                <span th:text="${category == 'Percorso' ? 'Quiz diversi completati' : 'Giorni diversi di attività'}">Soglia</span>
+                                <input class="input-field" type="number" name="target" min="1" max="10000" required th:value="${badge.target}">
+                            </label>
+                        </div>
+                    </fieldset>
+                    <button type="submit" class="quiz-next">Salva impostazioni</button>
+                </form>
+            </div>
+        </details>
         <div class="manage-empty" th:if="${students.isEmpty()}">
             <span>👧</span>
             Non è stato ancora inserito alcuno studente.

@@ -40,5 +40,6 @@
     <include file="007-teacher-registration-approval.xml" relativeToChangelogFile="true"/>
     <include file="008-question-image-owner.xml" relativeToChangelogFile="true"/>
     <include file="009-student-badges.xml" relativeToChangelogFile="true"/>
+    <include file="010-class-badge-settings.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

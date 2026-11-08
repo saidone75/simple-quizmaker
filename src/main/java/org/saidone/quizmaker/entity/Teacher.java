@@ -18,6 +18,7 @@
 
 package org.saidone.quizmaker.entity;
 
+import org.saidone.quizmaker.dto.ClassBadgeRule;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
@@ -35,6 +36,7 @@ import org.hibernate.annotations.JdbcTypeCode;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.UUID;
+import java.util.List;
 
 @Entity
 @Table(name = "teachers")
@@ -43,6 +45,10 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Teacher implements Serializable {
+
+    @JdbcTypeCode(org.hibernate.type.SqlTypes.JSON)
+    @Column(name = "class_badge_rules", columnDefinition = "jsonb")
+    private List<ClassBadgeRule> classBadgeRules;
 
     @Id
     @Column(name = "id", nullable = false)

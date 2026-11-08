@@ -18,6 +18,8 @@
 
 package org.saidone.quizmaker.controller;
 
+import org.saidone.quizmaker.dto.ClassBadgeRule;
+import org.saidone.quizmaker.service.StudentBadgeEvaluator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -110,8 +112,28 @@ public class TeacherDashboardWebController {
 
     @GetMapping("/teacher/students")
     public String adminStudents(Model model) {
-        model.addAttribute("students", studentService.findAll(teacherAuthenticationService.getCurrentTeacher()));
+        val teacher = teacherAuthenticationService.getCurrentTeacher();
+        model.addAttribute("students", studentService.findAll(teacher));
+        model.addAttribute("classBadgeSettings", StudentBadgeEvaluator.settings(teacher.getClassBadgeRules()));
         return "admin/students";
+    }
+
+    @PostMapping("/teacher/students/badges")
+    public String updateClassBadges(@RequestParam List<String> badgeId, @RequestParam List<Integer> target,
+                                   @RequestParam(defaultValue = "") List<String> enabled,
+                                   RedirectAttributes redirect) {
+        try {
+            if (badgeId.size() != target.size()) throw new IllegalArgumentException("Configurazione badge incompleta.");
+            val rules = new ArrayList<ClassBadgeRule>();
+            for (int i = 0; i < badgeId.size(); i++) {
+                rules.add(new ClassBadgeRule(badgeId.get(i), enabled.contains(badgeId.get(i)), target.get(i)));
+            }
+            teacherAuthenticationService.updateClassBadgeRules(rules);
+            redirect.addFlashAttribute("badgeSettingsSuccess", "Impostazioni dei badge salvate.");
+        } catch (IllegalArgumentException e) {
+            redirect.addFlashAttribute("badgeSettingsError", e.getMessage());
+        }
+        return "redirect:/teacher/students";
     }
 
     @GetMapping("/teacher/logs")
