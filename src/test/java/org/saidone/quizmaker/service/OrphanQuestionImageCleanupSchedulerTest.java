@@ -121,7 +121,7 @@ class OrphanQuestionImageCleanupSchedulerTest {
     void cleanupPreservesImageReferencedOnlyByLocalUrl() {
         val id = UUID.randomUUID();
         val question = new Question();
-        question.setImageUrl("/api/quizzes/images/" + id);
+        question.setImageUrl(String.format("/api/quizzes/images/%s", id));
         val image = new UploadedImage();
         image.setId(id);
         when(quizRepository.findAllByOrderByIdAsc(any(Pageable.class)))
@@ -142,7 +142,7 @@ class OrphanQuestionImageCleanupSchedulerTest {
         val earlyQuestion = new Question();
         earlyQuestion.setImageId(earlyImageId.toString());
         val laterQuestion = new Question();
-        laterQuestion.setImageUrl("/api/quizzes/images/" + laterImageId);
+        laterQuestion.setImageUrl(String.format("/api/quizzes/images/%s", laterImageId));
         val firstQuiz = Quiz.builder().questions(List.of(earlyQuestion)).build();
         val archivedQuiz = Quiz.builder().questions(List.of(laterQuestion)).archived(true).build();
         val firstPage = PageRequest.of(0, 100);

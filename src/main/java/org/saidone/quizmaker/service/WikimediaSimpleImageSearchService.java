@@ -147,7 +147,7 @@ public class WikimediaSimpleImageSearchService implements WikimediaImageSearchSe
         val rawQueries = new LinkedHashSet<String>();
         val phraseQuery = String.join(" ", normalizedKeywords);
         if (normalizedKeywords.length > 1) {
-            rawQueries.add("\"" + phraseQuery + "\"");
+            rawQueries.add(String.format("\"%s\"", phraseQuery));
             rawQueries.add(String.join(" AND ", normalizedKeywords));
         }
         rawQueries.add(String.join(" OR ", normalizedKeywords));

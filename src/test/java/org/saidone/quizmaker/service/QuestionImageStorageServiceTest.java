@@ -99,7 +99,7 @@ class QuestionImageStorageServiceTest {
         val result = service.store(file, teacher);
 
         assertThat(result.getId()).isNotNull();
-        assertThat(result.getUrl()).isEqualTo("/api/quizzes/images/" + result.getId());
+        assertThat(result.getUrl()).isEqualTo(String.format("/api/quizzes/images/%s", result.getId()));
         val imageCaptor = ArgumentCaptor.forClass(UploadedImage.class);
         verify(uploadedImageRepository).save(imageCaptor.capture());
         assertThat(imageCaptor.getValue().getTeacherId()).isEqualTo(teacher.getId());

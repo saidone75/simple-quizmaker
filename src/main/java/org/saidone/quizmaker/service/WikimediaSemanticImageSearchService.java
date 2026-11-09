@@ -673,7 +673,7 @@ public class WikimediaSemanticImageSearchService implements WikimediaImageSearch
             return true;
         }
 
-        val titleOrUrl = (Objects.toString(title, "") + " " + Objects.toString(imageUrl, ""))
+        val titleOrUrl = String.format("%s %s", Objects.toString(title, ""), Objects.toString(imageUrl, ""))
                 .toLowerCase(Locale.ROOT);
         return UNSUPPORTED_FILE_EXTENSIONS.stream().anyMatch(titleOrUrl::contains);
     }

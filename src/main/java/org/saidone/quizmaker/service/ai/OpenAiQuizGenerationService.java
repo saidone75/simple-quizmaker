@@ -248,7 +248,7 @@ public class OpenAiQuizGenerationService implements QuizGenerationService {
         val numberOfOptions = request.getQuestionType() == QuestionType.TRUE_FALSE ? 2 : request.getNumberOfOptions();
         val formatInstruction = request.getQuestionType() == QuestionType.TRUE_FALSE
                 ? "Ogni domanda deve essere un'affermazione da valutare. options deve essere esattamente [\"Vero\", \"Falso\"], in questo ordine. Usa answer 0 per vero e 1 per falso. Alterna affermazioni vere e false."
-                : "Ogni domanda deve avere esattamente " + numberOfOptions + " risposte a scelta multipla.";
+                : String.format("Ogni domanda deve avere esattamente %d risposte a scelta multipla.", numberOfOptions);
         val userPrompt = """
                 Crea un quiz in italiano e rispondi SOLO con JSON valido compatibile con QuizDto.Request.
                 Campi obbligatori: title (string), emoji (string), questions (array).

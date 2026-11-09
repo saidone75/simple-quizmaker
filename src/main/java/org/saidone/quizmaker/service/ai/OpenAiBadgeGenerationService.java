@@ -42,7 +42,7 @@ public class OpenAiBadgeGenerationService {
         val payload = buildPayload(request);
         try {
             val response = openAiRestClient.post().uri("/chat/completions")
-                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + apiKey)
+                    .header(HttpHeaders.AUTHORIZATION, String.format("Bearer %s", apiKey))
                     .contentType(MediaType.APPLICATION_JSON).body(payload).retrieve().body(String.class);
             return parseBadges(response);
         } catch (RestClientException ex) {

@@ -65,8 +65,10 @@ class OpenAiBadgeGenerationServiceTest {
     void rejectsInvalidThresholdsAndRefusalsAndTruncatedResponses() throws Exception {
         val service = new OpenAiBadgeGenerationService(mapper, null);
         for (val threshold : List.of("101", "-1", "80.5", "2147483648")) {
-            val response = response("{\"badges\":[{\"name\":\"Badge\",\"emoji\":\"🏅\",\"minimumPercentage\":"
-                    + threshold + "},{\"name\":\"Altro\",\"emoji\":\"🏅\",\"minimumPercentage\":100}]}");
+            val response = response(String.format("""
+                    {"badges":[{"name":"Badge","emoji":"🏅","minimumPercentage":%s},
+                    {"name":"Altro","emoji":"🏅","minimumPercentage":100}]}
+                    """, threshold));
             assertThatThrownBy(() -> service.parseBadges(response)).isInstanceOf(IllegalStateException.class);
         }
         assertThatThrownBy(() -> service.parseBadges("{\"choices\":[{\"message\":{\"refusal\":\"refused\"}}]}"))

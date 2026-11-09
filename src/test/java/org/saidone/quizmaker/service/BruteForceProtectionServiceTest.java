@@ -104,9 +104,9 @@ class BruteForceProtectionServiceTest {
         val clock = new MutableClock(Instant.parse("2026-01-01T10:00:00Z"));
         val bruteForce = new BruteForceProtectionService(clock);
         for (int i = 0; i < 100; i++) {
-            bruteForce.recordLoginFailure("teacher-" + i);
-            bruteForce.recordStudentLoginFailureByKeyword("keyword-" + i);
-            bruteForce.consumeRegisterAttempt("ip-" + i);
+            bruteForce.recordLoginFailure(String.format("teacher-%d", i));
+            bruteForce.recordStudentLoginFailureByKeyword(String.format("keyword-%d", i));
+            bruteForce.consumeRegisterAttempt(String.format("ip-%d", i));
         }
 
         clock.advance(Duration.ofMinutes(12));
@@ -133,8 +133,8 @@ class BruteForceProtectionServiceTest {
     void shouldBoundTrackedKeys() {
         val bruteForce = new BruteForceProtectionService();
         for (int i = 0; i < BruteForceProtectionService.MAX_TRACKED_KEYS * 2; i++) {
-            bruteForce.recordLoginFailure("teacher-" + i);
-            bruteForce.consumeRegisterAttempt("ip-" + i);
+            bruteForce.recordLoginFailure(String.format("teacher-%d", i));
+            bruteForce.consumeRegisterAttempt(String.format("ip-%d", i));
         }
         bruteForce.cleanupExpiredEntries();
 

@@ -44,7 +44,7 @@ class QuizSharingServiceTest {
         val question = new Question();
         question.setText("Domanda");
         question.setImageId(imageId.toString());
-        question.setImageUrl("/api/quizzes/images/" + imageId);
+        question.setImageUrl(String.format("/api/quizzes/images/%s", imageId));
         source = Quiz.builder().id(UUID.randomUUID()).title("Quiz").emoji("🧪")
                 .teacher(owner).createdByUsername(owner.getUsername()).questions(List.of(question)).build();
         when(quizzes.findByIdAndTeacher(source.getId(), owner)).thenReturn(Optional.of(source));
@@ -113,6 +113,6 @@ class QuizSharingServiceTest {
 
     private QuestionImageUploadDto copy() {
         val id = UUID.randomUUID();
-        return QuestionImageUploadDto.builder().id(id).url("/api/quizzes/images/" + id).build();
+        return QuestionImageUploadDto.builder().id(id).url(String.format("/api/quizzes/images/%s", id)).build();
     }
 }
