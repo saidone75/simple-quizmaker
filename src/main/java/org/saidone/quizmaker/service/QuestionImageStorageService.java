@@ -39,11 +39,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
+import java.nio.file.LinkOption;
+import java.nio.file.StandardOpenOption;
 import java.util.Locale;
 import java.util.UUID;
 
@@ -65,7 +65,8 @@ public class QuestionImageStorageService {
         if (file == null || file.isEmpty()) {
             throw new IllegalArgumentException("Seleziona un file immagine da caricare.");
         }
-        if (!isImage(file)) {
+        val extension = detectImageExtension(file);
+        if (extension == null) {
             throw new IllegalArgumentException("Il file selezionato non è un'immagine valida.");
         }
 
@@ -74,16 +75,17 @@ public class QuestionImageStorageService {
             Files.createDirectories(baseDir);
 
             val imageId = UUID.randomUUID();
-            val extension = extractExtension(file.getOriginalFilename());
-            val fileName = imageId + extension;
+            val fileName = String.format("%s%s", imageId, extension);
             val destination = baseDir.resolve(fileName).normalize();
 
             if (!destination.startsWith(baseDir)) {
                 throw new IllegalStateException("Percorso di destinazione non valido.");
             }
 
-            try (val inputStream = file.getInputStream()) {
-                Files.copy(inputStream, destination, StandardCopyOption.REPLACE_EXISTING);
+            try (val inputStream = file.getInputStream();
+                 val outputStream = Files.newOutputStream(destination, StandardOpenOption.WRITE,
+                         StandardOpenOption.CREATE_NEW, LinkOption.NOFOLLOW_LINKS)) {
+                inputStream.transferTo(outputStream);
             }
 
             val image = new UploadedImage();
@@ -105,12 +107,12 @@ public class QuestionImageStorageService {
     @PreAuthorize("@questionImageAuthorizationPolicy.canRead(#imageId)")
     public Resource load(UUID imageId) {
         val image = uploadedImageRepository.findById(imageId)
-                .orElseThrow(() -> new EntityNotFoundException("Immagine non trovata: " + imageId));
+                .orElseThrow(() -> new EntityNotFoundException(String.format("Immagine non trovata: %s", imageId)));
 
         try {
             val resource = new UrlResource(Path.of(image.getFilePath()).toUri());
             if (!resource.exists() || !resource.isReadable()) {
-                throw new EntityNotFoundException("File immagine non disponibile: " + imageId);
+                throw new EntityNotFoundException(String.format("File immagine non disponibile: %s", imageId));
             }
             return resource;
         } catch (MalformedURLException exception) {
@@ -122,7 +124,7 @@ public class QuestionImageStorageService {
     @PreAuthorize("@questionImageAuthorizationPolicy.canRead(#imageId)")
     public MediaType resolveMediaType(UUID imageId) {
         val image = uploadedImageRepository.findById(imageId)
-                .orElseThrow(() -> new EntityNotFoundException("Immagine non trovata: " + imageId));
+                .orElseThrow(() -> new EntityNotFoundException(String.format("Immagine non trovata: %s", imageId)));
 
         try {
             val contentType = Files.probeContentType(Path.of(image.getFilePath()));
@@ -139,7 +141,7 @@ public class QuestionImageStorageService {
     @PreAuthorize("hasRole('ADMIN') && @questionImageAuthorizationPolicy.canRead(#imageId)")
     public QuestionImageUploadDto duplicateForTeacher(UUID imageId, Teacher recipient) {
         val source = uploadedImageRepository.findById(imageId)
-                .orElseThrow(() -> new EntityNotFoundException("Immagine non trovata: " + imageId));
+                .orElseThrow(() -> new EntityNotFoundException(String.format("Immagine non trovata: %s", imageId)));
         val copy = new UploadedImage();
         copy.setId(UUID.randomUUID());
         copy.setTeacherId(recipient.getId());
@@ -158,7 +160,7 @@ public class QuestionImageStorageService {
     @Transactional
     public void delete(UUID imageId) {
         val image = uploadedImageRepository.findById(imageId)
-                .orElseThrow(() -> new EntityNotFoundException("Immagine non trovata: " + imageId));
+                .orElseThrow(() -> new EntityNotFoundException(String.format("Immagine non trovata: %s", imageId)));
 
         uploadedImageRepository.delete(image);
         uploadedImageRepository.flush();
@@ -186,14 +188,7 @@ public class QuestionImageStorageService {
     }
 
     public String imageUrl(UUID imageId) {
-        return "/api/quizzes/images/" + imageId;
-    }
-
-    private boolean isImage(MultipartFile file) {
-        if (!hasAllowedTypeHint(file)) {
-            return false;
-        }
-        return hasAllowedImageSignature(file);
+        return String.format("/api/quizzes/images/%s", imageId);
     }
 
     private boolean hasAllowedTypeHint(MultipartFile file) {
@@ -221,13 +216,21 @@ public class QuestionImageStorageService {
                 || normalizedContentType.equals("image/x-ms-bmp");
     }
 
-    private boolean hasAllowedImageSignature(MultipartFile file) {
-        try (InputStream inputStream = file.getInputStream()) {
+    private String detectImageExtension(MultipartFile file) {
+        if (!hasAllowedTypeHint(file)) return null;
+        try (val inputStream = file.getInputStream()) {
             val signature = inputStream.readNBytes(16384);
-            val detectedContentType = TIKA_DETECTOR.detect(signature, file.getOriginalFilename());
-            return isAllowedContentType(detectedContentType);
+            // Only trusted literals derived from the signature reach the path.
+            return switch (TIKA_DETECTOR.detect(signature)) {
+                case "image/png" -> ".png";
+                case "image/jpeg" -> ".jpg";
+                case "image/gif" -> ".gif";
+                case "image/webp" -> ".webp";
+                case "image/bmp", "image/x-ms-bmp" -> ".bmp";
+                default -> null;
+            };
         } catch (IOException ignored) {
-            return false;
+            return null;
         }
     }
 
