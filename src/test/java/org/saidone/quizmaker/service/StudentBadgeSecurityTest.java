@@ -7,6 +7,7 @@ import org.saidone.quizmaker.entity.*;
 import org.saidone.quizmaker.policy.TeacherAuthorizationPolicy;
 import org.saidone.quizmaker.repository.*;
 import org.springframework.context.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -19,6 +20,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
 class StudentBadgeSecurityTest {
@@ -76,6 +78,7 @@ class StudentBadgeSecurityTest {
     void authenticatedStudentCanReadTheirOwnCollection() {
         SecurityContextHolder.getContext().setAuthentication(new StudentAuthenticationToken(student));
         when(authentication.getCurrentStudent()).thenReturn(student);
+        when(students.findById(student.getId())).thenReturn(Optional.of(student));
         service.forCurrentStudent();
         verify(attempts).findByStudentIdOrderByCompletedAtAscIdAsc(student.getId());
     }
@@ -91,9 +94,25 @@ class StudentBadgeSecurityTest {
     @Test
     void authenticatedStudentCanRecordTheirOwnCompletion() {
         SecurityContextHolder.getContext().setAuthentication(new StudentAuthenticationToken(student));
+        when(students.findById(student.getId())).thenReturn(Optional.of(student));
         val quiz = Quiz.builder().id(UUID.randomUUID()).title("Geografia").teacher(teacher).build();
         service.recordCompletion(quiz, student, 1, 1, LocalDateTime.now());
         verify(attempts).save(any());
+    }
+
+    @Test
+    void authenticatedStudentRemovedFromDatabaseCannotReadOrEarnBadges() {
+        SecurityContextHolder.getContext().setAuthentication(new StudentAuthenticationToken(student));
+        when(authentication.getCurrentStudent()).thenReturn(student);
+        when(students.findById(student.getId())).thenReturn(Optional.empty());
+        assertThatThrownBy(service::forCurrentStudent)
+                .isInstanceOfSatisfying(ResponseStatusException.class,
+                        e -> assertThat(e.getStatusCode().value()).isEqualTo(404));
+        val quiz = Quiz.builder().id(UUID.randomUUID()).title("Geografia").teacher(teacher).build();
+        assertThatThrownBy(() -> service.recordCompletion(quiz, student, 1, 1, LocalDateTime.now()))
+                .isInstanceOfSatisfying(ResponseStatusException.class,
+                        e -> assertThat(e.getStatusCode().value()).isEqualTo(404));
+        verifyNoInteractions(attempts);
     }
 
     private void teacherLogin() {
