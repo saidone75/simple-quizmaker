@@ -72,7 +72,7 @@ public final class StudentBadgeEvaluator {
             }
             for (val definition : QuizBadgeDefinition.normalize(attempt.getQuizBadges())) {
                 if ((long) attempt.getScore() * 100 >= (long) attempt.getTotalQuestions() * definition.minimumPercentage()) {
-                    String key = "QUIZ:" + attempt.getQuizId() + ":" + definition.id();
+                    val key = String.format("QUIZ:%s:%s", attempt.getQuizId(), definition.id());
                     earned.putIfAbsent(key, new StudentBadgeDto.EarnedBadge(key, definition.id(), definition.name(),
                             definition.emoji(), definition.description(), "Quiz", attempt.getQuizId(),
                             attempt.getQuizTitle(), attempt.getCompletedAt()));
@@ -111,8 +111,8 @@ public final class StudentBadgeEvaluator {
 
     private static String description(Badge badge, int target) {
         return badge.category.equals("Percorso")
-                ? "Completa " + target + (target == 1 ? " quiz." : " quiz diversi.")
-                : "Completa quiz in " + target + (target == 1 ? " giorno." : " giorni diversi.");
+                ? String.format("Completa %d %s", target, target == 1 ? "quiz." : "quiz diversi.")
+                : String.format("Completa quiz in %d %s", target, target == 1 ? "giorno." : "giorni diversi.");
     }
 
     private static void award(Map<String, StudentBadgeDto.EarnedBadge> earned, Badge badge, int target,

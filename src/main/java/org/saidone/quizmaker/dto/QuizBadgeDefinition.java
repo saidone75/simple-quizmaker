@@ -38,6 +38,6 @@ public record QuizBadgeDefinition(
     public String description() {
         if (minimumPercentage == 0) return "Hai completato questo quiz e affrontato una nuova sfida!";
         return minimumPercentage == 100 ? "Tutte le risposte corrette in questo quiz."
-                : "Almeno il " + minimumPercentage + "% di risposte corrette in questo quiz.";
+                : String.format("Almeno il %d%% di risposte corrette in questo quiz.", minimumPercentage);
     }
 }

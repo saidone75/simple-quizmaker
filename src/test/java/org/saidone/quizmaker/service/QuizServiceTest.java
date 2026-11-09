@@ -88,7 +88,7 @@ class QuizServiceTest {
     @Test
     void updateRejectsUnauthorizedImageBeforeChangingQuiz() {
         val question = validQuestion(2);
-        question.setImageUrl("/api/quizzes/images/" + UUID.randomUUID());
+        question.setImageUrl(String.format("/api/quizzes/images/%s", UUID.randomUUID()));
         val request = QuizDto.Request.builder().title("Quiz").emoji("🧪").questions(List.of(question)).build();
         doThrow(new AccessDeniedException("Accesso immagine non consentito"))
                 .when(questionImageAuthorizationPolicy).validateQuestions(request.getQuestions(), teacher);
@@ -321,7 +321,7 @@ class QuizServiceTest {
         val question = new QuestionDto();
         question.setText("Domanda");
         question.setOptions(java.util.stream.IntStream.range(0, numberOfOptions)
-                .mapToObj(index -> "Risposta " + index).toList());
+                .mapToObj(index -> String.format("Risposta %d", index)).toList());
         question.setAnswer(0);
         return question;
     }

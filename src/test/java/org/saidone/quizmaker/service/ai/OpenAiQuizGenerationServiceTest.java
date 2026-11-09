@@ -169,7 +169,7 @@ class OpenAiQuizGenerationServiceTest {
         assertThat(properties.path("options").path("maxItems").asInt()).isEqualTo(numberOfOptions);
         assertThat(properties.path("answer").path("maximum").asInt()).isEqualTo(numberOfOptions - 1);
         assertThat(payload.path("messages").path(1).path("content").asText())
-                .contains("esattamente " + numberOfOptions + " risposte");
+                .contains(String.format("esattamente %d risposte", numberOfOptions));
 
         val question = new QuestionDto();
         question.setOptions(new ArrayList<>(List.of("Marte", "Venere", "Giove", "Mercurio").subList(0, numberOfOptions)));

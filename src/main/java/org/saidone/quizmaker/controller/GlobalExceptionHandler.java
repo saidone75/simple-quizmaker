@@ -52,7 +52,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, Object>> handleValidation(MethodArgumentNotValidException ex) {
         val errors = ex.getBindingResult().getFieldErrors().stream()
-                .map(e -> e.getField() + ": " + e.getDefaultMessage())
+                .map(e -> String.format("%s: %s", e.getField(), e.getDefaultMessage()))
                 .collect(Collectors.joining(", "));
         return errorResponse(HttpStatus.BAD_REQUEST, errors);
     }

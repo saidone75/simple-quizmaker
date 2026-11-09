@@ -126,7 +126,7 @@ class QuestionImageAuthorizationPolicyTest {
         assertThatThrownBy(() -> policy.validateQuestions(List.of(question), other))
                 .isInstanceOf(AccessDeniedException.class);
         question.setImageId(null);
-        question.setImageUrl("/api/quizzes/%69mages/" + imageId);
+        question.setImageUrl(String.format("/api/quizzes/%%69mages/%s", imageId));
         assertThatThrownBy(() -> policy.validateQuestions(List.of(question), other))
                 .isInstanceOf(AccessDeniedException.class);
     }
@@ -148,7 +148,7 @@ class QuestionImageAuthorizationPolicyTest {
 
     private Quiz quiz(Teacher teacher, boolean urlOnly) {
         val question = new Question();
-        if (urlOnly) question.setImageUrl("/api/quizzes/images/" + imageId);
+        if (urlOnly) question.setImageUrl(String.format("/api/quizzes/images/%s", imageId));
         else question.setImageId(imageId.toString());
         return Quiz.builder().teacher(teacher).questions(List.of(question)).published(true).build();
     }

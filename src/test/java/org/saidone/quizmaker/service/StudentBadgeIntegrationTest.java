@@ -98,14 +98,14 @@ class StudentBadgeIntegrationTest {
         for (int i = 0; i < 205; i++) {
             val image = new UploadedImage();
             image.setId(i == 204 ? lastImageId : UUID.fromString(String.format("00000000-0000-0000-0000-%012x", i + 1)));
-            image.setFilePath("target/cleanup-test-missing-" + image.getId());
+            image.setFilePath(String.format("target/cleanup-test-missing-%s", image.getId()));
             uploadedImages.save(image);
         }
         uploadedImages.flush();
         quiz.getQuestions().getFirst().setImageId(firstImageId.toString());
         quizzes.saveAndFlush(quiz);
         val archivedQuestion = new Question();
-        archivedQuestion.setImageUrl("/api/quizzes/images/" + lastImageId);
+        archivedQuestion.setImageUrl(String.format("/api/quizzes/images/%s", lastImageId));
         quizzes.saveAndFlush(Quiz.builder().title("Archived quiz").emoji("📦")
                 .teacher(teacher).createdByUsername(teacher.getUsername())
                 .questions(List.of(archivedQuestion)).archived(true).build());
@@ -323,10 +323,10 @@ class StudentBadgeIntegrationTest {
             question.setOptions(List.of("Vero", "Falso"));
         } else {
             question.setOptions(java.util.stream.IntStream.range(0, Integer.parseInt(format))
-                    .mapToObj(index -> "Risposta " + index).toList());
+                    .mapToObj(index -> String.format("Risposta %d", index)).toList());
         }
         question.setAnswer(question.getOptions().size() - 1);
-        val request = QuizDto.Request.builder().title("Quiz " + format).emoji("☀️").questions(List.of(question)).build();
+        val request = QuizDto.Request.builder().title(String.format("Quiz %s", format)).emoji("☀️").questions(List.of(question)).build();
         val body = mvc.perform(post("/api/quizzes").with(user(teacher.getUsername()).roles("TEACHER"))
                         .with(csrf()).contentType("application/json").content(mapper.writeValueAsString(request)))
                 .andExpect(status().isCreated()).andReturn().getResponse().getContentAsString();
@@ -346,7 +346,7 @@ class StudentBadgeIntegrationTest {
                         .with(csrf()).contentType("application/json").content("{\"published\":true}"))
                 .andExpect(status().isOk());
         mvc.perform(post("/api/quizzes/{id}/submit", id).with(authentication(new StudentAuthenticationToken(student)))
-                        .with(csrf()).contentType("application/json").content("{\"answers\":[" + question.getAnswer() + "]}"))
+                        .with(csrf()).contentType("application/json").content(String.format("{\"answers\":[%d]}", question.getAnswer())))
                 .andExpect(status().isOk()).andExpect(jsonPath("$.score").value(1));
     }
 

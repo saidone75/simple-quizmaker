@@ -82,7 +82,7 @@ public class DatabaseBackupScheduler {
 
             val timestamp = LocalDateTime.now(ZoneId.systemDefault()).format(TIMESTAMP_FORMATTER);
             val backupFile = backupDirPath.resolve(String.format("%s-%s.db", baseName, timestamp));
-            temporaryBackup = Files.createTempFile(backupDirPath, baseName + "-", ".tmp");
+            temporaryBackup = Files.createTempFile(backupDirPath, String.format("%s-", baseName), ".tmp");
 
             // Use a dedicated pool checkout, outside any Spring-managed transaction.
             try (val connection = dataSource.getConnection()) {
@@ -114,7 +114,7 @@ public class DatabaseBackupScheduler {
     }
 
     void validateBackup(Path backupFile) throws SQLException {
-        try (val connection = DriverManager.getConnection(SQLITE_JDBC_PREFIX + backupFile);
+        try (val connection = DriverManager.getConnection(String.format("%s%s", SQLITE_JDBC_PREFIX, backupFile));
              val statement = connection.createStatement();
              val result = statement.executeQuery("PRAGMA integrity_check")) {
             if (!result.next() || !"ok".equalsIgnoreCase(result.getString(1)) || result.next()) {

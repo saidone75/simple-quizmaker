@@ -102,7 +102,7 @@ class QuizGenerationApplicationServiceTest {
         question.setText("Il Sole è una stella?");
         question.setEmoji("☀️");
         question.setFeedback("Il Sole è la stella del nostro sistema.");
-        question.setOptions(IntStream.range(0, numberOfOptions).mapToObj(i -> "Risposta " + i).toList());
+        question.setOptions(IntStream.range(0, numberOfOptions).mapToObj(i -> String.format("Risposta %d", i)).toList());
         question.setAnswer(0);
         return question;
     }

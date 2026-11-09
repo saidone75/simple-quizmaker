@@ -20,7 +20,7 @@ class DatabaseBackupSchedulerTest {
 
     private DatabaseBackupScheduler scheduler(Path database, Path backups, int retention) {
         val datasource = new SQLiteDataSource();
-        datasource.setUrl("jdbc:sqlite:" + database);
+        datasource.setUrl(String.format("jdbc:sqlite:%s", database));
         val scheduler = new DatabaseBackupScheduler(datasource);
         configure(scheduler, datasource, backups, retention);
         return scheduler;
@@ -28,7 +28,7 @@ class DatabaseBackupSchedulerTest {
 
     private DatabaseBackupScheduler scheduler(Path database, Path backups, int retention, boolean failValidation) {
         val datasource = new SQLiteDataSource();
-        datasource.setUrl("jdbc:sqlite:" + database);
+        datasource.setUrl(String.format("jdbc:sqlite:%s", database));
         val scheduler = new DatabaseBackupScheduler(datasource) {
             @Override
             void validateBackup(Path backupFile) throws SQLException {
@@ -67,19 +67,19 @@ class DatabaseBackupSchedulerTest {
         Files.writeString(unrelated, "unrelated");
         val scheduler = scheduler(database, backups, 1, false);
 
-        try (val source = DriverManager.getConnection("jdbc:sqlite:" + database);
+        try (val source = DriverManager.getConnection(String.format("jdbc:sqlite:%s", database));
              val statement = source.createStatement()) {
             statement.execute("PRAGMA journal_mode=WAL");
             statement.execute("PRAGMA wal_autocheckpoint=0");
             statement.execute("CREATE TABLE answers (id INTEGER PRIMARY KEY, value TEXT)");
             statement.execute("INSERT INTO answers VALUES (1, 'committed in WAL')");
-            assertTrue(Files.size(Path.of(database + "-wal")) > 0);
+            assertTrue(Files.size(Path.of(String.format("%s-wal", database))) > 0);
             scheduler.backupDatabase();
             val completed = files(backups).stream().filter(p -> !p.equals(unrelated)).toList();
             assertEquals(1, completed.size());
             assertTrue(completed.getFirst().toString().endsWith(".db"));
             assertFalse(Files.exists(oldBackup));
-            try (val restored = DriverManager.getConnection("jdbc:sqlite:" + completed.getFirst());
+            try (val restored = DriverManager.getConnection(String.format("jdbc:sqlite:%s", completed.getFirst()));
                  val query = restored.createStatement();
                  val rows = query.executeQuery("SELECT value FROM answers")) {
                 assertTrue(rows.next());
@@ -97,7 +97,7 @@ class DatabaseBackupSchedulerTest {
         Files.createDirectories(backups);
         val oldBackup = backups.resolve("quizmaker-20200101-000000.db");
         Files.writeString(oldBackup, "previous backup");
-        try (val source = DriverManager.getConnection("jdbc:sqlite:" + database);
+        try (val source = DriverManager.getConnection(String.format("jdbc:sqlite:%s", database));
              val statement = source.createStatement()) {
             statement.execute("CREATE TABLE answers (id INTEGER PRIMARY KEY)");
         }
@@ -129,7 +129,7 @@ class DatabaseBackupSchedulerTest {
     @Test
     void repeatedBackupsDoNotOverwriteAndRetentionZeroKeepsAll() throws Exception {
         val database = directory.resolve("quizmaker.db");
-        try (val source = DriverManager.getConnection("jdbc:sqlite:" + database);
+        try (val source = DriverManager.getConnection(String.format("jdbc:sqlite:%s", database));
              val statement = source.createStatement()) {
             statement.execute("CREATE TABLE answers (id INTEGER PRIMARY KEY)");
         }

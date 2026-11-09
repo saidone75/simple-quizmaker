@@ -82,7 +82,7 @@ public class SecurityConfig {
                 )
                 .exceptionHandling(exceptions -> exceptions.defaultAuthenticationEntryPointFor(
                         new LoginUrlAuthenticationEntryPoint("/"),
-                        request -> request.getRequestURI().equals(request.getContextPath() + "/student/badges")))
+                        request -> request.getRequestURI().equals(String.format("%s/student/badges", request.getContextPath()))))
                 .formLogin(form -> form
                         .loginPage("/teacher/login")
                         .loginProcessingUrl("/teacher/login")
