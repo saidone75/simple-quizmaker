@@ -18,7 +18,10 @@
 
 package org.saidone.quizmaker.service;
 
+import com.github.benmanes.caffeine.cache.Cache;
 import lombok.val;
+import org.springframework.test.util.ReflectionTestUtils;
+import java.util.stream.IntStream;
 import org.junit.jupiter.api.Test;
 
 import java.time.Clock;
@@ -94,6 +97,93 @@ class BruteForceProtectionServiceTest {
         clock.advance(BruteForceProtectionService.STUDENT_LOGIN_LOCK.plusSeconds(1));
 
         assertThat(bruteForce.isStudentLoginBlocked(ip, keyword)).isFalse();
+    }
+
+    @Test
+    void shouldReclaimExpiredKeysWithoutRevisitingThem() {
+        val clock = new MutableClock(Instant.parse("2026-01-01T10:00:00Z"));
+        val bruteForce = new BruteForceProtectionService(clock);
+        for (int i = 0; i < 100; i++) {
+            bruteForce.recordLoginFailure("teacher-" + i);
+            bruteForce.recordStudentLoginFailureByKeyword("keyword-" + i);
+            bruteForce.consumeRegisterAttempt("ip-" + i);
+        }
+
+        clock.advance(Duration.ofMinutes(12));
+        bruteForce.cleanupExpiredEntries();
+
+        assertThat(cache(bruteForce, "loginStates").estimatedSize()).isZero();
+        assertThat(cache(bruteForce, "registerAttempts").estimatedSize()).isZero();
+    }
+
+    @Test
+    void shouldNotRetainExpiredLoginKeysWhenTheyArePolled() {
+        val clock = new MutableClock(Instant.parse("2026-01-01T10:00:00Z"));
+        val bruteForce = new BruteForceProtectionService(clock);
+        bruteForce.recordLoginFailure("teacher");
+        for (int i = 0; i < 7; i++) {
+            clock.advance(Duration.ofMinutes(1));
+            assertThat(bruteForce.isLoginBlocked("teacher")).isFalse();
+        }
+        bruteForce.cleanupExpiredEntries();
+        assertThat(cache(bruteForce, "loginStates").estimatedSize()).isZero();
+    }
+
+    @Test
+    void shouldBoundTrackedKeys() {
+        val bruteForce = new BruteForceProtectionService();
+        for (int i = 0; i < BruteForceProtectionService.MAX_TRACKED_KEYS * 2; i++) {
+            bruteForce.recordLoginFailure("teacher-" + i);
+            bruteForce.consumeRegisterAttempt("ip-" + i);
+        }
+        bruteForce.cleanupExpiredEntries();
+
+        assertThat(cache(bruteForce, "loginStates").estimatedSize())
+                .isLessThanOrEqualTo(BruteForceProtectionService.MAX_TRACKED_KEYS);
+        assertThat(cache(bruteForce, "registerAttempts").estimatedSize())
+                .isLessThanOrEqualTo(BruteForceProtectionService.MAX_TRACKED_KEYS);
+    }
+
+    @Test
+    void shouldKeepTeacherBlockedForFullLockAndAllowLoginAfterwards() {
+        val clock = new MutableClock(Instant.parse("2026-01-01T10:00:00Z"));
+        val bruteForce = new BruteForceProtectionService(clock);
+        for (int i = 0; i < BruteForceProtectionService.MAX_LOGIN_FAILURES; i++) {
+            bruteForce.recordLoginFailure("teacher");
+        }
+        clock.advance(BruteForceProtectionService.LOGIN_LOCK.minusSeconds(1));
+        bruteForce.cleanupExpiredEntries();
+        assertThat(bruteForce.isLoginBlocked("teacher")).isTrue();
+
+        clock.advance(Duration.ofSeconds(1));
+        assertThat(bruteForce.isLoginBlocked("teacher")).isFalse();
+        bruteForce.recordLoginFailure("teacher");
+        assertThat(bruteForce.isLoginBlocked("teacher")).isFalse();
+    }
+
+    @Test
+    void shouldPreserveRegistrationWindowAndAllowAttemptsAfterwards() {
+        val clock = new MutableClock(Instant.parse("2026-01-01T10:00:00Z"));
+        val bruteForce = new BruteForceProtectionService(clock);
+        for (int i = 0; i < BruteForceProtectionService.MAX_REGISTER_ATTEMPTS; i++) {
+            assertThat(bruteForce.consumeRegisterAttempt("ip")).isTrue();
+        }
+        clock.advance(BruteForceProtectionService.REGISTER_WINDOW);
+        bruteForce.cleanupExpiredEntries();
+        assertThat(bruteForce.consumeRegisterAttempt("ip")).isFalse();
+        clock.advance(Duration.ofSeconds(1));
+        assertThat(bruteForce.consumeRegisterAttempt("ip")).isTrue();
+    }
+
+    @Test
+    void shouldEnforceRegistrationLimitForConcurrentRequests() {
+        val accepted = IntStream.range(0, 1000).parallel()
+                .filter(i -> service.consumeRegisterAttempt("same-ip")).count();
+        assertThat(accepted).isEqualTo(BruteForceProtectionService.MAX_REGISTER_ATTEMPTS);
+    }
+
+    private static Cache<?, ?> cache(BruteForceProtectionService service, String name) {
+        return (Cache<?, ?>) ReflectionTestUtils.getField(service, name);
     }
 
     private static class MutableClock extends Clock {
