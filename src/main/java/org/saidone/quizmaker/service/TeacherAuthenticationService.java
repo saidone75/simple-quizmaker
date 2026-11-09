@@ -51,7 +51,7 @@ public class TeacherAuthenticationService implements UserDetailsService {
     @Transactional
     public void updateClassBadgeRules(List<ClassBadgeRule> rules) {
         val normalized = ClassBadgeRule.normalize(rules);
-        val teacher = getCurrentTeacher();
+        val teacher = findCurrentTeacher();
         teacher.setClassBadgeRules(normalized);
         teacherRepository.save(teacher);
     }
@@ -104,6 +104,10 @@ public class TeacherAuthenticationService implements UserDetailsService {
 
     @Transactional(readOnly = true)
     public Teacher getCurrentTeacher() {
+        return findCurrentTeacher();
+    }
+
+    private Teacher findCurrentTeacher() {
         val authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated() || authentication instanceof AnonymousAuthenticationToken) {
             throw new IllegalStateException("Insegnante non autenticato");

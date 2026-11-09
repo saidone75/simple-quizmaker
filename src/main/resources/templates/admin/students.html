@@ -126,7 +126,7 @@
                 <p>Personalizza i premi di Percorso e Costanza per tutti i tuoi studenti.</p>
                 <p>I giorni non devono essere consecutivi. Le modifiche valgono dalle prossime consegne;
                     i badge già guadagnati restano acquisiti.</p>
-                <div class="alert alert-success" role="status" th:if="${badgeSettingsSuccess}" th:text="${badgeSettingsSuccess}"></div>
+                <output class="alert alert-success" th:if="${badgeSettingsSuccess}" th:text="${badgeSettingsSuccess}"></output>
                 <div class="alert alert-error" role="alert" th:if="${badgeSettingsError}" th:text="${badgeSettingsError}"></div>
                 <form class="ai-grid" method="post" th:action="@{/teacher/students/badges}">
                     <fieldset class="editor-mode-card" th:each="category : ${ {'Percorso', 'Costanza'} }">
