@@ -21,6 +21,8 @@ package org.saidone.quizmaker.service;
 import lombok.val;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -101,6 +103,22 @@ class QuestionImageStorageServiceTest {
         val imageCaptor = ArgumentCaptor.forClass(UploadedImage.class);
         verify(uploadedImageRepository).save(imageCaptor.capture());
         assertThat(imageCaptor.getValue().getTeacherId()).isEqualTo(teacher.getId());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"../../alice.png", "/tmp/alice.png", "..\\..\\alice.png", "alice.jpg", "alice.png/../../outside"})
+    void store_usesSignatureAndGeneratedIdForPath(String filename) throws Exception {
+        val png = new byte[]{(byte) 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 1, 2, 3};
+        val file = new MockMultipartFile("file", filename, "image/png", png);
+
+        val result = service.store(file, teacher);
+
+        val imageCaptor = ArgumentCaptor.forClass(UploadedImage.class);
+        verify(uploadedImageRepository).save(imageCaptor.capture());
+        val destination = Path.of(imageCaptor.getValue().getFilePath());
+        assertThat(destination.getParent()).isEqualTo(tempDir.toAbsolutePath().normalize());
+        assertThat(destination.getFileName().toString()).isEqualTo(String.format("%s.png", result.getId()));
+        assertThat(Files.readAllBytes(destination)).isEqualTo(png);
     }
 
     @Test
