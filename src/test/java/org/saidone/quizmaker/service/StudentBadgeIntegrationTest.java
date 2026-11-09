@@ -54,6 +54,8 @@ class StudentBadgeIntegrationTest {
     @Autowired StudentRepository students;
     @Autowired TeacherRepository teachers;
     @Autowired QuizRepository quizzes;
+    @Autowired UploadedImageRepository uploadedImages;
+    @Autowired QuestionImageStorageService imageStorageService;
     @Autowired QuizSubmissionRepository submissions;
     @Autowired StudentQuizAttemptRepository attempts;
     @Autowired QuizSubmissionService submissionService;
@@ -87,6 +89,33 @@ class StudentBadgeIntegrationTest {
     @AfterEach
     void clearAuthentication() {
         SecurityContextHolder.clearContext();
+    }
+
+    @Test
+    void imageCleanupTraversesDeletedBatchesAndPreservesArchivedQuizReferences() {
+        val firstImageId = UUID.fromString("00000000-0000-0000-0000-000000000001");
+        val lastImageId = UUID.fromString("ffffffff-ffff-ffff-ffff-ffffffffffff");
+        for (int i = 0; i < 205; i++) {
+            val image = new UploadedImage();
+            image.setId(i == 204 ? lastImageId : UUID.fromString(String.format("00000000-0000-0000-0000-%012x", i + 1)));
+            image.setFilePath("target/cleanup-test-missing-" + image.getId());
+            uploadedImages.save(image);
+        }
+        uploadedImages.flush();
+        quiz.getQuestions().getFirst().setImageId(firstImageId.toString());
+        quizzes.saveAndFlush(quiz);
+        val archivedQuestion = new Question();
+        archivedQuestion.setImageUrl("/api/quizzes/images/" + lastImageId);
+        quizzes.saveAndFlush(Quiz.builder().title("Archived quiz").emoji("📦")
+                .teacher(teacher).createdByUsername(teacher.getUsername())
+                .questions(List.of(archivedQuestion)).archived(true).build());
+        entityManager.clear();
+        val scheduler = new OrphanQuestionImageCleanupScheduler(quizzes, uploadedImages, imageStorageService);
+
+        scheduler.cleanupOrphanImages();
+
+        assertThat(uploadedImages.findAll()).extracting(UploadedImage::getId)
+                .containsExactlyInAnyOrder(firstImageId, lastImageId);
     }
 
     @Test

@@ -24,19 +24,22 @@ import lombok.val;
 import org.saidone.quizmaker.repository.QuizRepository;
 import org.saidone.quizmaker.repository.UploadedImageRepository;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.net.URI;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.UUID;
-import java.net.URI;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
 @ConditionalOnProperty(prefix = "app.image-cleanup", name = "enabled", havingValue = "true", matchIfMissing = true)
 public class OrphanQuestionImageCleanupScheduler {
+
+    private static final int BATCH_SIZE = 100;
 
     private final QuizRepository quizRepository;
     private final UploadedImageRepository uploadedImageRepository;
@@ -47,36 +50,50 @@ public class OrphanQuestionImageCleanupScheduler {
         try {
             val usedImageIds = new HashSet<UUID>();
 
-            quizRepository.findAll().forEach(quiz -> {
-                if (quiz.getQuestions() == null) {
-                    return;
-                }
-                for (val question : quiz.getQuestions()) {
-                    if (question == null) continue;
-                    if (question.getImageId() != null && !question.getImageId().isBlank()) {
-                        parseUuid(question.getImageId()).ifPresent(usedImageIds::add);
+            // Keep only referenced UUIDs between batches, never all quiz payloads.
+            // Each repository call has its own persistence context: no outer transaction.
+            var quizPage = PageRequest.of(0, BATCH_SIZE);
+            while (true) {
+                val quizzes = quizRepository.findAllByOrderByIdAsc(quizPage);
+                quizzes.forEach(quiz -> {
+                    if (quiz.getQuestions() == null) {
+                        return;
                     }
-                    if (question.getImageUrl() != null && !question.getImageUrl().isBlank()) {
-                        try {
-                            val path = URI.create(question.getImageUrl().trim()).getPath();
-                            val prefix = "/api/quizzes/images/";
-                            if (path != null && path.startsWith(prefix)) {
-                                parseUuid(path.substring(prefix.length())).ifPresent(usedImageIds::add);
+                    for (val question : quiz.getQuestions()) {
+                        if (question == null) continue;
+                        if (question.getImageId() != null && !question.getImageId().isBlank()) {
+                            parseUuid(question.getImageId()).ifPresent(usedImageIds::add);
+                        }
+                        if (question.getImageUrl() != null && !question.getImageUrl().isBlank()) {
+                            try {
+                                val path = URI.create(question.getImageUrl().trim()).getPath();
+                                val prefix = "/api/quizzes/images/";
+                                if (path != null && path.startsWith(prefix)) {
+                                    parseUuid(path.substring(prefix.length())).ifPresent(usedImageIds::add);
+                                }
+                            } catch (IllegalArgumentException ex) {
+                                log.debug("URL immagine non valido ignorato durante la pulizia immagini orfane");
                             }
-                        } catch (IllegalArgumentException ex) {
-                            log.debug("URL immagine non valido ignorato durante la pulizia immagini orfane");
                         }
                     }
-                }
-            });
+                });
+                if (!quizzes.hasNext()) break;
+                quizPage = quizPage.next();
+            }
 
             var deletedCount = 0;
-            for (val image : uploadedImageRepository.findAll()) {
-                if (usedImageIds.contains(image.getId())) {
-                    continue;
+            val imagePage = PageRequest.of(0, BATCH_SIZE);
+            var images = uploadedImageRepository.findAllByOrderByIdAsc(imagePage);
+            while (images.hasContent()) {
+                // Advance by ID, not offset: deleting a batch must not skip rows.
+                val lastImageId = images.getContent().getLast().getId();
+                for (val image : images) {
+                    if (usedImageIds.contains(image.getId())) continue;
+                    questionImageStorageService.delete(image.getId());
+                    deletedCount++;
                 }
-                questionImageStorageService.delete(image.getId());
-                deletedCount++;
+                if (!images.hasNext()) break;
+                images = uploadedImageRepository.findByIdGreaterThanOrderByIdAsc(lastImageId, imagePage);
             }
 
             log.info("Pulizia immagini orfane completata. Immagini referenziate: {}, immagini eliminate: {}",
@@ -86,7 +103,7 @@ public class OrphanQuestionImageCleanupScheduler {
         }
     }
 
-    private java.util.Optional<UUID> parseUuid(String value) {
+    private Optional<UUID> parseUuid(String value) {
         try {
             return Optional.of(UUID.fromString(value.trim()));
         } catch (IllegalArgumentException ex) {

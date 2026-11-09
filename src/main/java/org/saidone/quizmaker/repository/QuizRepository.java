@@ -20,6 +20,8 @@ package org.saidone.quizmaker.repository;
 
 import org.saidone.quizmaker.entity.Quiz;
 import org.saidone.quizmaker.entity.Teacher;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -29,6 +31,8 @@ import java.util.UUID;
 
 @Repository
 public interface QuizRepository extends JpaRepository<Quiz, UUID> {
+    Slice<Quiz> findAllByOrderByIdAsc(Pageable pageable);
+
     List<Quiz> findAllByTeacherOrderByCreatedAtDesc(Teacher teacher);
 
     List<Quiz> findByTeacherAndPublishedTrueAndArchivedFalseOrderByCreatedAtDesc(Teacher teacher);
