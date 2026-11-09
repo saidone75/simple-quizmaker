@@ -33,6 +33,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -85,7 +86,7 @@ public class QuizSubmissionService {
         submission.setScore(score);
         submission.setTotalQuestions(quiz.getQuestions().size());
         submission.setUnlocked(false);
-        val completedAt = LocalDateTime.now();
+        val completedAt = LocalDateTime.now(ZoneId.systemDefault());
         submission.setSubmittedAt(completedAt);
         quizSubmissionRepository.save(submission);
         val newBadges = studentBadgeService.recordCompletion(quiz, student, score,
