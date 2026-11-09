@@ -38,7 +38,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
+import java.nio.file.LinkOption;
+import java.nio.file.StandardOpenOption;
 import java.util.zip.ZipFile;
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
@@ -73,10 +74,12 @@ public class DocumentTextExtractorService {
                     return text.toString();
                 }
             }
-            val temporaryFile = Files.createTempFile("quizmaker-attachment-", filename.endsWith(".pdf") ? ".pdf" : ".docx");
+            val temporaryFile = Files.createTempFile("quizmaker-attachment-", ".tmp");
             try {
-                try (val input = file.getInputStream()) {
-                    Files.copy(input, temporaryFile, StandardCopyOption.REPLACE_EXISTING);
+                try (val input = file.getInputStream();
+                     val output = Files.newOutputStream(temporaryFile, StandardOpenOption.WRITE,
+                             StandardOpenOption.TRUNCATE_EXISTING, LinkOption.NOFOLLOW_LINKS)) {
+                    input.transferTo(output);
                 }
                 return filename.endsWith(".pdf") ? extractFromPdf(temporaryFile, limit) : extractFromDocx(temporaryFile, limit);
             } finally {

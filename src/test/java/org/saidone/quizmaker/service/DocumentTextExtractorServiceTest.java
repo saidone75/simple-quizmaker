@@ -25,6 +25,8 @@ import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.apache.pdfbox.pdmodel.font.Standard14Fonts;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -49,6 +51,15 @@ class DocumentTextExtractorServiceTest {
         ReflectionTestUtils.setField(service, "maxAttachmentChars", 8);
         val file = streamingFile("notes.txt", "Città 🌍 e altro testo".getBytes(StandardCharsets.UTF_8));
         assertThat(service.extractText(file)).isEqualTo("Città 🌍");
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"../../alice.docx", "/tmp/alice.docx", "..\\..\\alice.docx"})
+    void ignoresUploadPathsWhenCreatingTemporaryFiles(String filename) throws Exception {
+        val text = "Down, down, down.";
+        val file = streamingFile(filename, docx(String.format("<w:p><w:r><w:t>%s</w:t></w:r></w:p>", text)));
+
+        assertThat(service.extractText(file)).contains(text);
     }
 
     @Test
