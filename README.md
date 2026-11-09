@@ -216,8 +216,11 @@ Quando aggiorni lo schema del database, avvia con `LIQUIBASE_ENABLED=true`
 | `OPENAI_MODEL`                       | `gpt-5.4-mini`                                    | Modello per generazione quiz                  |
 | `AI_EMBEDDING_MODEL_URL`             | `djl://.../all-MiniLM-L6-v2` | Modello locale per embedding                  |
 | `AI_GENERATION_MAX_QUESTIONS`        | `20`                                              | Numero massimo domande generate               |
-| `AI_GENERATION_MAX_ATTACHMENT_CHARS` | `60000`                                           | Max caratteri estratti da allegato            |
+| `AI_GENERATION_MAX_ATTACHMENT_CHARS` | `60000`                                           | Max caratteri estratti da allegato (lettura interrotta al limite)            |
+| `AI_EXTRACTION_MAX_PDF_PAGES` | `2000` | Pagine PDF massime da elaborare durante l’estrazione |
+| `AI_EXTRACTION_MAX_DOCX_XML_BYTES` | `67108864` (64 MB) | XML DOCX decompresso massimo letto; immagini e altri allegati interni esclusi |
 | `AI_GENERATION_MAX_ATTEMPTS`         | `2`                                               | Tentativi massimi di generazione/validazione  |
+| `AI_IMAGE_SEARCH_TIMEOUT` | `5m` | Tempo massimo complessivo per le immagini di un quiz; immagini mancanti omesse |
 | `UPLOAD_DIRECTORY`                   | `./upload`                                        | Directory file upload immagini quiz           |
 | `TURNSTILE_ENABLED`                  | `false` (`true` in dev)                           | Abilita CAPTCHA Turnstile                     |
 | `TURNSTILE_SITE_KEY`                 | vuota (o test key in dev)                         | Site key Turnstile                            |

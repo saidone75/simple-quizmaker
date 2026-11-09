@@ -82,7 +82,9 @@ public class QuestionImageStorageService {
                 throw new IllegalStateException("Percorso di destinazione non valido.");
             }
 
-            Files.copy(file.getInputStream(), destination, StandardCopyOption.REPLACE_EXISTING);
+            try (val inputStream = file.getInputStream()) {
+                Files.copy(inputStream, destination, StandardCopyOption.REPLACE_EXISTING);
+            }
 
             val image = new UploadedImage();
             image.setId(imageId);

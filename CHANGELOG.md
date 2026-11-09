@@ -23,6 +23,7 @@ in **Non rilasciato**.
 ### Corretto
 
 - Mostrati messaggi comprensibili durante la generazione AI per allegati troppo grandi, sessioni scadute, timeout e risposte non JSON del server.
+- Migliorata la stabilità e ridotto il consumo di memoria di rate limiter, upload, ricerche immagini, pulizia notturna ed estrazione degli allegati.
 
 ## [1.2.1] - 2026-10-27
 

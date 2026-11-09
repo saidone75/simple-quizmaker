@@ -19,6 +19,9 @@
 package org.saidone.quizmaker.service;
 
 import lombok.val;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.SliceImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -75,8 +78,10 @@ class OrphanQuestionImageCleanupSchedulerTest {
         orphanImage.setId(orphanImageId);
         orphanImage.setFilePath("/tmp/orphan.png");
 
-        when(quizRepository.findAll()).thenReturn(List.of(quiz));
-        when(uploadedImageRepository.findAll()).thenReturn(List.of(usedImage, orphanImage));
+        when(quizRepository.findAllByOrderByIdAsc(any(Pageable.class)))
+                .thenReturn(new SliceImpl<>(List.of(quiz)));
+        when(uploadedImageRepository.findAllByOrderByIdAsc(any(Pageable.class)))
+                .thenReturn(new SliceImpl<>(List.of(usedImage, orphanImage)));
 
         cleanupScheduler.cleanupOrphanImages();
 
@@ -102,8 +107,10 @@ class OrphanQuestionImageCleanupSchedulerTest {
         storedImage.setId(UUID.randomUUID());
         storedImage.setFilePath("/tmp/orphan.png");
 
-        when(quizRepository.findAll()).thenReturn(List.of(quiz));
-        when(uploadedImageRepository.findAll()).thenReturn(List.of(storedImage));
+        when(quizRepository.findAllByOrderByIdAsc(any(Pageable.class)))
+                .thenReturn(new SliceImpl<>(List.of(quiz)));
+        when(uploadedImageRepository.findAllByOrderByIdAsc(any(Pageable.class)))
+                .thenReturn(new SliceImpl<>(List.of(storedImage)));
 
         cleanupScheduler.cleanupOrphanImages();
 
@@ -117,11 +124,64 @@ class OrphanQuestionImageCleanupSchedulerTest {
         question.setImageUrl("/api/quizzes/images/" + id);
         val image = new UploadedImage();
         image.setId(id);
-        when(quizRepository.findAll()).thenReturn(List.of(Quiz.builder().questions(List.of(question)).build()));
-        when(uploadedImageRepository.findAll()).thenReturn(List.of(image));
+        when(quizRepository.findAllByOrderByIdAsc(any(Pageable.class)))
+                .thenReturn(new SliceImpl<>(List.of(Quiz.builder().questions(List.of(question)).build())));
+        when(uploadedImageRepository.findAllByOrderByIdAsc(any(Pageable.class)))
+                .thenReturn(new SliceImpl<>(List.of(image)));
 
         cleanupScheduler.cleanupOrphanImages();
 
         verifyNoInteractions(questionImageStorageService);
+    }
+
+    @Test
+    void cleanupScansAllQuizBatchesBeforeDeletingImagesAndUsesImageCursor() {
+        val earlyImageId = UUID.fromString("00000000-0000-0000-0000-000000000001");
+        val orphanImageId = UUID.fromString("00000000-0000-0000-0000-000000000002");
+        val laterImageId = UUID.fromString("00000000-0000-0000-0000-000000000003");
+        val earlyQuestion = new Question();
+        earlyQuestion.setImageId(earlyImageId.toString());
+        val laterQuestion = new Question();
+        laterQuestion.setImageUrl("/api/quizzes/images/" + laterImageId);
+        val firstQuiz = Quiz.builder().questions(List.of(earlyQuestion)).build();
+        val archivedQuiz = Quiz.builder().questions(List.of(laterQuestion)).archived(true).build();
+        val firstPage = PageRequest.of(0, 100);
+        when(quizRepository.findAllByOrderByIdAsc(firstPage))
+                .thenReturn(new SliceImpl<>(List.of(firstQuiz), firstPage, true));
+        when(quizRepository.findAllByOrderByIdAsc(firstPage.next()))
+                .thenReturn(new SliceImpl<>(List.of(archivedQuiz), firstPage.next(), false));
+        val earlyImage = new UploadedImage();
+        earlyImage.setId(earlyImageId);
+        val orphan = new UploadedImage();
+        orphan.setId(orphanImageId);
+        val laterImage = new UploadedImage();
+        laterImage.setId(laterImageId);
+        when(uploadedImageRepository.findAllByOrderByIdAsc(firstPage))
+                .thenReturn(new SliceImpl<>(List.of(earlyImage, orphan), firstPage, true));
+        when(uploadedImageRepository.findByIdGreaterThanOrderByIdAsc(orphanImageId, firstPage))
+                .thenReturn(new SliceImpl<>(List.of(laterImage), firstPage, false));
+
+        cleanupScheduler.cleanupOrphanImages();
+
+        val order = inOrder(quizRepository, uploadedImageRepository, questionImageStorageService);
+        order.verify(quizRepository).findAllByOrderByIdAsc(firstPage);
+        order.verify(quizRepository).findAllByOrderByIdAsc(firstPage.next());
+        order.verify(uploadedImageRepository).findAllByOrderByIdAsc(firstPage);
+        order.verify(questionImageStorageService).delete(orphanImageId);
+        order.verify(uploadedImageRepository).findByIdGreaterThanOrderByIdAsc(orphanImageId, firstPage);
+        verify(questionImageStorageService, never()).delete(earlyImageId);
+        verify(questionImageStorageService, never()).delete(laterImageId);
+        verify(quizRepository, never()).findAll();
+        verify(uploadedImageRepository, never()).findAll();
+    }
+
+    @Test
+    void cleanupDoesNotDeleteImagesWhenQuizScanFails() {
+        when(quizRepository.findAllByOrderByIdAsc(any(Pageable.class)))
+                .thenThrow(new IllegalStateException("Database unavailable"));
+
+        cleanupScheduler.cleanupOrphanImages();
+
+        verifyNoInteractions(uploadedImageRepository, questionImageStorageService);
     }
 }

@@ -18,9 +18,13 @@
 
 package org.saidone.quizmaker.service;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.Ticker;
 import lombok.val;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.scheduling.annotation.Scheduled;
 
 import java.time.Clock;
 import java.time.Duration;
@@ -28,8 +32,8 @@ import java.time.Instant;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Locale;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Service
 public class BruteForceProtectionService {
@@ -48,34 +52,50 @@ public class BruteForceProtectionService {
     private static final String STUDENT_KEYWORD_KEY_PREFIX = "student-keyword";
     private static final String KEY_FORMAT = "%s|%s";
 
-    private final Map<String, LoginState> loginStates = new ConcurrentHashMap<>();
-    private final Map<String, Deque<Instant>> registerAttempts = new ConcurrentHashMap<>();
+    static final int MAX_TRACKED_KEYS = 10_000;
+
+    private final Cache<String, LoginState> loginStates;
+    private final Cache<String, Deque<Instant>> registerAttempts;
     private final Clock clock;
 
     @Autowired
     public BruteForceProtectionService() {
-        this(Clock.systemUTC());
+        this(Clock.systemUTC(), Ticker.systemTicker());
     }
 
     BruteForceProtectionService(Clock clock) {
+        this(clock, () -> TimeUnit.MILLISECONDS.toNanos(clock.millis()));
+    }
+
+    private BruteForceProtectionService(Clock clock, Ticker ticker) {
         this.clock = clock;
+        // Retain entries longer than every applicable window/lock. Reads must not
+        // extend retention; stale keys are reclaimed even if they are polled.
+        loginStates = Caffeine.newBuilder()
+                .maximumSize(MAX_TRACKED_KEYS)
+                .expireAfterWrite(LOGIN_LOCK.plus(LOGIN_WINDOW))
+                .ticker(ticker)
+                .build();
+        registerAttempts = Caffeine.newBuilder()
+                .maximumSize(MAX_TRACKED_KEYS)
+                .expireAfterWrite(REGISTER_WINDOW.plusMinutes(1))
+                .ticker(ticker)
+                .build();
+    }
+
+    @Scheduled(fixedDelay = 60_000)
+    public void cleanupExpiredEntries() {
+        loginStates.cleanUp();
+        registerAttempts.cleanUp();
     }
 
     public boolean isLoginBlocked(String key) {
-        val state = loginStates.get(key);
+        val state = loginStates.getIfPresent(key);
         if (state == null) {
             return false;
         }
-
-        val now = Instant.now(clock);
-        if (state.blockedUntil != null && state.blockedUntil.isAfter(now)) {
-            return true;
-        }
-
-        if (state.blockedUntil != null && !state.blockedUntil.isAfter(now)) {
-            loginStates.remove(key);
-        }
-        return false;
+        val blockedUntil = state.blockedUntil;
+        return blockedUntil != null && blockedUntil.isAfter(Instant.now(clock));
     }
 
     private static String key(String prefix, String suffix) {
@@ -106,8 +126,8 @@ public class BruteForceProtectionService {
 
     private void recordLoginFailure(String key, int maxFailures, Duration window, Duration lockDuration) {
         val now = Instant.now(clock);
-        loginStates.compute(key, (k, state) -> {
-            if (state == null) {
+        loginStates.asMap().compute(key, (k, state) -> {
+            if (state == null || (state.blockedUntil != null && !state.blockedUntil.isAfter(now))) {
                 state = new LoginState();
             }
 
@@ -125,27 +145,31 @@ public class BruteForceProtectionService {
     }
 
     public void clearLoginFailures(String key) {
-        loginStates.remove(key);
+        loginStates.invalidate(key);
     }
 
     public boolean consumeRegisterAttempt(String ipKey) {
-        val now = Instant.now(clock);
-        val bucket = registerAttempts.computeIfAbsent(ipKey, k -> new ArrayDeque<>());
-        synchronized (bucket) {
+        val accepted = new AtomicBoolean();
+        registerAttempts.asMap().compute(ipKey, (key, bucket) -> {
+            val now = Instant.now(clock);
+            if (bucket == null) {
+                bucket = new ArrayDeque<>();
+            }
             while (!bucket.isEmpty() && bucket.peekFirst().plus(REGISTER_WINDOW).isBefore(now)) {
                 bucket.removeFirst();
             }
-            if (bucket.size() >= MAX_REGISTER_ATTEMPTS) {
-                return false;
+            if (bucket.size() < MAX_REGISTER_ATTEMPTS) {
+                bucket.addLast(now);
+                accepted.set(true);
             }
-            bucket.addLast(now);
-            return true;
-        }
+            return bucket;
+        });
+        return accepted.get();
     }
 
     private static class LoginState {
         private final Deque<Instant> failures = new ArrayDeque<>();
-        private Instant blockedUntil;
+        private volatile Instant blockedUntil;
 
         private void prune(Instant now, Duration window) {
             while (!failures.isEmpty() && failures.peekFirst().plus(window).isBefore(now)) {

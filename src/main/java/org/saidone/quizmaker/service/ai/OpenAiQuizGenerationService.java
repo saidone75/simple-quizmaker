@@ -39,6 +39,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestClient;
 
+import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.ThreadLocalRandom;
@@ -48,7 +49,14 @@ import java.util.concurrent.ThreadLocalRandom;
 @Slf4j
 public class OpenAiQuizGenerationService implements QuizGenerationService {
     private static final int MAX_WIKIMEDIA_SEARCH_THREADS = 3;
-    private static final ExecutorService WIKIMEDIA_SEARCH_EXECUTOR = Executors.newFixedThreadPool(MAX_WIKIMEDIA_SEARCH_THREADS);
+    private static final int MAX_QUEUED_WIKIMEDIA_SEARCHES = 60;
+    private final ThreadPoolExecutor wikimediaSearchExecutor = new ThreadPoolExecutor(
+            MAX_WIKIMEDIA_SEARCH_THREADS, MAX_WIKIMEDIA_SEARCH_THREADS,
+            0L, TimeUnit.MILLISECONDS, new ArrayBlockingQueue<>(MAX_QUEUED_WIKIMEDIA_SEARCHES),
+            new ThreadPoolExecutor.AbortPolicy());
+
+    @Value("${app.ai.generation.image-search-timeout:5m}")
+    private Duration imageSearchTimeout = Duration.ofMinutes(5);
 
     private final ObjectMapper objectMapper;
     private final RestClient openAiRestClient;
@@ -141,48 +149,59 @@ public class OpenAiQuizGenerationService implements QuizGenerationService {
         if (quiz == null || quiz.getQuestions() == null) {
             return;
         }
+        val tasks = new ArrayList<PendingImage>();
+        // Only this request thread updates the DTO. Cancelled HTTP/native work
+        // may finish late, but must never modify an already returned quiz.
+        for (val question : quiz.getQuestions()) {
+            if (question == null) continue;
+            question.setImageUrl(Strings.EMPTY);
+            if (!includeAiImages) question.setImageKeywords(Strings.EMPTY);
+        }
+        if (!includeAiImages) return;
+
+        val deadline = System.nanoTime() + imageSearchTimeout.toNanos();
         try {
-            val tasks = new ArrayList<Future<?>>();
             for (val question : quiz.getQuestions()) {
-                tasks.add(WIKIMEDIA_SEARCH_EXECUTOR.submit(() -> processQuestionImage(question, includeAiImages, imageSearchMode)));
+                if (question == null || !StringUtils.hasText(question.getImageKeywords())) continue;
+                val keywords = parseImageKeywords(question.getImageKeywords());
+                if (keywords.length == 0) continue;
+                question.setImageKeywords(String.join(", ", keywords));
+                val task = wikimediaSearchExecutor.submit(
+                        () -> wikimediaImageSearchService.searchImage(keywords, imageSearchMode));
+                tasks.add(new PendingImage(question, task));
             }
-            for (val task : tasks) {
-                task.get();
+        } catch (RejectedExecutionException e) {
+            // Keep accepted work; remaining questions simply have no image.
+            log.warn("Coda ricerche Wikimedia satura: alcune immagini saranno omesse.");
+        }
+
+        try {
+            for (val pending : tasks) {
+                val remaining = deadline - System.nanoTime();
+                if (remaining <= 0) throw new TimeoutException();
+                val imageUrl = pending.task().get(remaining, TimeUnit.NANOSECONDS);
+                pending.question().setImageUrl(StringUtils.hasText(imageUrl) ? imageUrl : Strings.EMPTY);
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             log.warn("Risoluzione immagini Wikimedia interrotta: {}", e.getMessage());
-        } catch (ExecutionException e) {
+        } catch (TimeoutException e) {
+            log.warn("Tempo massimo per la risoluzione immagini Wikimedia superato.");
+        } catch (ExecutionException | CancellationException e) {
             log.warn("Errore durante la risoluzione immagini Wikimedia: {}", e.getMessage());
+        } finally {
+            tasks.forEach(pending -> pending.task().cancel(true));
+            wikimediaSearchExecutor.purge();
         }
     }
+
+    private record PendingImage(QuestionDto question, Future<String> task) {}
 
     @PreDestroy
     void shutdownWikimediaSearchExecutor() {
-        WIKIMEDIA_SEARCH_EXECUTOR.shutdown();
-    }
-
-    private void processQuestionImage(QuestionDto question,
-                                      boolean includeAiImages,
-                                      String imageSearchMode) {
-        if (question == null) {
-            return;
-        }
-        if (!includeAiImages) {
-            question.setImageKeywords(Strings.EMPTY);
-            question.setImageUrl(Strings.EMPTY);
-            return;
-        }
-
-        var resolvedUrl = Strings.EMPTY;
-        if (StringUtils.hasText(question.getImageKeywords())) {
-            val keywords = parseImageKeywords(question.getImageKeywords());
-            if (keywords.length > 0) {
-                question.setImageKeywords(String.join(", ", keywords));
-                resolvedUrl = wikimediaImageSearchService.searchImage(keywords, imageSearchMode);
-            }
-        }
-        question.setImageUrl(StringUtils.hasText(resolvedUrl) ? resolvedUrl : Strings.EMPTY);
+        wikimediaSearchExecutor.shutdownNow().forEach(task -> {
+            if (task instanceof Future<?> future) future.cancel(true);
+        });
     }
 
     private String[] parseImageKeywords(String imageKeywords) {

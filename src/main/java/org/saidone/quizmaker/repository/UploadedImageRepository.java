@@ -19,10 +19,16 @@
 package org.saidone.quizmaker.repository;
 
 import org.saidone.quizmaker.entity.UploadedImage;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.UUID;
 
 public interface UploadedImageRepository extends JpaRepository<UploadedImage, UUID> {
+    Slice<UploadedImage> findAllByOrderByIdAsc(Pageable pageable);
+
+    Slice<UploadedImage> findByIdGreaterThanOrderByIdAsc(UUID id, Pageable pageable);
+
     boolean existsByFilePath(String filePath);
 }

@@ -32,6 +32,9 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.junit.jupiter.api.extension.ExtendWith;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.UUID;
 import java.util.Optional;
@@ -44,6 +47,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -97,6 +101,47 @@ class QuestionImageStorageServiceTest {
         val imageCaptor = ArgumentCaptor.forClass(UploadedImage.class);
         verify(uploadedImageRepository).save(imageCaptor.capture());
         assertThat(imageCaptor.getValue().getTeacherId()).isEqualTo(teacher.getId());
+    }
+
+    @Test
+    void store_closesUploadStreamAfterSuccessfulCopy() throws Exception {
+        val png = new byte[]{(byte) 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 1, 2, 3};
+        val file = spy(new MockMultipartFile("file", "safe.png", "image/png", png));
+        val validationStream = spy(new ByteArrayInputStream(png));
+        val uploadStream = spy(new ByteArrayInputStream(png));
+        when(file.getInputStream()).thenReturn(validationStream, uploadStream);
+
+        val result = service.store(file, teacher);
+
+        verify(validationStream).close();
+        verify(uploadStream).close();
+        val imageCaptor = ArgumentCaptor.forClass(UploadedImage.class);
+        verify(uploadedImageRepository).save(imageCaptor.capture());
+        assertThat(Files.readAllBytes(Path.of(imageCaptor.getValue().getFilePath()))).isEqualTo(png);
+        assertThat(result.getId()).isEqualTo(imageCaptor.getValue().getId());
+    }
+
+    @Test
+    void store_closesUploadStreamWhenCopyFails() throws Exception {
+        val png = new byte[]{(byte) 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 1, 2, 3};
+        val file = spy(new MockMultipartFile("file", "safe.png", "image/png", png));
+        val validationStream = spy(new ByteArrayInputStream(png));
+        val failure = new IOException("Copy failed");
+        val uploadStream = spy(new InputStream() {
+            @Override
+            public int read() throws IOException {
+                throw failure;
+            }
+        });
+        when(file.getInputStream()).thenReturn(validationStream, uploadStream);
+
+        assertThatThrownBy(() -> service.store(file, teacher))
+                .isInstanceOf(IllegalStateException.class)
+                .hasCause(failure);
+
+        verify(validationStream).close();
+        verify(uploadStream).close();
+        verify(uploadedImageRepository, never()).save(any());
     }
 
     @Test

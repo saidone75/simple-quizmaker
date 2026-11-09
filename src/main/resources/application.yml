@@ -31,7 +31,10 @@ app:
     generation:
       max-questions: ${AI_GENERATION_MAX_QUESTIONS:20}
       max-attachment-chars: ${AI_GENERATION_MAX_ATTACHMENT_CHARS:60000}
+      max-pdf-pages: ${AI_EXTRACTION_MAX_PDF_PAGES:2000}
+      max-docx-xml-bytes: ${AI_EXTRACTION_MAX_DOCX_XML_BYTES:67108864}
       max-attempts: ${AI_GENERATION_MAX_ATTEMPTS:2}
+      image-search-timeout: ${AI_IMAGE_SEARCH_TIMEOUT:5m}
   upload:
     directory: ${UPLOAD_DIRECTORY:./upload}
   db-backup:
