@@ -335,6 +335,7 @@ async function reviewQuiz(id) {
         }
         renderReview();
     } catch (error) {
+        console.error('Impossibile caricare la revisione del quiz', error);
         showStudentAlert('Errore nel caricamento del quiz', 'Riprova tra poco o avvisa la maestra.');
     }
 }

@@ -1,10 +1,11 @@
 package org.saidone.quizmaker.dto;
 
+import java.io.Serializable;
 import java.util.HashSet;
 import java.util.List;
 
 /** Teacher settings are snapshotted on each completed attempt. */
-public record ClassBadgeRule(String id, boolean enabled, int target) {
+public record ClassBadgeRule(String id, boolean enabled, int target) implements Serializable {
     public static List<ClassBadgeRule> defaults() {
         return List.of(new ClassBadgeRule("FIRST_QUIZ", true, 1),
                 new ClassBadgeRule("FIVE_QUIZZES", true, 5),
