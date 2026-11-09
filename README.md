@@ -218,6 +218,7 @@ Quando aggiorni lo schema del database, avvia con `LIQUIBASE_ENABLED=true`
 | `AI_GENERATION_MAX_QUESTIONS`        | `20`                                              | Numero massimo domande generate               |
 | `AI_GENERATION_MAX_ATTACHMENT_CHARS` | `60000`                                           | Max caratteri estratti da allegato            |
 | `AI_GENERATION_MAX_ATTEMPTS`         | `2`                                               | Tentativi massimi di generazione/validazione  |
+| `AI_IMAGE_SEARCH_TIMEOUT` | `5m` | Tempo massimo complessivo per le immagini di un quiz; immagini mancanti omesse |
 | `UPLOAD_DIRECTORY`                   | `./upload`                                        | Directory file upload immagini quiz           |
 | `TURNSTILE_ENABLED`                  | `false` (`true` in dev)                           | Abilita CAPTCHA Turnstile                     |
 | `TURNSTILE_SITE_KEY`                 | vuota (o test key in dev)                         | Site key Turnstile                            |

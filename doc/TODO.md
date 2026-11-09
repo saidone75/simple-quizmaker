@@ -6,8 +6,8 @@
 2. [x] **P2 — Chiudere lo stream degli upload immagini.**
    Aggiunto `try-with-resources` in `QuestionImageStorageService.store()`. Verificata la chiusura degli stream di validazione e copia sia dopo un upload riuscito sia in caso di errore di lettura, senza salvare il record nel database quando la copia fallisce.
 
-3. [ ] **P2 — Limitare la coda delle ricerche immagini e gestire le attese.**
-   In `OpenAiQuizGenerationService`, `Executors.newFixedThreadPool(3)` usa una coda senza limite. Con Wikimedia lento e più generazioni contemporanee, possono accumularsi attività, domande e richieste in attesa. `task.get()` non impone una scadenza complessiva e l'interruzione non cancella i lavori pendenti. Introdurre una coda limitata, un comportamento esplicito in caso di saturazione, una scadenza complessiva e la cancellazione delle attività residue. Verificare il comportamento con ricerche lente e richieste concorrenti.
+3. [x] **P2 — Limitare la coda delle ricerche immagini e gestire le attese.**
+   Pool gestito dal servizio con 3 worker e massimo 60 attività in coda. Budget complessivo di 5 minuti per quiz, configurabile con `AI_IMAGE_SEARCH_TIMEOUT`. A coda piena si omettono le ricerche non accettate; a scadenza o interruzione si cancellano le attività residue e si rimuovono quelle annullate dalla coda. I worker non modificano il quiz restituito. Aggiunti test per saturazione, timeout, risultati tardivi, interruzione e richieste concorrenti.
 
 4. [ ] **P2 — Elaborare a lotti la pulizia notturna delle immagini.**
    In `OrphanQuestionImageCleanupScheduler.cleanupOrphanImages()`, `quizRepository.findAll()` materializza tutti i quiz, comprese le domande JSON e i quiz archiviati; successivamente `uploadedImageRepository.findAll()` carica tutte le immagini. Il picco di memoria cresce con l'intero archivio e può causare GC intenso o esaurimento dell'heap. Elaborare i dati a pagine o con proiezioni adeguate, liberando ogni lotto e preservando il controllo globale dei riferimenti alle immagini.
