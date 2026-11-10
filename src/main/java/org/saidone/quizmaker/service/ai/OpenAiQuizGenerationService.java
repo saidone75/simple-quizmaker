@@ -35,7 +35,7 @@ import org.saidone.quizmaker.service.WikimediaImageSearchService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestClient;
 
@@ -44,7 +44,7 @@ import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.ThreadLocalRandom;
 
-@Component
+@Service
 @RequiredArgsConstructor
 @Slf4j
 public class OpenAiQuizGenerationService implements QuizGenerationService {
