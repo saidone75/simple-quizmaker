@@ -93,7 +93,8 @@ class QuizServiceTest {
         doThrow(new AccessDeniedException("Accesso immagine non consentito"))
                 .when(questionImageAuthorizationPolicy).validateQuestions(request.getQuestions(), teacher);
 
-        assertThatThrownBy(() -> quizService.update(sampleQuiz.getId(), request, teacher))
+        val quizId = sampleQuiz.getId();
+        assertThatThrownBy(() -> quizService.update(quizId, request, teacher))
                 .isInstanceOf(AccessDeniedException.class);
         verify(quizRepository, never()).save(any());
     }
@@ -275,7 +276,8 @@ class QuizServiceTest {
         val second = validQuestion(3);
         val request = QuizDto.Request.builder().questions(List.of(first, second)).build();
         assertThatThrownBy(() -> quizService.create(request, teacher)).hasMessageContaining("stesso tipo");
-        assertThatThrownBy(() -> quizService.update(sampleQuiz.getId(), request, teacher)).hasMessageContaining("stesso tipo");
+        val quizId = sampleQuiz.getId();
+        assertThatThrownBy(() -> quizService.update(quizId, request, teacher)).hasMessageContaining("stesso tipo");
 
         second.setOptions(List.of("Vero", "Falso"));
         second.setType(QuestionType.TRUE_FALSE);
