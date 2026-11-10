@@ -11,6 +11,8 @@ in **Non rilasciato**.
 
 ## [Non rilasciato]
 
+## [1.3.0] - 2026-11-10
+
 ### Aggiunto
 
 - Pannello collassabile “Badge della classe” nella gestione studenti per abilitare i badge di Percorso e Costanza e personalizzarne le soglie, conservando i premi già acquisiti.
@@ -18,12 +20,24 @@ in **Non rilasciato**.
 
 ### Modificato
 
-- Riuniti introduzione e contenuti della pagina Discover in un'unica card, con sezioni disposte in una sola colonna.
+- Riuniti introduzione e contenuti della pagina Discover in un'unica card.
+- Semplificata la pagina dei badge dello studente e migliorata l'accessibilità di form e messaggi di stato.
+- Semplificati i nomi dei backup SQLite e cambiata la directory predefinita da `./backups` a `./backup`.
+- Aggiornati Spring Boot alla versione 4.1.2, DJL alla versione 0.40.0, PyTorch JNI alla versione 2.7.1-0.40.0, Apache Tika alla versione 4.2.0 ed Enforcer alla versione 3.7.0.
+- Aggiornati gli strumenti di analisi e CI.
+- Spostata la documentazione delle API in `API.md`.
 
 ### Corretto
 
 - Mostrati messaggi comprensibili durante la generazione AI per allegati troppo grandi, sessioni scadute, timeout e risposte non JSON del server.
 - Migliorata la stabilità e ridotto il consumo di memoria di rate limiter, upload, ricerche immagini, pulizia notturna ed estrazione degli allegati.
+- Corretto il caricamento dello studente nelle transazioni dei badge e migliorata la gestione degli errori durante il ripristino dei quiz.
+- Resi espliciti fuso orario delle consegne e permessi dei file temporanei; corretti problemi di serializzazione e chiamate interne ai metodi transazionali.
+
+### Aggiornamento
+
+- Applicare la migrazione Liquibase `010-class-badge-settings` prima di usare la nuova versione. In produzione avviare con `--spring.liquibase.enabled=true` per aggiornare lo schema; le impostazioni iniziali dei badge restano quelle precedenti.
+- Per mantenere la directory dei backup esistente, impostare `DB_BACKUP_DIRECTORY=./backups` o il percorso già utilizzato.
 
 ## [1.2.1] - 2026-10-27
 
@@ -146,7 +160,8 @@ in **Non rilasciato**.
 - Database H2 per `dev`/`docker`, SQLite per `prod`.
 - Runtime embedded Jetty.
 
-[Non rilasciato]: https://github.com/saidone75/simple-quizmaker/compare/v1.2.1...HEAD
+[Non rilasciato]: https://github.com/saidone75/simple-quizmaker/compare/v1.3.0...HEAD
+[1.3.0]: https://github.com/saidone75/simple-quizmaker/compare/v1.2.1...v1.3.0
 [1.2.1]: https://github.com/saidone75/simple-quizmaker/compare/v1.2.0...v1.2.1
 [1.2.0]: https://github.com/saidone75/simple-quizmaker/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/saidone75/simple-quizmaker/compare/v1.0.5...v1.1.0
