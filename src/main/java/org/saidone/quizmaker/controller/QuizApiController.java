@@ -198,7 +198,7 @@ public class QuizApiController {
         if (second == null || second.isBlank()) {
             return first;
         }
-        return String.format("%s\n\n%s", first, second);
+        return String.format("%s%n%n%s", first, second);
     }
 
 }
