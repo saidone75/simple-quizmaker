@@ -141,7 +141,7 @@
                 <button type="button" class="btn-add-question" id="add-quiz-badge-btn">+ Aggiungi badge</button>
                 <button th:if="${aiEnabled}" type="button" class="btn-add-question" id="generate-quiz-badges-btn">🤖 Proponi badge con AI</button>
             </div>
-            <p id="badge-generation-msg" class="badge-editor-note editor-mode-subtitle" role="status" aria-live="polite" hidden></p>
+            <output id="badge-generation-msg" class="badge-editor-note editor-mode-subtitle" aria-live="polite" hidden></output>
             <p class="badge-editor-note editor-mode-subtitle">Puoi impostare fino a 8 badge. Chi raggiunge più soglie guadagna tutti i relativi premi.
                 Una soglia di 0% premia l’impegno di chiunque completi il quiz.
                 Modificare o rimuovere un premio non toglie i badge già guadagnati dagli studenti.</p>
