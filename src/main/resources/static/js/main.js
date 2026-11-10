@@ -113,7 +113,7 @@ function escHtml(str) {
 
 // ===== API HELPERS =====
 function getCsrfHeaders(baseHeaders) {
-    const headers = {...(baseHeaders || {})};
+    const headers = {...baseHeaders};
     const csrfToken = document.querySelector('meta[name="quizmaker-csrf-token"]')?.content || '';
     const csrfHeader = document.querySelector('meta[name="quizmaker-csrf-header"]')?.content || '';
     if (csrfToken && csrfHeader) {
@@ -123,7 +123,7 @@ function getCsrfHeaders(baseHeaders) {
 }
 
 async function apiFetch(url, options) {
-    const opts = {...(options || {})};
+    const opts = {...options};
     opts.headers = getCsrfHeaders(opts.headers);
     return fetch(url, opts);
 }
