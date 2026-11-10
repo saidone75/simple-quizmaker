@@ -117,7 +117,7 @@ class QuizSubmissionServiceTest {
         service.submit(quiz.getId(), student, List.of(1, 0));
         assertThat(previous.getSubmittedAt()).isAfter(LocalDateTime.of(2026, 1, 1, 12, 0));
         assertThat(previous.getUnlocked()).isFalse();
-        verify(badges).recordCompletion(eq(quiz), eq(student), eq(2), eq(2), eq(previous.getSubmittedAt()));
+        verify(badges).recordCompletion(quiz, student, 2, 2, previous.getSubmittedAt());
     }
 
     @Test
