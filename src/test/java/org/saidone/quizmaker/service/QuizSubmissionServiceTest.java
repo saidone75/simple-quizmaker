@@ -65,7 +65,8 @@ class QuizSubmissionServiceTest {
     void reviewRejectsQuizOutsideStudentsPublishedAvailableQuizzes() {
         when(quizzes.findByIdAndTeacherAndPublishedTrueAndArchivedFalse(quiz.getId(), teacher))
                 .thenReturn(Optional.empty());
-        assertThatThrownBy(() -> service.review(quiz.getId(), student))
+        val quizId = quiz.getId();
+        assertThatThrownBy(() -> service.review(quizId, student))
                 .isInstanceOf(jakarta.persistence.EntityNotFoundException.class);
         verifyNoInteractions(submissions, badges);
     }
@@ -74,7 +75,8 @@ class QuizSubmissionServiceTest {
     void reviewRequiresStudentsOwnSubmission() {
         when(submissions.findByStudentIdAndQuizId(student.getId(), quiz.getId()))
                 .thenReturn(Optional.empty());
-        assertThatThrownBy(() -> service.review(quiz.getId(), student))
+        val quizId = quiz.getId();
+        assertThatThrownBy(() -> service.review(quizId, student))
                 .isInstanceOf(jakarta.persistence.EntityNotFoundException.class);
         verify(submissions, never()).save(any());
     }
@@ -97,7 +99,9 @@ class QuizSubmissionServiceTest {
     void lockedSubmissionCannotEarnBadges() {
         when(submissions.findByStudentIdAndQuizId(student.getId(), quiz.getId()))
                 .thenReturn(Optional.of(QuizSubmission.builder().unlocked(false).build()));
-        assertThatThrownBy(() -> service.submit(quiz.getId(), student, List.of(1, 0)))
+        val quizId = quiz.getId();
+        val answers = List.of(1, 0);
+        assertThatThrownBy(() -> service.submit(quizId, student, answers))
                 .isInstanceOf(IllegalStateException.class);
         verifyNoInteractions(badges);
         verify(submissions, never()).save(any());
@@ -119,7 +123,9 @@ class QuizSubmissionServiceTest {
     @Test
     void failedSubmissionSaveDoesNotRecordAnAttempt() {
         when(submissions.save(any())).thenThrow(new IllegalStateException("save failed"));
-        assertThatThrownBy(() -> service.submit(quiz.getId(), student, List.of(1, 0)))
+        val quizId = quiz.getId();
+        val answers = List.of(1, 0);
+        assertThatThrownBy(() -> service.submit(quizId, student, answers))
                 .hasMessage("save failed");
         verifyNoInteractions(badges);
     }

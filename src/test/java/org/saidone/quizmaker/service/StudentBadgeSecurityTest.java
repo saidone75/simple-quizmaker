@@ -51,7 +51,9 @@ class StudentBadgeSecurityTest {
     void studentCannotImpersonateAnotherStudentToAwardBadges() {
         SecurityContextHolder.getContext().setAuthentication(new StudentAuthenticationToken(student));
         val other = Student.builder().id(UUID.randomUUID()).teacher(teacher).build();
-        assertThatThrownBy(() -> service.recordCompletion(Quiz.builder().build(), other, 1, 1, LocalDateTime.now()))
+        val quiz = Quiz.builder().build();
+        val completedAt = LocalDateTime.now();
+        assertThatThrownBy(() -> service.recordCompletion(quiz, other, 1, 1, completedAt))
                 .isInstanceOf(AccessDeniedException.class);
         verifyNoInteractions(attempts);
     }
@@ -59,7 +61,8 @@ class StudentBadgeSecurityTest {
     @Test
     void studentCannotUseTeacherCollectionEndpoint() {
         SecurityContextHolder.getContext().setAuthentication(new StudentAuthenticationToken(student));
-        assertThatThrownBy(() -> service.forTeacher(student.getId(), teacher)).isInstanceOf(AccessDeniedException.class);
+        val studentId = student.getId();
+        assertThatThrownBy(() -> service.forTeacher(studentId, teacher)).isInstanceOf(AccessDeniedException.class);
         verifyNoInteractions(attempts, students);
     }
 
@@ -67,8 +70,11 @@ class StudentBadgeSecurityTest {
     void teacherCannotImpersonateAColleagueOrAwardBadgesDirectly() {
         teacherLogin();
         val colleague = Teacher.builder().id(UUID.randomUUID()).username("colleague").build();
-        assertThatThrownBy(() -> service.forTeacher(student.getId(), colleague)).isInstanceOf(AccessDeniedException.class);
-        assertThatThrownBy(() -> service.recordCompletion(Quiz.builder().build(), student, 1, 1, LocalDateTime.now()))
+        val studentId = student.getId();
+        assertThatThrownBy(() -> service.forTeacher(studentId, colleague)).isInstanceOf(AccessDeniedException.class);
+        val quiz = Quiz.builder().build();
+        val completedAt = LocalDateTime.now();
+        assertThatThrownBy(() -> service.recordCompletion(quiz, student, 1, 1, completedAt))
                 .isInstanceOf(AccessDeniedException.class);
         assertThatThrownBy(service::forCurrentStudent).isInstanceOf(AccessDeniedException.class);
         verifyNoInteractions(attempts, students);
@@ -109,7 +115,8 @@ class StudentBadgeSecurityTest {
                 .isInstanceOfSatisfying(ResponseStatusException.class,
                         e -> assertThat(e.getStatusCode().value()).isEqualTo(404));
         val quiz = Quiz.builder().id(UUID.randomUUID()).title("Geografia").teacher(teacher).build();
-        assertThatThrownBy(() -> service.recordCompletion(quiz, student, 1, 1, LocalDateTime.now()))
+        val completedAt = LocalDateTime.now();
+        assertThatThrownBy(() -> service.recordCompletion(quiz, student, 1, 1, completedAt))
                 .isInstanceOfSatisfying(ResponseStatusException.class,
                         e -> assertThat(e.getStatusCode().value()).isEqualTo(404));
         verifyNoInteractions(attempts);

@@ -127,9 +127,11 @@ class DocumentTextExtractorServiceTest {
                     .toList();
             for (val result : executor.invokeAll(requests)) assertThat(result.get()).contains("Concurrent text");
         }
-        assertThatThrownBy(() -> service.extractText(streamingFile("broken.pdf", new byte[]{1, 2, 3})))
+        val brokenPdf = streamingFile("broken.pdf", new byte[]{1, 2, 3});
+        assertThatThrownBy(() -> service.extractText(brokenPdf))
                 .isInstanceOf(IllegalArgumentException.class);
-        assertThatThrownBy(() -> service.extractText(streamingFile("broken.docx", new byte[]{1, 2, 3})))
+        val brokenDocx = streamingFile("broken.docx", new byte[]{1, 2, 3});
+        assertThatThrownBy(() -> service.extractText(brokenDocx))
                 .isInstanceOf(IllegalArgumentException.class);
         assertThat(temporaryFiles()).containsExactlyInAnyOrderElementsOf(before);
     }
