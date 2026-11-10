@@ -152,13 +152,17 @@ public class QuestionImageStorageService {
 
     @Transactional
     @PreAuthorize("@questionImageAuthorizationPolicy.canDelete(#imageId, #teacher)")
-    public void deleteForTeacher(UUID imageId, Teacher teacher) {
-        delete(imageId);
+    public void deleteForTeacher(UUID imageId, @SuppressWarnings("unused") Teacher teacher) {
+        deleteStoredImage(imageId);
     }
 
     // Internal cleanup entry point; never expose directly through a controller.
     @Transactional
     public void delete(UUID imageId) {
+        deleteStoredImage(imageId);
+    }
+
+    private void deleteStoredImage(UUID imageId) {
         val image = uploadedImageRepository.findById(imageId)
                 .orElseThrow(() -> new EntityNotFoundException(String.format("Immagine non trovata: %s", imageId)));
 
