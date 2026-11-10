@@ -240,7 +240,9 @@ function resumeQuizIfNeeded() {
         goTo('quiz');
         renderPlay();
         return true;
-    } catch (_) {
+    } catch (error) {
+        // Restoring saved progress is optional: discard it if restoration fails so the quiz picker remains usable.
+        console.warn('Impossibile ripristinare il quiz salvato nella sessione', error);
         clearQuizProgress();
         return false;
     }
