@@ -175,7 +175,8 @@ public class DocumentTextExtractorService {
                 try (val input = new FilterInputStream(zip.getInputStream(entry)) {
                     @Override
                     public int read(byte[] bytes, int offset, int length) throws IOException {
-                        val count = super.read(bytes, offset, (int) Math.min(length, Math.max(1, remainingBytes[0])));
+                        val readLength = length > 0 ? Math.clamp(remainingBytes[0], 1, length) : length;
+                        val count = super.read(bytes, offset, readLength);
                         if (count > 0) {
                             remainingBytes[0] -= count;
                             if (remainingBytes[0] < 0) throw new IOException("Limite XML DOCX decompresso superato");
