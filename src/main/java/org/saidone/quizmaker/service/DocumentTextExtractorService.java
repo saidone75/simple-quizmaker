@@ -40,6 +40,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.LinkOption;
 import java.nio.file.StandardOpenOption;
+import java.nio.file.attribute.PosixFilePermissions;
 import java.util.zip.ZipFile;
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
@@ -74,7 +75,9 @@ public class DocumentTextExtractorService {
                     return text.toString();
                 }
             }
-            val temporaryFile = Files.createTempFile("quizmaker-attachment-", ".tmp");
+            // Apply owner-only permissions atomically when creating uploads in the shared temp directory.
+            val temporaryFile = Files.createTempFile("quizmaker-attachment-", ".tmp",
+                    PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("rw-------")));
             try {
                 try (val input = file.getInputStream();
                      val output = Files.newOutputStream(temporaryFile, StandardOpenOption.WRITE,
