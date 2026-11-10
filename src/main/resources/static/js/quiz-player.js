@@ -494,9 +494,9 @@ function nextQuestion() {
 
 async function showResult() {
     const { quiz, answers } = playState;
-    let score = playState.score;
-    let total = quiz.questions.length;
-    let newBadges = [];
+    let score;
+    let total;
+    let newBadges;
 
     try {
         const res = await apiFetch('/api/quizzes/' + quiz.id + '/submit', {
