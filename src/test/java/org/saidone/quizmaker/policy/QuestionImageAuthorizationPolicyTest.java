@@ -123,11 +123,12 @@ class QuestionImageAuthorizationPolicyTest {
         when(images.findById(imageId)).thenReturn(Optional.of(image));
         val question = new QuestionDto();
         question.setImageId(imageId.toString());
-        assertThatThrownBy(() -> policy.validateQuestions(List.of(question), other))
+        val questions = List.of(question);
+        assertThatThrownBy(() -> policy.validateQuestions(questions, other))
                 .isInstanceOf(AccessDeniedException.class);
         question.setImageId(null);
         question.setImageUrl(String.format("/api/quizzes/%%69mages/%s", imageId));
-        assertThatThrownBy(() -> policy.validateQuestions(List.of(question), other))
+        assertThatThrownBy(() -> policy.validateQuestions(questions, other))
                 .isInstanceOf(AccessDeniedException.class);
     }
 
