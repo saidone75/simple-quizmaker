@@ -245,7 +245,7 @@ public class OpenAiQuizGenerationService implements QuizGenerationService {
     }
 
     Map<String, Object> buildPayload(QuizGenerationRequestDto request, String attachmentText) {
-        val numberOfOptions = request.getQuestionType() == QuestionType.TRUE_FALSE ? 2 : request.getNumberOfOptions();
+        int numberOfOptions = request.getQuestionType() == QuestionType.TRUE_FALSE ? 2 : request.getNumberOfOptions();
         val formatInstruction = request.getQuestionType() == QuestionType.TRUE_FALSE
                 ? "Ogni domanda deve essere un'affermazione da valutare. options deve essere esattamente [\"Vero\", \"Falso\"], in questo ordine. Usa answer 0 per vero e 1 per falso. Alterna affermazioni vere e false."
                 : String.format("Ogni domanda deve avere esattamente %d risposte a scelta multipla.", numberOfOptions);
