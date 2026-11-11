@@ -15,14 +15,13 @@ in **Non rilasciato**.
 
 ### Aggiunto
 
-- Pannello collassabile “Badge della classe” nella gestione studenti per abilitare i badge di Percorso e Costanza e personalizzarne le soglie, conservando i premi già acquisiti.
-- Possibilità per gli studenti di rivedere i quiz completati e le risposte consegnate in sola lettura, mantenendo lo sblocco dell'insegnante necessario per un nuovo tentativo.
+- Pannello collassabile “Badge della classe” nella gestione studenti per abilitare i badge di percorso e costanza e personalizzarne le soglie, conservando i premi già acquisiti.
+- Possibilità per gli studenti di rivedere i quiz completati e le risposte date in sola lettura, mantenendo lo sblocco dell'insegnante necessario per un nuovo tentativo.
 
 ### Modificato
 
-- Riuniti introduzione e contenuti della pagina Discover in un'unica card.
+- Riuniti introduzione e contenuti della pagina discover in un'unica card.
 - Semplificata la pagina dei badge dello studente e migliorata l'accessibilità di form e messaggi di stato.
-- Semplificati i nomi dei backup SQLite e cambiata la directory predefinita da `./backups` a `./backup`.
 - Aggiornati Spring Boot alla versione 4.1.2, DJL alla versione 0.40.0, PyTorch JNI alla versione 2.7.1-0.40.0, Apache Tika alla versione 4.2.0 ed Enforcer alla versione 3.7.0.
 - Aggiornati gli strumenti di analisi e CI.
 - Spostata la documentazione delle API in `API.md`.
@@ -31,8 +30,7 @@ in **Non rilasciato**.
 
 - Mostrati messaggi comprensibili durante la generazione AI per allegati troppo grandi, sessioni scadute, timeout e risposte non JSON del server.
 - Migliorata la stabilità e ridotto il consumo di memoria di rate limiter, upload, ricerche immagini, pulizia notturna ed estrazione degli allegati.
-- Corretto il caricamento dello studente nelle transazioni dei badge e migliorata la gestione degli errori durante il ripristino dei quiz.
-- Resi espliciti fuso orario delle consegne e permessi dei file temporanei; corretti problemi di serializzazione e chiamate interne ai metodi transazionali.
+- Resi espliciti i permessi dei file temporanei; corretti problemi di serializzazione e chiamate interne ai metodi transazionali.
 
 ### Aggiornamento
 
