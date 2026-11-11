@@ -32,7 +32,7 @@ Alice's Simple Quiz Maker è pensato per chi desidera:
 
 - creare quiz in pochi minuti;
 - gestire studenti, risultati e tentativi in modo centralizzato;
-- usare AI (opzionale) per generare domande a partire da un argomento o da allegati;
+- usare l'IA (opzionale) per generare domande a partire da un argomento o da allegati;
 - usare immagini Wikimedia per quiz più visivi e coinvolgenti;
 - condividere quiz tra insegnanti e riutilizzare materiali didattici.
 
@@ -40,22 +40,21 @@ Alice's Simple Quiz Maker è pensato per chi desidera:
 
 - Software libero e open source con licenza [GPLv3](https://www.gnu.org/licenses/gpl-3.0).
 - Accesso **insegnante** con registrazione self-service e dashboard dedicata (`/teacher/...`).
-- Gestione **multi-insegnante** con ruoli amministratore/non-amministratore, abilitazione account, reset password e cancellazione account (solo amministratore).
-- Quiz a scelta multipla con **2, 3 o 4 risposte** oppure **vero/falso**, con un unico formato scelto per tutte le domande.
+- Gestione **multi-insegnante** con ruoli amministratore/non-amministratore, abilitazione account, reset password.
+- Quiz a scelta multipla con **2, 3 o 4 risposte** oppure **vero/falso**.
 - Generazione quiz con **OpenAI** (opzionale) e supporto allegati (`.pdf`, `.docx`, testo).
-- Ricerca immagini Wikimedia con modalità **advanced** e **simple**, configurabile globalmente e per insegnante.
+- Ricerca immagini Wikimedia con modalità **advanced** e **simple**, configurabile globalmente o per insegnante.
 - Condivisione quiz verso più insegnanti.
 - Gestione risultati con analytics e sblocco tentativi singolo studente o massivo.
 - Badge per risultati, percorso e costanza, con premi a tema personalizzabili per ogni quiz.
 - Raccolta personale dei badge per ogni studente, consultabile anche dal suo insegnante.
-- Profilo insegnante con preferenze tema, ricerca immagini e gestione password.
 - Architettura Spring con migrazioni schema DB versionate via Liquibase.
 - Backup schedulato database SQLite in produzione con retention configurabile.
 
 ## 🧰 Stack tecnologico
 
 - Java **21**
-- Spring Boot **4.1.2**
+- Spring Boot **4.1.x**
 - Spring Security
 - Thymeleaf
 - JPA/Hibernate + Liquibase
@@ -147,8 +146,7 @@ Variabili utili:
 - `START_APP=0` per verificare un'applicazione già avviata; altrimenti il test avvia Maven e arresta l'app al termine.
 - `DISABLE_TURNSTILE` (default `1`, applicato solo all'app avviata dal test)
 
-Richiede Babashka (verificato con 1.0.164), `curl` e, per l'avvio automatico, Maven e Java 21.
-Lo script Clojure è in `scripts/smoke-e2e.clj`; `scripts/smoke-e2e.sh` resta un collegamento allo stesso test.
+Richiede Babashka, `curl` e, per l'avvio automatico, Maven e Java 21.
 Il test usa sessioni separate per insegnante e studente, verifica la presenza del quiz pubblicato,
 il punteggio e il blocco dopo la consegna, e rimuove il quiz e lo studente creati anche in caso di errore.
 Per un'app già avviata, impostare credenziali valide: non vengono registrati nuovi insegnanti.
@@ -212,7 +210,7 @@ Quando aggiorni lo schema del database, avvia con `LIQUIBASE_ENABLED=true`
 | `ADMIN_PASSWORD`                     | `changeme`                                        | Password amministratore iniziale              |
 | `PROD_SQLITE_DB_URL`                 | `jdbc:sqlite:./data/quizmaker.db`                 | Path DB SQLite in produzione                  |
 | `OPENAI_API_KEY`                     | vuota                                             | API key OpenAI                                |
-| `OPENAI_MODEL`                       | `gpt-5.4-mini`                                    | Modello per generazione quiz                  |
+| `OPENAI_MODEL`                       | `gpt-6-luna`                                    | Modello per generazione quiz                  |
 | `AI_EMBEDDING_MODEL_URL`             | `djl://.../all-MiniLM-L6-v2` | Modello locale per embedding                  |
 | `AI_GENERATION_MAX_QUESTIONS`        | `20`                                              | Numero massimo domande generate               |
 | `AI_GENERATION_MAX_ATTACHMENT_CHARS` | `60000`                                           | Max caratteri estratti da allegato (lettura interrotta al limite)            |
