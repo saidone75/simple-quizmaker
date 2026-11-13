@@ -16,6 +16,11 @@ in **Non rilasciato**.
 - Bloccate le modifiche ai quiz pubblicati nell'editor e nelle API: l'insegnante deve prima spubblicarli tramite il controllo già presente nella dashboard.
 - Versione progressiva dei quiz, aggiornata quando cambiano le domande e salvata nelle consegne. Le consegne relative a una versione precedente sono segnalate a studenti e insegnanti; il risultato resta disponibile, mentre la revisione delle risposte è disabilitata.
 
+### Modificato
+
+- Resi grigi e bloccati i pulsanti Modifica, Archivia ed Elimina dei quiz pubblicati nella dashboard, con messaggi specifici al clic. L'accesso diretto all'editor di un quiz pubblicato rimanda alla dashboard.
+- Aggiornato il tooltip del controllo di pubblicazione: “Pubblica” per i quiz non pubblicati e “Nascondi” per quelli pubblicati, con aggiornamento immediato al cambio di stato.
+
 ### Corretto
 
 - Escluse le consegne obsolete dalle statistiche della versione attuale, per evitare confronti con domande modificate.
