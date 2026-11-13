@@ -101,9 +101,8 @@ class StudentBadgeIntegrationTest {
                 .questions(List.of(question)).badges(List.of()).build();
         val json = objectMapper.writeValueAsString(edit);
         mvc.perform(get("/teacher/quiz/{id}/edit", quizId).with(user(teacher.getUsername()).roles("TEACHER")))
-                .andExpect(status().isOk())
-                .andExpect(content().string(containsString("data-published=\"true\"")))
-                .andExpect(content().string(containsString("Per modificarlo, spubblicalo dalla dashboard.")));
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/teacher"));
         mvc.perform(put("/api/quizzes/{id}", quizId).with(user(teacher.getUsername()).roles("TEACHER"))
                         .with(csrf()).contentType("application/json").content(json))
                 .andExpect(status().isBadRequest())
@@ -385,6 +384,8 @@ class StudentBadgeIntegrationTest {
 
     @Test
     void editorLoadsThemedBadgesAndShowsAiActionOnlyWhenEnabled() throws Exception {
+        quiz.setPublished(false);
+        quizzes.saveAndFlush(quiz);
         mvc.perform(get("/teacher/quiz/{id}/edit", quiz.getId()).with(user(teacher.getUsername()).roles("TEACHER")))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("data-initial-badges-json=")))

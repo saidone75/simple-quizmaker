@@ -100,8 +100,8 @@
                 <div class="manage-card-actions">
                     <label class="btn-icon-action btn-publish-toggle"
                            th:for="${'publish-toggle-' + quiz.id}"
-                           th:aria-label="${'Pubblicato: ' + quiz.title}"
-                           title="Pubblicato">
+                           th:aria-label="${(quiz.published ? 'Nascondi: ' : 'Pubblica: ') + quiz.title}"
+                           th:title="${quiz.published ? 'Nascondi' : 'Pubblica'}">
                         <span style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;"
                               th:text="${'Stato pubblicazione per quiz ' + quiz.title}">Stato pubblicazione quiz</span>
                         <input type="checkbox"
@@ -110,17 +110,17 @@
                                th:data-id="${quiz.id}"
                                class="js-toggle-publication">
                     </label>
-                    <a th:href="@{/teacher/quiz/{id}/edit(id=${quiz.id})}" class="btn-icon-action btn-edit-quiz" title="Modifica">✏️</a>
+                    <a th:href="@{/teacher/quiz/{id}/edit(id=${quiz.id})}" class="btn-icon-action btn-edit-quiz" th:aria-disabled="${quiz.published}" title="Modifica">✏️</a>
                     <button sec:authorize="hasRole('ADMIN')"
                             th:if="${!#lists.isEmpty(shareTeachers)}"
                             class="btn-icon-action btn-share-quiz js-open-share-modal"
                             title="Invia ad altri insegnanti"
                             th:data-id="${quiz.id}"
                             th:data-title="${quiz.title}">📤</button>
-                    <button class="btn-icon-action btn-archive-quiz js-toggle-archive" title="Archivia"
+                    <button class="btn-icon-action btn-archive-quiz js-toggle-archive" th:aria-disabled="${quiz.published}" title="Archivia"
                             th:data-id="${quiz.id}"
                             th:data-title="${quiz.title}">🗄️</button>
-                    <button class="btn-icon-action btn-delete-quiz js-open-delete-modal" title="Elimina"
+                    <button class="btn-icon-action btn-delete-quiz js-open-delete-modal" th:aria-disabled="${quiz.published}" title="Elimina"
                             th:data-id="${quiz.id}"
                             th:data-title="${quiz.title}">🗑</button>
                 </div>

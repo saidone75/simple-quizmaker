@@ -350,6 +350,9 @@ public class TeacherDashboardWebController {
     public String editQuiz(@PathVariable UUID id, Model model) {
         model.addAttribute("aiEnabled", teacherAuthenticationService.getCurrentTeacher().isAiEnabled());
         val quiz = quizService.findByIdForTeacher(id, teacherAuthenticationService.getCurrentTeacher());
+        if (Boolean.TRUE.equals(quiz.getPublished())) {
+            return "redirect:/teacher";
+        }
         model.addAttribute("quiz", quiz);
         model.addAttribute("quizQuestionsJson", serializeQuestions(quiz.getQuestions()));
         model.addAttribute("quizBadgesJson", serializeQuestions(quiz.getBadges()));

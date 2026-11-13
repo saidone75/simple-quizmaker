@@ -151,6 +151,16 @@
             if (!res.ok) {
                 throw new Error('Errore server');
             }
+            checkbox.closest('.manage-card')?.querySelectorAll(
+                '.btn-edit-quiz, .btn-archive-quiz, .btn-delete-quiz'
+            ).forEach(action => action.setAttribute('aria-disabled', String(published)));
+            const publicationLabel = checkbox.closest('.btn-publish-toggle');
+            if (publicationLabel) {
+                const label = published ? 'Nascondi' : 'Pubblica';
+                publicationLabel.title = label;
+                publicationLabel.setAttribute('aria-label', label + ': ' +
+                    (checkbox.closest('.manage-card')?.querySelector('.manage-card-title')?.textContent.trim() || 'quiz'));
+            }
             showToast(published ? 'Quiz pubblicato!' : 'Quiz nascosto agli studenti');
         } catch (e) {
             checkbox.checked = !published;
@@ -159,6 +169,17 @@
             checkbox.disabled = false;
         }
     };
+
+    // Use aria-disabled so blocked actions can still explain how to enable them.
+    document.addEventListener('click', (event) => {
+        const action = event.target.closest('.manage-card .btn-icon-action[aria-disabled="true"]');
+        if (!action) return;
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        const verb = action.classList.contains('btn-edit-quiz') ? 'modificare'
+            : action.classList.contains('btn-archive-quiz') ? 'archiviare' : 'eliminare';
+        showToast(`Non puoi ${verb} un quiz pubblicato`);
+    }, true);
 
     document.querySelectorAll('.js-open-delete-modal').forEach((button) => {
         button.addEventListener('click', () => {
