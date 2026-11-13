@@ -50,6 +50,11 @@ class StudentBadgeMigrationTest {
             // reapplying migrations must not duplicate the imported attempt.
             liquibase.update(contexts, labels);
             try (val statement = connection.createStatement()) {
+                try (val versions = statement.executeQuery("SELECT q.version, s.version FROM quizzes q JOIN quiz_submissions s ON s.quiz_id=q.id")) {
+                    assertThat(versions.next()).isTrue();
+                    assertThat(versions.getInt(1)).isEqualTo(1);
+                    assertThat(versions.getInt(2)).isEqualTo(1);
+                }
                 statement.executeUpdate("DELETE FROM quiz_submissions");
                 statement.executeUpdate("DELETE FROM quizzes");
                 try (val result = statement.executeQuery("""

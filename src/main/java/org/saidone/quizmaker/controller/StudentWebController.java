@@ -63,6 +63,7 @@ public class StudentWebController {
         model.addAttribute("studentId", maybeStudent.get().getId());
         model.addAttribute("quizzes", quizzes);
         model.addAttribute("lockedQuizIds", lockedQuizIds);
+        model.addAttribute("obsoleteQuizIds", quizSubmissionService.findObsoleteQuizIdsForStudent(maybeStudent.get()));
         try {
             model.addAttribute("quizzesJson", objectMapper.writeValueAsString(quizzes));
             model.addAttribute("lockedQuizIdsJson", objectMapper.writeValueAsString(lockedQuizIds));

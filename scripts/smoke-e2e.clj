@@ -118,7 +118,8 @@
                 (str "Risultato inatteso: " (pr-str result)))
         (println "Punteggio verificato: 1/1, quiz bloccato."))
       (let [review (api! :student :GET (str "/api/quizzes/" id "/review"))]
-        (check! (= {:answers [1] :score 1 :total 1} review)
+        (check! (= {:answers [1] :score 1 :total 1 :version 1 :currentVersion 1 :obsolete false}
+                   (select-keys review [:answers :score :total :version :currentVersion :obsolete]))
                 "La revisione non contiene le risposte consegnate"))
       (let [retry (request! :student :POST (str "/api/quizzes/" id "/submit")
                             {:headers (csrf-headers :student "/") :data {:answers [0]} :expected-status 400})]

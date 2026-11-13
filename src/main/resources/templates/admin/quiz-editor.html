@@ -43,6 +43,10 @@
 
     <!-- BODY -->
     <div class="teacher-body">
+        <div class="editor-mode-card editor-mode-card-spaced" th:if="${quiz != null and quiz.published}">
+            <p class="editor-mode-subtitle">Questo quiz è pubblicato. Per modificarlo, spubblicalo dalla dashboard.</p>
+            <a th:href="@{/teacher}" class="topbar-back topbar-back-link">← Vai alla dashboard</a>
+        </div>
         <div class="editor-mode-card editor-mode-card-spaced">
             <div class="form-group">
                 <label class="form-label" for="quiz-format-input">Tipo di quiz</label>
@@ -162,7 +166,7 @@
 <meta name="quizmaker-csrf-token" th:content="${_csrf.token}">
 <meta name="quizmaker-csrf-header" th:content="${_csrf.headerName}">
 <div id="quiz-editor-data"
-     th:attr="data-quiz-id=${quiz?.id},data-initial-questions-json=${quizQuestionsJson},data-initial-badges-json=${quizBadgesJson}"
+     th:attr="data-quiz-id=${quiz?.id},data-published=${quiz != null and quiz.published},data-initial-questions-json=${quizQuestionsJson},data-initial-badges-json=${quizBadgesJson}"
      hidden></div>
 <script th:src="@{/js/quiz-badges-editor.js}"></script>
 <script th:src="@{/js/quiz-editor-page.js}"></script>

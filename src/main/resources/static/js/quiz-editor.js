@@ -24,6 +24,10 @@ let quizId = null;
 let quizFormat = '4';
 let editorEventBindingsInitialized = false;
 
+function isQuizEditorReadOnly() {
+    return document.getElementById('quiz-editor-data')?.dataset.published === 'true';
+}
+
 function initEditor(id, questionsJson) {
     quizId = id;
     if (questionsJson) {
@@ -115,6 +119,7 @@ function toggleCard(idx) {
 }
 
 function setCorrect(qIdx, optIdx) {
+    if (isQuizEditorReadOnly()) return;
     currentQuestions[qIdx].answer = optIdx;
     renderQuestions();
     setTimeout(() => {
@@ -411,6 +416,10 @@ async function uploadQuestionImage(qIdx) {
 }
 
 async function saveQuiz() {
+    if (isQuizEditorReadOnly()) {
+        showValidation('Spubblica il quiz dalla dashboard prima di modificarlo.');
+        return;
+    }
     const title = document.getElementById('quiz-title-input').value.trim();
     const emoji = document.getElementById('quiz-emoji-input').value.trim() || '❓';
     const msgEl = document.getElementById('validation-msg');

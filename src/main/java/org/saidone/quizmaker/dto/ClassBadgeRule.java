@@ -1,5 +1,6 @@
 package org.saidone.quizmaker.dto;
 
+import lombok.val;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.List;
@@ -16,10 +17,10 @@ public record ClassBadgeRule(String id, boolean enabled, int target) implements 
 
     public static List<ClassBadgeRule> normalize(List<ClassBadgeRule> rules) {
         if (rules == null) return defaults();
-        var known = defaults().stream().map(ClassBadgeRule::id).toList();
-        var seen = new HashSet<String>();
+        val known = defaults().stream().map(ClassBadgeRule::id).toList();
+        val seen = new HashSet<String>();
         if (rules.size() != known.size()) throw new IllegalArgumentException("Configura tutti e cinque i badge della classe.");
-        for (var rule : rules) {
+        for (val rule : rules) {
             if (rule == null || !known.contains(rule.id()) || !seen.add(rule.id()) || rule.target() < 1 || rule.target() > 10000)
                 throw new IllegalArgumentException("Ogni badge richiede una soglia tra 1 e 10000 e un identificativo valido.");
         }

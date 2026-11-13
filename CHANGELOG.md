@@ -11,6 +11,19 @@ in **Non rilasciato**.
 
 ## [Non rilasciato]
 
+### Aggiunto
+
+- Bloccate le modifiche ai quiz pubblicati nell'editor e nelle API: l'insegnante deve prima spubblicarli tramite il controllo già presente nella dashboard.
+- Versione progressiva dei quiz, aggiornata quando cambiano le domande e salvata nelle consegne. Le consegne relative a una versione precedente sono segnalate a studenti e insegnanti; il risultato resta disponibile, mentre la revisione delle risposte è disabilitata.
+
+### Corretto
+
+- Escluse le consegne obsolete dalle statistiche della versione attuale, per evitare confronti con domande modificate.
+
+### Aggiornamento
+
+- Applicare la migrazione Liquibase `011-quiz-versions`. I quiz e le consegne esistenti partono dalla versione 1: eventuali modifiche precedenti alla migrazione non sono ricostruibili.
+
 ## [1.3.0] - 2026-11-10
 
 ### Aggiunto

@@ -64,6 +64,7 @@ class StudentBadgeIntegrationTest {
     @Autowired TeacherLifecycleService teacherLifecycleService;
     @Autowired QuizService quizService;
     @Autowired EntityManager entityManager;
+    @Autowired ObjectMapper objectMapper;
     MockMvc mvc;
     Teacher teacher;
     Student student;
@@ -89,6 +90,121 @@ class StudentBadgeIntegrationTest {
     @AfterEach
     void clearAuthentication() {
         SecurityContextHolder.clearContext();
+    }
+
+    @Test
+    void publishedQuizMustBeUnpublishedBeforeEditingAndIsLockedAgainAfterRepublishing() throws Exception {
+        val quizId = quiz.getId();
+        val originalTitle = quiz.getTitle();
+        val question = objectMapper.convertValue(quiz.getQuestions().getFirst(), QuestionDto.class);
+        val edit = QuizDto.Request.builder().title("Titolo modificato").emoji(quiz.getEmoji())
+                .questions(List.of(question)).badges(List.of()).build();
+        val json = objectMapper.writeValueAsString(edit);
+        mvc.perform(get("/teacher/quiz/{id}/edit", quizId).with(user(teacher.getUsername()).roles("TEACHER")))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("data-published=\"true\"")))
+                .andExpect(content().string(containsString("Per modificarlo, spubblicalo dalla dashboard.")));
+        mvc.perform(put("/api/quizzes/{id}", quizId).with(user(teacher.getUsername()).roles("TEACHER"))
+                        .with(csrf()).contentType("application/json").content(json))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Spubblica il quiz dalla dashboard prima di modificarlo."));
+        entityManager.flush();
+        entityManager.clear();
+        val unchanged = quizzes.findById(quizId).orElseThrow();
+        assertThat(unchanged.getTitle()).isEqualTo(originalTitle);
+        assertThat(unchanged.getVersion()).isEqualTo(1);
+        assertThat(unchanged.getBadges()).hasSize(2);
+        mvc.perform(put("/api/quizzes/{id}/publication", quizId).with(user(teacher.getUsername()).roles("TEACHER"))
+                        .with(csrf()).contentType("application/json").content("{\"published\":false}"))
+                .andExpect(status().isOk());
+        mvc.perform(get("/teacher/quiz/{id}/edit", quizId).with(user(teacher.getUsername()).roles("TEACHER")))
+                .andExpect(status().isOk()).andExpect(content().string(containsString("data-published=\"false\"")))
+                .andExpect(content().string(not(containsString("Per modificarlo, spubblicalo dalla dashboard."))));
+        mvc.perform(put("/api/quizzes/{id}", quizId).with(user(teacher.getUsername()).roles("TEACHER"))
+                        .with(csrf()).contentType("application/json").content(json))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.title").value("Titolo modificato"));
+        mvc.perform(put("/api/quizzes/{id}/publication", quizId).with(user(teacher.getUsername()).roles("TEACHER"))
+                        .with(csrf()).contentType("application/json").content("{\"published\":true}"))
+                .andExpect(status().isOk());
+        mvc.perform(put("/api/quizzes/{id}", quizId).with(user(teacher.getUsername()).roles("TEACHER"))
+                        .with(csrf()).contentType("application/json").content(json))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void questionChangesMarkPreviousSubmissionsObsoleteUntilAnUnlockedRetry() throws Exception {
+        val quizId = quiz.getId();
+        val studentId = student.getId();
+        submissionService.submit(quizId, student, List.of(0));
+        entityManager.flush();
+        assertThat(submissions.findByStudentIdAndQuizId(studentId, quizId).orElseThrow().getVersion()).isEqualTo(1);
+        val question = objectMapper.convertValue(quiz.getQuestions().getFirst(), QuestionDto.class);
+        question.setOptions(List.of("Parigi", "Roma"));
+        question.setAnswer(1);
+        val edit = QuizDto.Request.builder().title(quiz.getTitle()).emoji(quiz.getEmoji())
+                .questions(List.of(question)).build();
+        SecurityContextHolder.getContext().setAuthentication(teacherAuthentication());
+        quizService.updatePublicationStatus(quizId, false, teacher);
+        assertThat(quizService.update(quizId, edit, teacher).getVersion()).isEqualTo(2);
+        quizService.updatePublicationStatus(quizId, true, teacher);
+        entityManager.flush();
+        entityManager.clear();
+        val activeStudent = students.findById(studentId).orElseThrow();
+        val activeTeacher = teachers.findById(teacher.getId()).orElseThrow();
+        SecurityContextHolder.getContext().setAuthentication(new StudentAuthenticationToken(activeStudent));
+        val review = submissionService.review(quizId, activeStudent);
+        assertThat(review.obsolete()).isTrue();
+        assertThat(review.answers()).isEmpty();
+        assertThat(review.score()).isEqualTo(1);
+        assertThat(review.version()).isEqualTo(1);
+        assertThat(review.currentVersion()).isEqualTo(2);
+        mvc.perform(get("/api/quizzes/{id}/review", quizId).with(authentication(new StudentAuthenticationToken(activeStudent))))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.obsolete").value(true))
+                .andExpect(jsonPath("$.answers").isEmpty()).andExpect(jsonPath("$.score").value(1));
+        mvc.perform(get("/").with(authentication(new StudentAuthenticationToken(activeStudent))))
+                .andExpect(status().isOk()).andExpect(content().string(containsString("Versione precedente")));
+        mvc.perform(post("/api/quizzes/{id}/submit", quizId).with(authentication(new StudentAuthenticationToken(activeStudent)))
+                        .with(csrf()).contentType("application/json").content("{\"answers\":[1]}"))
+                .andExpect(status().isBadRequest());
+        mvc.perform(get("/teacher/results").with(user(activeTeacher.getUsername()).roles("TEACHER")))
+                .andExpect(status().isOk()).andExpect(content().string(containsString("Versione precedente (v1)")))
+                .andExpect(content().string(containsString("Non ci sono ancora abbastanza dati.")));
+        SecurityContextHolder.getContext().setAuthentication(teacherAuthentication());
+        submissionService.unlockQuizForStudent(studentId, quizId, activeTeacher);
+        SecurityContextHolder.getContext().setAuthentication(new StudentAuthenticationToken(activeStudent));
+        submissionService.submit(quizId, activeStudent, List.of(1));
+        entityManager.flush();
+        entityManager.clear();
+        val retried = submissions.findByStudentIdAndQuizId(studentId, quizId).orElseThrow();
+        assertThat(retried.getVersion()).isEqualTo(2);
+        assertThat(retried.getUnlocked()).isFalse();
+        val currentReview = submissionService.review(quizId, students.findById(studentId).orElseThrow());
+        assertThat(currentReview.obsolete()).isFalse();
+        assertThat(currentReview.answers()).containsExactly(1);
+    }
+
+    @Test
+    void versionChangesOnlyWhenQuestionsChangeAndSubmissionUsesCurrentVersion() {
+        val quizId = quiz.getId();
+        val question = objectMapper.convertValue(quiz.getQuestions().getFirst(), QuestionDto.class);
+        val edit = QuizDto.Request.builder().title("Nuovo titolo").emoji("🧪")
+                .badges(List.of()).questions(List.of(question)).build();
+        SecurityContextHolder.getContext().setAuthentication(teacherAuthentication());
+        quizService.updatePublicationStatus(quizId, false, teacher);
+        assertThat(quizService.update(quizId, edit, teacher).getVersion()).isEqualTo(1);
+        assertThat(quizService.updatePublicationStatus(quizId, true, teacher).getVersion()).isEqualTo(1);
+        quizService.updatePublicationStatus(quizId, false, teacher);
+        question.setText("Domanda aggiornata");
+        assertThat(quizService.update(quizId, edit, teacher).getVersion()).isEqualTo(2);
+        assertThat(quizService.update(quizId, edit, teacher).getVersion()).isEqualTo(2);
+        question.setFeedback("Nuova spiegazione");
+        assertThat(quizService.update(quizId, edit, teacher).getVersion()).isEqualTo(3);
+        quizService.updatePublicationStatus(quizId, true, teacher);
+        // No submit-time version guard: the server stores the current version.
+        SecurityContextHolder.getContext().setAuthentication(new StudentAuthenticationToken(student));
+        submissionService.submit(quizId, student, List.of(0));
+        entityManager.flush();
+        assertThat(submissions.findByStudentIdAndQuizId(student.getId(), quizId).orElseThrow().getVersion()).isEqualTo(3);
     }
 
     @Test
@@ -294,6 +410,8 @@ class StudentBadgeIntegrationTest {
 
     @Test
     void apiSavesThemedBadgesAndRejectsInvalidThresholds() throws Exception {
+        quiz.setPublished(false);
+        quizzes.saveAndFlush(quiz);
         String json = """
                 {"title":"Geografia","emoji":"🌍","questions":[{"text":"Capitale d’Italia?","options":["Roma","Parigi"],"answer":0}],
                  "badges":[{"id":"traveler","name":"Piccolo viaggiatore","emoji":"🌱","minimumPercentage":%d}]}

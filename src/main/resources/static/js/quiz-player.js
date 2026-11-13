@@ -300,6 +300,26 @@ async function reviewQuiz(id) {
             throw new Error('Impossibile caricare le risposte consegnate.');
         }
         const [quiz, review] = await Promise.all(responses.map(response => response.json()));
+        if (review.obsolete || review.version < quiz.version) {
+            const submittedAt = review.submittedAt ? new Date(review.submittedAt).toLocaleString('it-IT') : '';
+            disableQuizNavigationLock();
+            goTo('quiz');
+            document.getElementById('play-title').textContent = `${quiz.title} · Versione precedente`;
+            document.getElementById('play-score').textContent = `⭐ ${review.score} / ${review.total}`;
+            document.getElementById('play-progress-text').textContent = `Versione ${review.version}`;
+            document.getElementById('play-pct').textContent = '';
+            document.getElementById('play-progress-fill').style.width = '0%';
+            document.getElementById('play-area').innerHTML = `
+                <div class="quiz-card">
+                    <h2>Versione precedente</h2>
+                    <p>Risultato: ${escHtml(String(review.score))}/${escHtml(String(review.total))}${submittedAt ? ' · ' + escHtml(submittedAt) : ''}.</p>
+                    <p>Il quiz è stato modificato: le vecchie risposte non sono più consultabili.
+                        Per rifarlo, chiedi alla maestra di sbloccarlo.</p>
+                </div>
+                <button type="button" class="quiz-next" id="review-home">🎒 Torna ai quiz</button>`;
+            document.getElementById('review-home').onclick = () => goTo('student');
+            return;
+        }
         let current = 0;
         disableQuizNavigationLock();
         goTo('quiz');
@@ -343,16 +363,21 @@ async function reviewQuiz(id) {
 }
 
 
-function markQuizCardAsLocked(quizId) {
+function markQuizCardAsLocked(quizId, obsolete) {
     const quizCard = document.querySelector('.quiz-picker .quiz-pick-item[data-id="' + String(quizId) + '"]');
     if (!quizCard) return;
 
     quizCard.dataset.locked = 'true';
     quizCard.classList.add('is-locked');
-    quizCard.title = 'Quiz completato: clicca per rivedere le tue risposte';
+    if (typeof obsolete === 'boolean') {
+        quizCard.dataset.obsolete = String(obsolete);
+        if (!obsolete) quizCard.querySelector('[data-obsolete-label]')?.remove();
+    }
+    const isObsolete = quizCard.dataset.obsolete === 'true';
+    quizCard.title = isObsolete ? 'Versione precedente: clicca per vedere il risultato' : 'Quiz completato: clicca per rivedere le tue risposte';
     const count = quizCard.querySelector('.quiz-pick-count');
     if (count && !count.dataset.reviewLabel) {
-        count.textContent += ' · Rivedi le risposte';
+        count.textContent += isObsolete ? ' · Vedi risultato' : ' · Rivedi le risposte';
         count.dataset.reviewLabel = 'true';
     }
 
@@ -516,7 +541,7 @@ async function showResult() {
         if (globalThis.LOCKED_QUIZ_IDS) {
             globalThis.LOCKED_QUIZ_IDS.add(String(quiz.id));
         }
-        markQuizCardAsLocked(quiz.id);
+        markQuizCardAsLocked(quiz.id, false);
     } catch (e) {
         showStudentAlert('Errore nel salvataggio', e.message);
         clearQuizProgress();
