@@ -41,6 +41,10 @@ import java.util.UUID;
 @AllArgsConstructor
 public class QuizSubmission {
 
+    @Builder.Default
+    @Column(nullable = false)
+    private int version = 1;
+
     @Id
     @Column(name = "id", nullable = false)
     @JdbcTypeCode(java.sql.Types.VARCHAR)

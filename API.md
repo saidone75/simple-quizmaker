@@ -6,9 +6,10 @@ Documentazione delle API di Alice's Simple Quiz Maker. Torna al [README](README.
 
 - `GET /api/quizzes` elenco quiz pubblicati per studente autenticato.
 - `GET /api/quizzes/{id}` dettaglio quiz pubblicato.
+- `GET /api/quizzes/{id}/review` riepilogo della propria consegna: punteggio, data, `version`, `currentVersion` e `obsolete`. Per una consegna obsoleta, `answers` è vuoto e la revisione delle risposte non è disponibile.
 - `POST /api/quizzes/{id}/submit` invio risposte studente.
 - `POST /api/quizzes` creazione quiz (insegnante).
-- `PUT /api/quizzes/{id}` modifica quiz (insegnante).
+- `PUT /api/quizzes/{id}` modifica quiz non pubblicato (insegnante). Se il quiz è pubblicato, restituisce HTTP 400: spubblicarlo prima tramite `/publication`.
 - `DELETE /api/quizzes/{id}` eliminazione quiz (insegnante).
 - `PUT /api/quizzes/{id}/publication` pubblicazione/depubblicazione.
 - `PUT /api/quizzes/{id}/archived` archiviazione/riattivazione quiz.
@@ -19,6 +20,10 @@ Documentazione delle API di Alice's Simple Quiz Maker. Torna al [README](README.
 - `POST /api/quizzes/images` upload immagine domanda (insegnante con upload abilitato).
 - `GET /api/quizzes/images/{imageId}` download consentito al proprietario o agli insegnanti con un quiz che usa l'immagine; gli studenti accedono solo tramite quiz pubblicati e non archiviati del proprio insegnante.
 - `DELETE /api/quizzes/images/{imageId}` eliminazione consentita al proprietario (per immagini precedenti alla migrazione, all'insegnante del quiz che le usa), purché nessun quiz di altri insegnanti usi l'immagine. Accessi non consentiti restituiscono HTTP 403.
+
+Il quiz espone `version`, inizialmente 1, incrementata quando cambia il contenuto delle domande.
+La consegna salva la versione attuale sul server; non è richiesto un numero di versione nella richiesta di invio.
+Modifiche a titolo, badge o pubblicazione non incrementano la versione.
 
 La condivisione di un quiz duplica anche i record delle immagini caricate:
 ogni destinatario riceve UUID e proprietà separati, mantenendo lo stesso file

@@ -59,6 +59,7 @@ public class QuizDto {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class Response {
+        private Integer version;
         private UUID id;
         private String title;
         private String emoji;

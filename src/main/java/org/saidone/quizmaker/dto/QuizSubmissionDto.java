@@ -24,13 +24,15 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.UtilityClass;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
 @UtilityClass
 public class QuizSubmissionDto {
 
-    public record Review(List<Integer> answers, Integer score, Integer total) {}
+    public record Review(List<Integer> answers, Integer score, Integer total,
+                         int version, int currentVersion, boolean obsolete, LocalDateTime submittedAt) {}
 
     @Data
     @NoArgsConstructor

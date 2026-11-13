@@ -38,6 +38,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -110,12 +111,19 @@ public class QuizService {
         questionImageAuthorizationPolicy.validateQuestions(request.getQuestions(), teacher);
         val quiz = quizRepository.findByIdAndTeacher(id, teacher)
                 .orElseThrow(() -> new EntityNotFoundException(String.format(QUIZ_NOT_FOUND_MESSAGE, id)));
+        if (Boolean.TRUE.equals(quiz.getPublished())) {
+            throw new IllegalStateException("Spubblica il quiz dalla dashboard prima di modificarlo.");
+        }
         quiz.setTitle(request.getTitle());
         quiz.setEmoji(request.getEmoji());
         if (request.getBadges() != null) {
             quiz.setBadges(QuizBadgeDefinition.normalize(request.getBadges()));
         }
-        quiz.setQuestions(request.getQuestions().stream().map(questionMapper::toEntity).toList());
+        val updatedQuestions = request.getQuestions().stream().map(questionMapper::toEntity).toList();
+        if (!Objects.equals(quiz.getQuestions(), updatedQuestions)) {
+            quiz.setVersion(quiz.getVersion() + 1);
+        }
+        quiz.setQuestions(updatedQuestions);
         quiz.setModifiedByUsername(teacher.getUsername());
         quiz.setModifiedAt(LocalDateTime.now(ZoneId.systemDefault()));
         val saved = quizRepository.save(quiz);

@@ -73,6 +73,9 @@
                                 <span class="status-pill" th:classappend="${result.unlocked ? ' status-pill-unlocked' : ' status-pill-locked'}"
                                       th:title="${result.unlocked ? 'Sbloccato' : 'Bloccato'}"
                                       th:text="${result.unlocked ? '✅ Sbloccato' : '🔒 Bloccato'}">🔒 Bloccato</span>
+                                <span class="status-pill" th:if="${result.obsolete()}"
+                                      th:text="${'Versione precedente (v' + result.version + ')'}"
+                                      th:title="${'Versione attuale: ' + result.currentVersion}">Versione precedente</span>
                             </td>
                             <td>
                                 <button th:if="${!result.unlocked}"
@@ -106,6 +109,8 @@
                                           th:text="${result.unlocked ? '✅ Sbloccato' : '🔒 Bloccato'}">🔒 Bloccato</span>
                                 </div>
                                 <div class="result-mobile-action">
+                                    <span class="status-pill" th:if="${result.obsolete()}"
+                                          th:text="${'Versione precedente (v' + result.version + ')'}">Versione precedente</span>
                                     <button th:if="${!result.unlocked}"
                                             class="btn-unlock-single js-unlock-submission"
                                             th:data-student-id="${result.studentId}"
@@ -122,7 +127,7 @@
 
                 <details class="results-analytics" th:if="${group.analytics != null}">
                     <summary>
-                        <span>📊 Analytics</span>
+                        <span>📊 Analytics — versione attuale</span>
                         <span class="analytics-accordion-icon">▾</span>
                     </summary>
 

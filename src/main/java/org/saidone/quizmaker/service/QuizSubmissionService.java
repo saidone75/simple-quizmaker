@@ -57,12 +57,22 @@ public class QuizSubmissionService {
     }
 
     @Transactional(readOnly = true)
+    public Set<UUID> findObsoleteQuizIdsForStudent(Student student) {
+        return quizSubmissionRepository.findByStudent(student).stream()
+                .filter(s -> s.getVersion() < s.getQuiz().getVersion())
+                .map(s -> s.getQuiz().getId())
+                .collect(java.util.stream.Collectors.toSet());
+    }
+
+    @Transactional(readOnly = true)
     public QuizSubmissionDto.Review review(UUID quizId, Student student) {
-        quizRepository.findByIdAndTeacherAndPublishedTrueAndArchivedFalse(quizId, student.getTeacher())
+        val quiz = quizRepository.findByIdAndTeacherAndPublishedTrueAndArchivedFalse(quizId, student.getTeacher())
                 .orElseThrow(() -> new EntityNotFoundException("Quiz non trovato"));
         val submission = quizSubmissionRepository.findByStudentIdAndQuizId(student.getId(), quizId)
                 .orElseThrow(() -> new EntityNotFoundException("Quiz non ancora completato"));
-        return new QuizSubmissionDto.Review(submission.getAnswers(), submission.getScore(), submission.getTotalQuestions());
+        val obsolete = submission.getVersion() < quiz.getVersion();
+        return new QuizSubmissionDto.Review(obsolete ? List.of() : submission.getAnswers(), submission.getScore(),
+                submission.getTotalQuestions(), submission.getVersion(), quiz.getVersion(), obsolete, submission.getSubmittedAt());
     }
 
     @Transactional
@@ -83,6 +93,7 @@ public class QuizSubmissionService {
                 .build());
 
         submission.setAnswers(answers == null ? List.of() : answers);
+        submission.setVersion(quiz.getVersion());
         submission.setScore(score);
         submission.setTotalQuestions(quiz.getQuestions().size());
         submission.setUnlocked(false);
@@ -108,7 +119,9 @@ public class QuizSubmissionService {
                         s.getTotalQuestions(),
                         s.getAnswers(),
                         s.getSubmittedAt(),
-                        Boolean.TRUE.equals(s.getUnlocked())
+                        Boolean.TRUE.equals(s.getUnlocked()),
+                        s.getVersion(),
+                        s.getQuiz().getVersion()
                 ))
                 .toList();
     }
@@ -140,8 +153,13 @@ public class QuizSubmissionService {
             Integer totalQuestions,
             List<Integer> answers,
             LocalDateTime submittedAt,
-            boolean unlocked
+            boolean unlocked,
+            int version,
+            int currentVersion
     ) {
+        public boolean obsolete() {
+            return version < currentVersion;
+        }
     }
 
     private int calculateScore(Quiz quiz, List<Integer> answers) {

@@ -178,10 +178,12 @@ public class TeacherDashboardWebController {
                                                List<QuizSubmissionService.ResultRow> results,
                                                Map<UUID, QuizDto.Response> quizzesById,
                                                int totalStudents) {
-        int totalQuestions = resolveTotalQuestions(quizId, results, quizzesById);
-        val completionRate = String.format(Locale.ROOT, "%d su %d", results == null ? 0 : results.size(), Math.max(totalStudents, 0));
+        val currentResults = results == null ? List.<QuizSubmissionService.ResultRow>of()
+                : results.stream().filter(result -> !result.obsolete()).toList();
+        val totalQuestions = resolveTotalQuestions(quizId, currentResults, quizzesById);
+        val completionRate = String.format(Locale.ROOT, "%d su %d", currentResults.size(), Math.max(totalStudents, 0));
 
-        if (results == null || results.isEmpty()) {
+        if (currentResults.isEmpty()) {
             return new QuizResultAnalytics(
                     String.format(Locale.ROOT, "%.1f su %d", 0D, totalQuestions),
                     completionRate,
@@ -189,12 +191,12 @@ public class TeacherDashboardWebController {
                     "Non ci sono ancora abbastanza dati.");
         }
 
-        val averageScore = results.stream()
+        val averageScore = currentResults.stream()
                 .mapToDouble(result -> result.score() == null ? 0D : result.score())
                 .average()
                 .orElse(0D);
 
-        val difficultQuestionsData = buildDifficultQuestions(quizId, results, quizzesById);
+        val difficultQuestionsData = buildDifficultQuestions(quizId, currentResults, quizzesById);
         val difficultQuestions = difficultQuestionsData.questions();
         val difficultQuestionsMessage = difficultQuestions.isEmpty()
                 ? (difficultQuestionsData.hasAttempts()

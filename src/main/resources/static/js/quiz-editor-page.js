@@ -27,6 +27,14 @@
 
     initEditor(quizId, initialQuestionsJson);
 
+    if (isQuizEditorReadOnly()) {
+        document.querySelectorAll('.teacher-body input, .teacher-body textarea, .teacher-body select, .teacher-body button')
+            .forEach(control => {
+                control.disabled = true;
+            });
+        return;
+    }
+
     document.getElementById('quiz-title-input')?.addEventListener('input', updateBadge);
     document.getElementById('add-question-btn')?.addEventListener('click', addQuestion);
     document.getElementById('save-btn')?.addEventListener('click', saveQuiz);
