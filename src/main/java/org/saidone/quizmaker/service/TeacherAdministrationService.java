@@ -27,6 +27,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.security.core.session.SessionInformation;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.transaction.support.TransactionSynchronization;
@@ -171,7 +172,7 @@ public class TeacherAdministrationService {
     private void expireSessions(String username) {
         for (val principal : sessionRegistry.getAllPrincipals()) {
             if (principal instanceof UserDetails user && user.getUsername().equalsIgnoreCase(username)) {
-                sessionRegistry.getAllSessions(principal, false).forEach(session -> session.expireNow());
+                sessionRegistry.getAllSessions(principal, false).forEach(SessionInformation::expireNow);
             }
         }
     }
