@@ -180,7 +180,7 @@ public class TeacherDashboardWebController {
                                                int totalStudents) {
         val currentResults = results == null ? List.<QuizSubmissionService.ResultRow>of()
                 : results.stream().filter(result -> !result.obsolete()).toList();
-        val totalQuestions = resolveTotalQuestions(quizId, currentResults, quizzesById);
+        final int totalQuestions = resolveTotalQuestions(quizId, currentResults, quizzesById);
         val completionRate = String.format(Locale.ROOT, "%d su %d", currentResults.size(), Math.max(totalStudents, 0));
 
         if (currentResults.isEmpty()) {
