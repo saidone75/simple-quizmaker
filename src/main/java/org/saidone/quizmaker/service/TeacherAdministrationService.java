@@ -27,6 +27,10 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.security.core.session.SessionRegistry;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.security.SecureRandom;
 import java.util.List;
@@ -39,6 +43,7 @@ public class TeacherAdministrationService {
 
     private final TeacherRepository teacherRepository;
     private final PasswordEncoder passwordEncoder;
+    private final SessionRegistry sessionRegistry;
 
     private static final Faker FAKER = new Faker(Locale.ITALIAN);
     private static final SecureRandom RANDOM = new SecureRandom();
@@ -67,8 +72,10 @@ public class TeacherAdministrationService {
 
         val targetTeacher = teacherRepository.findById(targetTeacherId)
                 .orElseThrow(() -> new IllegalArgumentException("Insegnante non trovato"));
+        val changed = targetTeacher.isAdmin() != admin;
         targetTeacher.setAdmin(admin);
         teacherRepository.save(targetTeacher);
+        if (changed) expireSessionsAfterCommit(targetTeacher.getUsername());
     }
 
     @Transactional
@@ -96,8 +103,10 @@ public class TeacherAdministrationService {
 
         val targetTeacher = teacherRepository.findById(targetTeacherId)
                 .orElseThrow(() -> new IllegalArgumentException("Insegnante non trovato"));
+        val changed = targetTeacher.isEnabled() != enabled;
         targetTeacher.setEnabled(enabled);
         teacherRepository.save(targetTeacher);
+        if (changed) expireSessionsAfterCommit(targetTeacher.getUsername());
     }
 
     @Transactional
@@ -144,5 +153,26 @@ public class TeacherAdministrationService {
         targetTeacher.setPassword(passwordEncoder.encode(temporaryPassword));
         teacherRepository.save(targetTeacher);
         return temporaryPassword;
+    }
+
+    private void expireSessionsAfterCommit(String username) {
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    expireSessions(username);
+                }
+            });
+        } else {
+            expireSessions(username);
+        }
+    }
+
+    private void expireSessions(String username) {
+        for (val principal : sessionRegistry.getAllPrincipals()) {
+            if (principal instanceof UserDetails user && user.getUsername().equalsIgnoreCase(username)) {
+                sessionRegistry.getAllSessions(principal, false).forEach(session -> session.expireNow());
+            }
+        }
     }
 }

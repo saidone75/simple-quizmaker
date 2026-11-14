@@ -23,11 +23,15 @@ in **Non rilasciato**.
 
 ### Corretto
 
+- Neutralizzato l'HTML nel campo emoji delle domande durante la riproduzione dei quiz.
+- Revocate le sessioni aperte degli insegnanti dopo una modifica all'abilitazione o al ruolo amministratore.
+- Rimossi i file immagine degli upload falliti o annullati dalla transazione; preservate per almeno 24 ore le immagini appena caricate e non ancora associate a un quiz.
 - Escluse le consegne obsolete dalle statistiche della versione attuale, per evitare confronti con domande modificate.
 
 ### Aggiornamento
 
 - Applicare la migrazione Liquibase `011-quiz-versions`. I quiz e le consegne esistenti partono dalla versione 1: eventuali modifiche precedenti alla migrazione non sono ricostruibili.
+- Applicare anche la migrazione Liquibase `012-question-image-created-at`, che registra la data degli upload e assegna alle immagini esistenti la data della migrazione.
 
 ## [1.3.0] - 2026-11-10
 

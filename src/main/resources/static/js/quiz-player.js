@@ -450,7 +450,7 @@ function renderPlay() {
 
     document.getElementById('play-area').innerHTML = `
         <div class="quiz-card">
-            <span class="quiz-emoji">${q.emoji || '❓'}</span>
+            <span class="quiz-emoji">${escHtml(q.emoji || '❓')}</span>
             <p class="quiz-question">${escHtml(q.text)}</p>
             ${mediaBlock}
             <div class="quiz-options">

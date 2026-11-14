@@ -82,22 +82,40 @@ public class QuestionImageStorageService {
                 throw new IllegalStateException("Percorso di destinazione non valido.");
             }
 
-            try (val inputStream = file.getInputStream();
-                 val outputStream = Files.newOutputStream(destination, StandardOpenOption.WRITE,
-                         StandardOpenOption.CREATE_NEW, LinkOption.NOFOLLOW_LINKS)) {
-                inputStream.transferTo(outputStream);
+            var completed = false;
+            var created = false;
+            try {
+                try (val outputStream = Files.newOutputStream(destination, StandardOpenOption.WRITE,
+                        StandardOpenOption.CREATE_NEW, LinkOption.NOFOLLOW_LINKS)) {
+                    created = true;
+                    if (TransactionSynchronizationManager.isSynchronizationActive()) {
+                        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                            @Override
+                            public void afterCompletion(int status) {
+                                if (status != STATUS_COMMITTED) removeUploadedBinary(destination);
+                            }
+                        });
+                    }
+                    try (val inputStream = file.getInputStream()) {
+                        inputStream.transferTo(outputStream);
+                    }
+                }
+
+                val image = new UploadedImage();
+                image.setId(imageId);
+                image.setTeacherId(teacher.getId());
+                image.setFilePath(destination.toString());
+                uploadedImageRepository.save(image);
+
+                val result = QuestionImageUploadDto.builder()
+                        .id(imageId)
+                        .url(imageUrl(imageId))
+                        .build();
+                completed = true;
+                return result;
+            } finally {
+                if (created && !completed) removeUploadedBinary(destination);
             }
-
-            val image = new UploadedImage();
-            image.setId(imageId);
-            image.setTeacherId(teacher.getId());
-            image.setFilePath(destination.toString());
-            uploadedImageRepository.save(image);
-
-            return QuestionImageUploadDto.builder()
-                    .id(imageId)
-                    .url(imageUrl(imageId))
-                    .build();
         } catch (IOException exception) {
             throw new IllegalStateException("Errore durante il salvataggio del file immagine.", exception);
         }
@@ -188,6 +206,14 @@ public class QuestionImageStorageService {
             Files.deleteIfExists(Path.of(filePath));
         } catch (IOException exception) {
             log.error("Errore durante la rimozione del file immagine non più referenziato: {}", filePath, exception);
+        }
+    }
+
+    private void removeUploadedBinary(Path destination) {
+        try {
+            Files.deleteIfExists(destination);
+        } catch (IOException exception) {
+            log.error("Errore durante la pulizia di un upload non completato: {}", destination, exception);
         }
     }
 

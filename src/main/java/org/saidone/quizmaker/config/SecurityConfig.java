@@ -19,6 +19,9 @@
 package org.saidone.quizmaker.config;
 
 import lombok.val;
+import org.springframework.security.core.session.SessionRegistry;
+import org.springframework.security.core.session.SessionRegistryImpl;
+import org.springframework.security.web.session.HttpSessionEventPublisher;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -58,7 +61,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) {
+    public SecurityFilterChain filterChain(HttpSecurity http, SessionRegistry sessionRegistry) {
         http
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/css/**", "/js/**", "/images/**", "/favicon.ico").permitAll()
@@ -92,6 +95,10 @@ public class SecurityConfig {
                         .passwordParameter("password")
                         .permitAll()
                 )
+                .sessionManagement(sessions -> sessions
+                        .maximumSessions(-1)
+                        .sessionRegistry(sessionRegistry)
+                        .expiredUrl("/teacher/login?expired=true"))
                 .logout(logout -> logout
                         .logoutUrl("/teacher/logout")
                         .logoutSuccessUrl("/teacher/login?logout=true")
@@ -126,6 +133,16 @@ public class SecurityConfig {
                 .addFilterBefore(studentSessionAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
+    }
+
+    @Bean
+    public SessionRegistry sessionRegistry() {
+        return new SessionRegistryImpl();
+    }
+
+    @Bean
+    public HttpSessionEventPublisher httpSessionEventPublisher() {
+        return new HttpSessionEventPublisher();
     }
 
     @Bean

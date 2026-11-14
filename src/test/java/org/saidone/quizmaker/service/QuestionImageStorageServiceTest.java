@@ -19,6 +19,7 @@
 package org.saidone.quizmaker.service;
 
 import lombok.val;
+import org.springframework.transaction.support.TransactionSynchronization;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -270,4 +271,65 @@ class QuestionImageStorageServiceTest {
         source.setFilePath(Files.write(tempDir.resolve("shared.png"), new byte[]{1, 2, 3}).toString());
         return source;
     }
+
+    @Test
+    void inputFailureAfterCreatingDestinationRemovesPartialUpload() throws Exception {
+        val file = spy(pngUpload());
+        when(file.getInputStream()).thenCallRealMethod().thenThrow(new IOException("Read failed"));
+
+        assertThatThrownBy(() -> service.store(file, teacher)).isInstanceOf(IllegalStateException.class);
+
+        try (val files = Files.list(tempDir)) {
+            assertThat(files.count()).isZero();
+        }
+        verify(uploadedImageRepository, never()).save(any());
+    }
+
+    @Test
+    void failedDatabaseSaveRemovesUploadedBinary() throws Exception {
+        val file = pngUpload();
+        when(uploadedImageRepository.save(any())).thenThrow(new IllegalStateException("Database unavailable"));
+
+        assertThatThrownBy(() -> service.store(file, teacher)).isInstanceOf(IllegalStateException.class);
+
+        try (val files = Files.list(tempDir)) {
+            assertThat(files.count()).isZero();
+        }
+    }
+
+    @Test
+    void transactionRollbackRemovesUploadedBinaryButCommitPreservesIt() throws Exception {
+        val file = pngUpload();
+        TransactionSynchronizationManager.initSynchronization();
+        try {
+            service.store(file, teacher);
+            try (val files = Files.list(tempDir)) {
+                assertThat(files.count()).isEqualTo(1);
+            }
+            TransactionSynchronizationManager.getSynchronizations().forEach(synchronization ->
+                    synchronization.afterCompletion(TransactionSynchronization.STATUS_ROLLED_BACK));
+            try (val files = Files.list(tempDir)) {
+                assertThat(files.count()).isZero();
+            }
+        } finally {
+            TransactionSynchronizationManager.clearSynchronization();
+        }
+        TransactionSynchronizationManager.initSynchronization();
+        try {
+            service.store(file, teacher);
+            TransactionSynchronizationManager.getSynchronizations().forEach(synchronization ->
+                    synchronization.afterCompletion(TransactionSynchronization.STATUS_COMMITTED));
+            try (val files = Files.list(tempDir)) {
+                assertThat(files.count()).isEqualTo(1);
+            }
+        } finally {
+            TransactionSynchronizationManager.clearSynchronization();
+        }
+    }
+
+    private MockMultipartFile pngUpload() {
+        return new MockMultipartFile("file", "image.png", "image/png",
+                new byte[]{(byte) 0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 1, 2, 3});
+    }
+
 }

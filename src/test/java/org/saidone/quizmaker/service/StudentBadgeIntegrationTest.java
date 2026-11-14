@@ -3,6 +3,11 @@ package org.saidone.quizmaker.service;
 import ai.djl.repository.zoo.ZooModel;
 import jakarta.persistence.EntityManager;
 import lombok.val;
+import org.springframework.mock.web.MockHttpSession;
+import org.springframework.security.core.session.SessionRegistry;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -24,6 +29,10 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
+
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -90,6 +99,44 @@ class StudentBadgeIntegrationTest {
     @AfterEach
     void clearAuthentication() {
         SecurityContextHolder.clearContext();
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void permissionChangesInvalidateEveryPreviouslyAuthenticatedTeacherSession(boolean changeAdminRole) throws Exception {
+        val registry = context.getBean(SessionRegistry.class);
+        teacher.setAdmin(true);
+        teacher.setPassword(context.getBean(PasswordEncoder.class)
+                .encode("session-test-password"));
+        teachers.saveAndFlush(teacher);
+        val sessions = new ArrayList<MockHttpSession>();
+        try {
+            for (int i = 0; i < 2; i++) {
+                SecurityContextHolder.clearContext();
+                val login = mvc.perform(post("/teacher/login").with(csrf()).param("username", teacher.getUsername())
+                                .param("password", "session-test-password"))
+                        .andExpect(status().is3xxRedirection()).andReturn();
+                sessions.add((MockHttpSession) login.getRequest().getSession(false));
+            }
+            val actingAdmin = teachers.saveAndFlush(Teacher.builder().username("session-admin")
+                    .password("unused").admin(true).enabled(true).build());
+            mvc.perform(post("/teacher/system/teachers/{id}/{flag}", teacher.getId(), changeAdminRole ? "admin" : "enabled")
+                            .with(user(actingAdmin.getUsername()).roles("TEACHER", "ADMIN")).with(csrf())
+                            .param(changeAdminRole ? "admin" : "enabled", "false"))
+                    .andExpect(status().is3xxRedirection());
+            // The test transaction rolls back; simulate only the post-commit session revocation.
+            TransactionSynchronizationManager.getSynchronizations()
+                    .forEach(TransactionSynchronization::afterCommit);
+            for (val session : sessions) {
+                SecurityContextHolder.clearContext();
+                mvc.perform(get("/api/teacher/logs/tail").session(session))
+                        .andExpect(status().is3xxRedirection())
+                        .andExpect(redirectedUrl("/teacher/login?expired=true"));
+                assertThat(session.isInvalid()).isTrue();
+            }
+        } finally {
+            sessions.forEach(session -> registry.removeSessionInformation(session.getId()));
+        }
     }
 
     @Test
@@ -213,6 +260,7 @@ class StudentBadgeIntegrationTest {
         for (int i = 0; i < 205; i++) {
             val image = new UploadedImage();
             image.setId(i == 204 ? lastImageId : UUID.fromString(String.format("00000000-0000-0000-0000-%012x", i + 1)));
+            image.setCreatedAt(LocalDateTime.now(ZoneId.systemDefault()).minusDays(2));
             image.setFilePath(String.format("target/cleanup-test-missing-%s", image.getId()));
             uploadedImages.save(image);
         }

@@ -19,6 +19,11 @@
 package org.saidone.quizmaker.service;
 
 import lombok.val;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.session.SessionRegistry;
+import org.springframework.security.core.session.SessionInformation;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,6 +34,8 @@ import org.saidone.quizmaker.entity.Teacher;
 import org.saidone.quizmaker.repository.TeacherRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -45,6 +52,9 @@ class TeacherAdministrationServiceTest {
 
     @Mock
     private PasswordEncoder passwordEncoder;
+
+    @Mock
+    private SessionRegistry sessionRegistry;
 
     @InjectMocks
     private TeacherAdministrationService teacherAdministrationService;
@@ -94,4 +104,53 @@ class TeacherAdministrationServiceTest {
         assertThat(second.isEnabled()).isTrue();
         verify(teacherRepository).saveAll(List.of(first, second));
     }
+
+    @Test
+    void disablingTeacherExpiresAllTheirSessionsAfterCommit() {
+        assertSessionsExpiredAfterCommit(false);
+    }
+
+    @Test
+    void changingAdminRoleExpiresAllTheirSessionsAfterCommit() {
+        assertSessionsExpiredAfterCommit(true);
+    }
+
+    @Test
+    void rollbackDoesNotExpireTeacherSessions() {
+        val target = Teacher.builder().id(UUID.randomUUID()).username("teacher").enabled(true).build();
+        when(teacherRepository.findById(target.getId())).thenReturn(Optional.of(target));
+        TransactionSynchronizationManager.initSynchronization();
+        try {
+            teacherAdministrationService.updateTeacherEnabledFlag(target.getId(), false, actingAdmin);
+            TransactionSynchronizationManager.getSynchronizations().forEach(synchronization ->
+                    synchronization.afterCompletion(TransactionSynchronization.STATUS_ROLLED_BACK));
+            org.mockito.Mockito.verifyNoInteractions(sessionRegistry);
+        } finally {
+            TransactionSynchronizationManager.clearSynchronization();
+        }
+    }
+
+    private void assertSessionsExpiredAfterCommit(boolean changeRole) {
+        val target = Teacher.builder().id(UUID.randomUUID()).username("teacher").admin(true).enabled(true).build();
+        val principal = User.withUsername("teacher")
+                .password("unused").roles("TEACHER", "ADMIN").build();
+        val first = new SessionInformation(principal, "first", new Date());
+        val second = new SessionInformation(principal, "second", new Date());
+        when(teacherRepository.findById(target.getId())).thenReturn(Optional.of(target));
+        when(sessionRegistry.getAllPrincipals()).thenReturn(List.of(principal));
+        when(sessionRegistry.getAllSessions(principal, false)).thenReturn(List.of(first, second));
+        TransactionSynchronizationManager.initSynchronization();
+        try {
+            if (changeRole) teacherAdministrationService.updateTeacherAdminFlag(target.getId(), false, actingAdmin);
+            else teacherAdministrationService.updateTeacherEnabledFlag(target.getId(), false, actingAdmin);
+            assertThat(first.isExpired()).isFalse();
+            TransactionSynchronizationManager.getSynchronizations()
+                    .forEach(TransactionSynchronization::afterCommit);
+            assertThat(first.isExpired()).isTrue();
+            assertThat(second.isExpired()).isTrue();
+        } finally {
+            TransactionSynchronizationManager.clearSynchronization();
+        }
+    }
+
 }
