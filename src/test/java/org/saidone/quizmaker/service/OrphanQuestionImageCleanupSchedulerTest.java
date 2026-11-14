@@ -33,6 +33,8 @@ import org.saidone.quizmaker.entity.UploadedImage;
 import org.saidone.quizmaker.repository.QuizRepository;
 import org.saidone.quizmaker.repository.UploadedImageRepository;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.UUID;
 
@@ -71,10 +73,12 @@ class OrphanQuestionImageCleanupSchedulerTest {
                 .build();
 
         val usedImage = new UploadedImage();
+        usedImage.setCreatedAt(LocalDateTime.now(ZoneId.systemDefault()).minusDays(2));
         usedImage.setId(usedImageId);
         usedImage.setFilePath("/tmp/used.png");
 
         val orphanImage = new UploadedImage();
+        orphanImage.setCreatedAt(LocalDateTime.now(ZoneId.systemDefault()).minusDays(2));
         orphanImage.setId(orphanImageId);
         orphanImage.setFilePath("/tmp/orphan.png");
 
@@ -104,6 +108,7 @@ class OrphanQuestionImageCleanupSchedulerTest {
                 .build();
 
         val storedImage = new UploadedImage();
+        storedImage.setCreatedAt(LocalDateTime.now(ZoneId.systemDefault()).minusDays(2));
         storedImage.setId(UUID.randomUUID());
         storedImage.setFilePath("/tmp/orphan.png");
 
@@ -123,6 +128,7 @@ class OrphanQuestionImageCleanupSchedulerTest {
         val question = new Question();
         question.setImageUrl(String.format("/api/quizzes/images/%s", id));
         val image = new UploadedImage();
+        image.setCreatedAt(LocalDateTime.now(ZoneId.systemDefault()).minusDays(2));
         image.setId(id);
         when(quizRepository.findAllByOrderByIdAsc(any(Pageable.class)))
                 .thenReturn(new SliceImpl<>(List.of(Quiz.builder().questions(List.of(question)).build())));
@@ -151,10 +157,13 @@ class OrphanQuestionImageCleanupSchedulerTest {
         when(quizRepository.findAllByOrderByIdAsc(firstPage.next()))
                 .thenReturn(new SliceImpl<>(List.of(archivedQuiz), firstPage.next(), false));
         val earlyImage = new UploadedImage();
+        earlyImage.setCreatedAt(LocalDateTime.now(ZoneId.systemDefault()).minusDays(2));
         earlyImage.setId(earlyImageId);
         val orphan = new UploadedImage();
+        orphan.setCreatedAt(LocalDateTime.now(ZoneId.systemDefault()).minusDays(2));
         orphan.setId(orphanImageId);
         val laterImage = new UploadedImage();
+        laterImage.setCreatedAt(LocalDateTime.now(ZoneId.systemDefault()).minusDays(2));
         laterImage.setId(laterImageId);
         when(uploadedImageRepository.findAllByOrderByIdAsc(firstPage))
                 .thenReturn(new SliceImpl<>(List.of(earlyImage, orphan), firstPage, true));
@@ -184,4 +193,19 @@ class OrphanQuestionImageCleanupSchedulerTest {
 
         verifyNoInteractions(uploadedImageRepository, questionImageStorageService);
     }
+    @Test
+    void cleanupPreservesRecentlyUploadedImages() {
+        val image = new UploadedImage();
+        image.setId(UUID.randomUUID());
+        image.setCreatedAt(LocalDateTime.now(ZoneId.systemDefault()));
+        when(quizRepository.findAllByOrderByIdAsc(any(Pageable.class)))
+                .thenReturn(new SliceImpl<>(List.of()));
+        when(uploadedImageRepository.findAllByOrderByIdAsc(any(Pageable.class)))
+                .thenReturn(new SliceImpl<>(List.of(image)));
+
+        cleanupScheduler.cleanupOrphanImages();
+
+        verifyNoInteractions(questionImageStorageService);
+    }
+
 }

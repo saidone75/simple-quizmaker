@@ -16,13 +16,22 @@ in **Non rilasciato**.
 - Bloccate le modifiche ai quiz pubblicati nell'editor e nelle API: l'insegnante deve prima spubblicarli tramite il controllo già presente nella dashboard.
 - Versione progressiva dei quiz, aggiornata quando cambiano le domande e salvata nelle consegne. Le consegne relative a una versione precedente sono segnalate a studenti e insegnanti; il risultato resta disponibile, mentre la revisione delle risposte è disabilitata.
 
+### Modificato
+
+- Resi grigi e bloccati i pulsanti Modifica, Archivia ed Elimina dei quiz pubblicati nella dashboard, con messaggi specifici al clic. L'accesso diretto all'editor di un quiz pubblicato rimanda alla dashboard.
+- Aggiornato il tooltip del controllo di pubblicazione: “Pubblica” per i quiz non pubblicati e “Nascondi” per quelli pubblicati, con aggiornamento immediato al cambio di stato.
+
 ### Corretto
 
+- Neutralizzato l'HTML nel campo emoji delle domande durante la riproduzione dei quiz.
+- Revocate le sessioni aperte degli insegnanti dopo una modifica all'abilitazione o al ruolo amministratore.
+- Rimossi i file immagine degli upload falliti o annullati dalla transazione; preservate per almeno 24 ore le immagini appena caricate e non ancora associate a un quiz.
 - Escluse le consegne obsolete dalle statistiche della versione attuale, per evitare confronti con domande modificate.
 
 ### Aggiornamento
 
 - Applicare la migrazione Liquibase `011-quiz-versions`. I quiz e le consegne esistenti partono dalla versione 1: eventuali modifiche precedenti alla migrazione non sono ricostruibili.
+- Applicare anche la migrazione Liquibase `012-question-image-created-at`, che registra la data degli upload e assegna alle immagini esistenti la data della migrazione.
 
 ## [1.3.0] - 2026-11-10
 

@@ -43,10 +43,6 @@
 
     <!-- BODY -->
     <div class="teacher-body">
-        <div class="editor-mode-card editor-mode-card-spaced" th:if="${quiz != null and quiz.published}">
-            <p class="editor-mode-subtitle">Questo quiz è pubblicato. Per modificarlo, spubblicalo dalla dashboard.</p>
-            <a th:href="@{/teacher}" class="topbar-back topbar-back-link">← Vai alla dashboard</a>
-        </div>
         <div class="editor-mode-card editor-mode-card-spaced">
             <div class="form-group">
                 <label class="form-label" for="quiz-format-input">Tipo di quiz</label>

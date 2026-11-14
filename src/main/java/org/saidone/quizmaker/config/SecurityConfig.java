@@ -18,7 +18,13 @@
 
 package org.saidone.quizmaker.config;
 
+import jakarta.servlet.DispatcherType;
 import lombok.val;
+import org.springframework.security.core.session.SessionRegistry;
+import org.springframework.security.core.session.SessionRegistryImpl;
+import org.springframework.security.web.session.HttpSessionEventPublisher;
+import org.springframework.security.web.session.ConcurrentSessionFilter;
+import org.springframework.security.web.session.SimpleRedirectSessionInformationExpiredStrategy;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -58,9 +64,10 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) {
+    public SecurityFilterChain filterChain(HttpSecurity http, SessionRegistry sessionRegistry) {
         http
                 .authorizeHttpRequests(auth -> auth
+                        .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
                         .requestMatchers("/css/**", "/js/**", "/images/**", "/favicon.ico").permitAll()
                         .requestMatchers(HttpMethod.GET, "/robots.txt", "/sitemap.xml", "/llms.txt").permitAll()
                         .requestMatchers("/h2-console/**").permitAll()
@@ -86,7 +93,11 @@ public class SecurityConfig {
                 .formLogin(form -> form
                         .loginPage("/teacher/login")
                         .loginProcessingUrl("/teacher/login")
-                        .successHandler(rateLimitAuthenticationSuccessHandler)
+                        .successHandler((request, response, authentication) -> {
+                            // Track teacher logins only: student authentication is rebuilt on each request.
+                            sessionRegistry.registerNewSession(request.getSession().getId(), authentication.getPrincipal());
+                            rateLimitAuthenticationSuccessHandler.onAuthenticationSuccess(request, response, authentication);
+                        })
                         .failureHandler(rateLimitAuthenticationFailureHandler)
                         .usernameParameter("username")
                         .passwordParameter("password")
@@ -122,10 +133,23 @@ public class SecurityConfig {
                         })
                         .frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin)
                 )
+                .addFilterAt(new ConcurrentSessionFilter(sessionRegistry,
+                        new SimpleRedirectSessionInformationExpiredStrategy("/teacher/login?expired=true")),
+                        ConcurrentSessionFilter.class)
                 .addFilterBefore(loginRateLimitFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(studentSessionAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
+    }
+
+    @Bean
+    public SessionRegistry sessionRegistry() {
+        return new SessionRegistryImpl();
+    }
+
+    @Bean
+    public HttpSessionEventPublisher httpSessionEventPublisher() {
+        return new HttpSessionEventPublisher();
     }
 
     @Bean

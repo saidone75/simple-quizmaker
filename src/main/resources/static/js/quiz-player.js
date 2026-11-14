@@ -310,11 +310,16 @@ async function reviewQuiz(id) {
             document.getElementById('play-pct').textContent = '';
             document.getElementById('play-progress-fill').style.width = '0%';
             document.getElementById('play-area').innerHTML = `
-                <div class="quiz-card">
-                    <h2>Versione precedente</h2>
-                    <p>Risultato: ${escHtml(String(review.score))}/${escHtml(String(review.total))}${submittedAt ? ' · ' + escHtml(submittedAt) : ''}.</p>
-                    <p>Il quiz è stato modificato: le vecchie risposte non sono più consultabili.
-                        Per rifarlo, chiedi alla maestra di sbloccarlo.</p>
+                <div class="quiz-card quiz-previous-version">
+                    <h2 class="quiz-question">Versione precedente</h2>
+                    <div class="quiz-previous-meta">
+                        <span class="quiz-previous-score">Risultato: ${escHtml(String(review.score))} / ${escHtml(String(review.total))}</span>
+                        ${submittedAt ? `<span class="quiz-previous-date">${escHtml(submittedAt)}</span>` : ''}
+                    </div>
+                    <div class="quiz-feedback learning">
+                        <p>Il quiz è stato modificato: le vecchie risposte non sono più consultabili.</p>
+                        <p>Per rifarlo, chiedi alla maestra di sbloccarlo.</p>
+                    </div>
                 </div>
                 <button type="button" class="quiz-next" id="review-home">🎒 Torna ai quiz</button>`;
             document.getElementById('review-home').onclick = () => goTo('student');
@@ -445,7 +450,7 @@ function renderPlay() {
 
     document.getElementById('play-area').innerHTML = `
         <div class="quiz-card">
-            <span class="quiz-emoji">${q.emoji || '❓'}</span>
+            <span class="quiz-emoji">${escHtml(q.emoji || '❓')}</span>
             <p class="quiz-question">${escHtml(q.text)}</p>
             ${mediaBlock}
             <div class="quiz-options">

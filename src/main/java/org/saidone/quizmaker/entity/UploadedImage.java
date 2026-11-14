@@ -19,6 +19,7 @@
 package org.saidone.quizmaker.entity;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
@@ -26,6 +27,8 @@ import jakarta.persistence.Table;
 import lombok.Data;
 import org.hibernate.annotations.JdbcTypeCode;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.UUID;
 
 @Entity
@@ -45,8 +48,15 @@ public class UploadedImage {
     @JdbcTypeCode(java.sql.Types.VARCHAR)
     private UUID teacherId;
 
+    @Convert(converter = LocalDateTimeColumnConverter.class)
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
     @PrePersist
     public void prePersist() {
+        if (createdAt == null) {
+            createdAt = LocalDateTime.now(ZoneId.systemDefault());
+        }
         if (this.id == null) {
             this.id = UUID.randomUUID();
         }

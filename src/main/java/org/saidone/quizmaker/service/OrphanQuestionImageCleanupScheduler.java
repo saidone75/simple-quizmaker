@@ -29,6 +29,8 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.net.URI;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.UUID;
@@ -48,6 +50,7 @@ public class OrphanQuestionImageCleanupScheduler {
     @Scheduled(cron = "${app.image-cleanup.cron:0 0 3 * * *}")
     public void cleanupOrphanImages() {
         try {
+            val cutoff = LocalDateTime.now(ZoneId.systemDefault()).minusDays(1);
             val usedImageIds = new HashSet<UUID>();
 
             // Keep only referenced UUIDs between batches, never all quiz payloads.
@@ -88,7 +91,8 @@ public class OrphanQuestionImageCleanupScheduler {
                 // Advance by ID, not offset: deleting a batch must not skip rows.
                 val lastImageId = images.getContent().getLast().getId();
                 for (val image : images) {
-                    if (usedImageIds.contains(image.getId())) continue;
+                    if (usedImageIds.contains(image.getId()) || image.getCreatedAt() == null
+                            || !image.getCreatedAt().isBefore(cutoff)) continue;
                     questionImageStorageService.delete(image.getId());
                     deletedCount++;
                 }
