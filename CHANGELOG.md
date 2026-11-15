@@ -13,6 +13,7 @@ in **Non rilasciato**.
 
 ### Aggiunto
 
+- Musica di completamento que coriandoli alla consegna del quiz.
 - Bloccate le modifiche ai quiz pubblicati nell'editor e nelle API: l'insegnante deve prima spubblicarli tramite il controllo già presente nella dashboard.
 - Versione progressiva dei quiz, aggiornata quando cambiano le domande e salvata nelle consegne. Le consegne relative a una versione precedente sono segnalate a studenti e insegnanti; il risultato resta disponibile, mentre la revisione delle risposte è disabilitata.
 

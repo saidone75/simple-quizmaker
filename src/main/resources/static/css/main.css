@@ -768,9 +768,27 @@ input[type="file"].input-field::-webkit-file-upload-button:hover {
 
 /* ===== RESULT ===== */
 .result-card {
+    position: relative;
+    overflow: hidden;
     width: 100%; max-width: 480px; background: var(--white);
     border-radius: 28px; padding: 2.5rem 2rem; box-shadow: var(--shadow-lg);
     text-align: center; animation: slideUp 0.4s cubic-bezier(0.4,0,0.2,1);
+}
+.result-card > :not(.result-confetti) { position: relative; z-index: 1; }
+.result-confetti { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+.result-confetti span {
+    position: absolute;
+    left: var(--confetti-x);
+    top: -20px;
+    width: 9px;
+    height: 15px;
+    border-radius: 3px;
+    background: var(--confetti-color);
+    animation: result-confetti-fall 3s var(--confetti-delay) ease-out both;
+}
+@keyframes result-confetti-fall {
+    from { transform: translateY(0) rotate(0); opacity: 1; }
+    to { transform: translateY(var(--confetti-distance)) rotate(var(--confetti-turn)); opacity: 0; }
 }
 .result-emoji { font-size: 72px; display: block; margin-bottom: var(--space-3); animation: pop 0.5s cubic-bezier(0.175,0.885,0.32,1.275); }
 @keyframes pop { from { transform: scale(0) rotate(-10deg); } to { transform: scale(1) rotate(0); } }
@@ -1844,6 +1862,7 @@ body[data-theme="dark"] #toast {
 
 /* ===== ACCESSIBILITY / REDUCED MOTION ===== */
 @media (prefers-reduced-motion: reduce) {
+    .result-confetti { display: none; }
     *,
     *::before,
     *::after {
