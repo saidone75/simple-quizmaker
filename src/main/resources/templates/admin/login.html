@@ -28,8 +28,8 @@
 <div class="login-screen">
     <div class="login-card">
         <h1 class="login-title">Alice's Simple Quiz&nbsp;Maker</h1>
-        <div style="font-size:52px;text-align:center;margin-bottom:8px">🐰</div>
-        <h2 style="text-align:center;margin-bottom:0.5rem;">Area Insegnante</h2>
+        <div class="error-emoji">🐰</div>
+        <h2 class="login-heading">Area Insegnante</h2>
         <p class="login-sub">Accedi per gestire i quiz</p>
 
         <div class="alert alert-error" th:if="${param.error}">
@@ -66,13 +66,13 @@
                        required>
             </div>
 
-            <button type="submit" class="btn-start-quiz" style="margin-top:1.25rem">
+            <button type="submit" class="btn-start-quiz profile-password-submit">
                 🔐 Accedi
             </button>
         </form>
 
-        <p style="text-align:center;margin-top:1.25rem;">
-            <a th:href="@{/teacher/register}" style="font-size:14px;color:var(--brand-purple-dark);font-weight:700;text-decoration:none;">
+        <p class="login-footer profile-password-submit">
+            <a th:href="@{/teacher/register}" class="public-link">
                 ✨ Non hai un account? Registrati
             </a>
         </p>

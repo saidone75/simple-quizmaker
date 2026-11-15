@@ -28,14 +28,14 @@
     <link rel="stylesheet" th:href="@{/css/main.css}">
 </head>
 <body>
-<div id="screen-editor" class="screen active" style="background:var(--page-bg);min-height:100vh;">
+<div id="screen-editor" class="screen active screen-admin">
 
     <!-- TOPBAR -->
     <div class="topbar">
         <span class="topbar-title" th:text="${quiz != null ? '✏️ Modifica Quiz' : '✏️ Nuovo Quiz'}">✏️ Quiz</span>
-        <a th:href="@{/teacher}" class="topbar-back" style="text-decoration:none">← Dashboard</a>
+        <a th:href="@{/teacher}" class="topbar-back">← Dashboard</a>
         <span class="topbar-badge" id="q-count-badge">0 domande</span>
-        <form th:action="@{/teacher/logout}" method="post" style="margin:0">
+        <form th:action="@{/teacher/logout}" method="post" class="topbar-inline-form">
             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
             <button type="submit" class="topbar-back">Logout</button>
         </form>
@@ -118,12 +118,12 @@
                    th:value="${quiz?.title}"
                   >
 
-            <label class="form-label" for="quiz-emoji-input" style="margin-top:1.25rem">Emoji del quiz</label>
+            <label class="form-label profile-password-submit" for="quiz-emoji-input">Emoji del quiz</label>
             <input type="text" id="quiz-emoji-input" class="input-field"
                    placeholder="Es: 🦕" maxlength="4" style="width:80px"
                    th:value="${quiz?.emoji}">
 
-            <div class="section-label" style="margin-top:1.25rem">Domande</div>
+            <div class="section-label profile-password-submit">Domande</div>
             <div id="questions-list" class="questions-list"></div>
             <button class="btn-add-question" id="add-question-btn">+ Aggiungi domanda</button>
         </div>

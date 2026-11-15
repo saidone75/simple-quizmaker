@@ -75,7 +75,7 @@
     <div class="quiz-card" style="max-width:420px;width:92%;text-align:center;">
         <h1 class="login-title" style="margin-bottom:0.5rem;">Alice's Simple Quiz&nbsp;Maker</h1>
         <p class="login-sub">Quiz scolastici per imparare divertendosi</p>
-        <div style="font-size:52px;margin-bottom:12px">🐰</div>
+        <div class="error-emoji">🐰</div>
         <h2>Accesso studenti</h2>
         <p>Inserisci la parola chiave di 5 caratteri assegnata dalla maestra.</p>
         <form id="student-login-form" th:action="@{/student/login}" method="post"
@@ -93,8 +93,8 @@
             <button class="quiz-next" style="display:block">Entra</button>
         </form>
         <p th:if="${loginError}" th:text="${loginError}" style="margin-top:12px;color:var(--red);font-weight:700"></p>
-        <p style="text-align:center;margin-top:1.25rem;">
-            <a th:href="@{/teacher/login}" style="font-size:14px;color:var(--gray-muted);font-weight:700;text-decoration:none;">
+        <p class="login-footer profile-password-submit">
+            <a th:href="@{/teacher/login}" class="public-link">
                 → Accesso insegnanti
             </a>
         </p>
