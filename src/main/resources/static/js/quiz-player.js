@@ -256,6 +256,7 @@ function startQuizFromCard(el) {
         return;
     }
 
+    globalThis.quizCelebration?.unlock();
     const title = el.querySelector('.quiz-pick-name').textContent;
     const emoji = el.querySelector('.quiz-pick-icon').textContent;
 
@@ -518,6 +519,7 @@ function pickAnswer(idx, restoring) {
 }
 
 function nextQuestion() {
+    globalThis.quizCelebration?.unlock();
     playState.current++;
     persistQuizProgress();
     if (playState.current >= playState.quiz.questions.length) void showResult();
@@ -595,4 +597,5 @@ async function showResult() {
         }
     }
     goTo('result');
+    globalThis.quizCelebration?.play();
 }

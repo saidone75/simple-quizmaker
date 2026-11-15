@@ -88,6 +88,7 @@
 
 <div id="screen-result" class="screen">
     <div class="result-card">
+        <div id="result-confetti" class="result-confetti" aria-hidden="true"></div>
         <span class="result-emoji" id="res-emoji">🏆</span>
         <p class="result-title" id="res-title">Perfetto!</p>
         <p class="result-subtitle" id="res-sub">Hai risposto a tutte le domande</p>
@@ -126,6 +127,8 @@
 <div id="student-page-data"
      th:attr="data-quizzes-json=${quizzesJson},data-locked-quiz-ids-json=${lockedQuizIdsJson},data-student-id=${studentId},data-student-name=${studentName}"
      hidden></div>
+<script th:src="@{/js/game-sounds.js}"></script>
+<script th:src="@{/js/quiz-celebration.js}"></script>
 <script th:src="@{/js/main.js}"></script>
 <script th:src="@{/js/quiz-player.js}"></script>
 <script th:src="@{/js/student-page.js}"></script>
