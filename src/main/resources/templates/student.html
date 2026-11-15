@@ -28,10 +28,10 @@
 
 <div class="topbar" style="position:sticky;top:0;z-index:10;">
     <span class="topbar-title">🎒 Area Studente</span>
-    <div style="display:flex;align-items:center;gap:8px;">
+    <div class="topbar-actions">
         <a th:href="@{/student/badges}" class="topbar-back">🏅 I miei badge</a>
         <span class="topbar-badge" th:text="${studentName}">Studente</span>
-        <form th:action="@{/student/logout}" method="post" style="margin:0;">
+        <form th:action="@{/student/logout}" method="post" class="topbar-inline-form">
             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
             <button type="submit" class="topbar-back">Esci</button>
         </form>
@@ -40,7 +40,7 @@
 
 <div id="screen-student" class="screen active">
     <div class="student-inner">
-        <div style="font-size:52px;margin-bottom:12px">🎒</div>
+        <div class="error-emoji">🎒</div>
         <p style="font-size:24px;font-weight:800;margin:0 0 8px 0;" th:text="'Ciao ' + ${studentName} + '!'">Ciao Studente!</p>
         <h2>Scegli un quiz!</h2>
         <p>Puoi rivedere i quiz completati e le tue risposte. Per rifarli, chiedi alla maestra di sbloccarli.</p>

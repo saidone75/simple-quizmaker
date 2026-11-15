@@ -27,12 +27,12 @@
     <link rel="stylesheet" th:href="@{/css/main.css}">
 </head>
 <body>
-<div class="screen active" style="display:block;">
+<div class="screen active">
     <div class="topbar">
         <span class="topbar-title">ℹ️ About</span>
-        <a th:href="@{/teacher/system}" class="topbar-back" style="text-decoration:none">← System</a>
+        <a th:href="@{/teacher/system}" class="topbar-back">← System</a>
         <span class="topbar-badge" sec:authentication="name">admin</span>
-        <form th:action="@{/teacher/logout}" method="post" style="margin:0">
+        <form th:action="@{/teacher/logout}" method="post" class="topbar-inline-form">
             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
             <button type="submit" class="topbar-back">Logout</button>
         </form>

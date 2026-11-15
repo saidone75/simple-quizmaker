@@ -23,6 +23,8 @@ in **Non rilasciato**.
 
 ### Corretto
 
+- Uniformati gli stili condivisi delle pagine e rimossi i riferimenti a variabili CSS inesistenti; centralizzati bordi e spaziature della tabella studenti.
+- Ripristinato il focus visibile dei campi, resi adattabili gli input della parola chiave e consentito lo scorrimento delle modali sugli schermi bassi.
 - Neutralizzato l'HTML nel campo emoji delle domande durante la riproduzione dei quiz.
 - Revocate le sessioni aperte degli insegnanti dopo una modifica all'abilitazione o al ruolo amministratore.
 - Rimossi i file immagine degli upload falliti o annullati dalla transazione; preservate per almeno 24 ore le immagini appena caricate e non ancora associate a un quiz.

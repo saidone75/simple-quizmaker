@@ -29,8 +29,8 @@
 <div class="login-screen">
     <div class="login-card">
         <h1 class="login-title">🐰 Alice's Simple Quiz&nbsp;Maker</h1>
-        <div style="font-size:52px;text-align:center;margin-bottom:8px">📝</div>
-        <h2 style="text-align:center;margin-bottom:0.5rem;">Registrazione Insegnante</h2>
+        <div class="error-emoji">📝</div>
+        <h2 class="login-heading">Registrazione Insegnante</h2>
         <p class="login-sub">Crea il tuo account per gestire classi e quiz</p>
 
         <div class="alert alert-error" th:if="${registerError}">
@@ -59,13 +59,13 @@
                 <div class="cf-turnstile" data-theme="light" data-size="flexible" th:attr="data-sitekey=${turnstileSiteKey}"></div>
             </div>
 
-            <button type="submit" class="btn-start-quiz" style="margin-top:1.25rem">
+            <button type="submit" class="btn-start-quiz profile-password-submit">
                 🚀 Crea account
             </button>
         </form>
 
-        <p style="text-align:center;margin-top:1.25rem;">
-            <a th:href="@{/teacher/login}" style="font-size:14px;color:var(--gray-muted);font-weight:700;text-decoration:none;">
+        <p class="login-footer profile-password-submit">
+            <a th:href="@{/teacher/login}" class="public-link">
                 ← Hai già un account? Accedi
             </a>
         </p>
