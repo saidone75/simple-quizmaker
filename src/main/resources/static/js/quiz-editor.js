@@ -258,7 +258,7 @@ function renderQuestions() {
 function initializeEditorListEvents(list) {
     if (editorEventBindingsInitialized) return;
 
-    list.addEventListener('click', async (event) => {
+    list.addEventListener('click', (event) => {
         const target = event.target;
         if (!(target instanceof Element)) return;
 
@@ -271,7 +271,7 @@ function initializeEditorListEvents(list) {
 
         const removeImageButton = target.closest('[data-action="remove-image-preview"]');
         if (removeImageButton) {
-            await removeQuestionImagePreview(Number(removeImageButton.dataset.questionIndex));
+            removeQuestionImagePreview(Number(removeImageButton.dataset.questionIndex));
             return;
         }
 
@@ -317,25 +317,9 @@ function initializeEditorListEvents(list) {
     editorEventBindingsInitialized = true;
 }
 
-async function removeQuestionImagePreview(qIdx) {
+function removeQuestionImagePreview(qIdx) {
     const question = currentQuestions[qIdx];
     if (!question) return;
-
-    const uploadedImageId = (question.imageId || '').trim();
-    if (uploadedImageId) {
-        try {
-            const response = await apiFetch('/api/quizzes/images/' + uploadedImageId, {
-                method: 'DELETE'
-            });
-            if (!response.ok) {
-                throw new Error(await response.text() || 'Errore durante la rimozione immagine.');
-            }
-            showToast('Immagine rimossa con successo');
-        } catch (error) {
-            showValidation(error.message || 'Errore durante la rimozione immagine.');
-            return;
-        }
-    }
 
     question.imageUrl = '';
     question.imageId = '';
@@ -346,6 +330,7 @@ async function removeQuestionImagePreview(qIdx) {
     }
 
     updateQuestionImagePreview(qIdx);
+    showToast('Immagine rimossa dalla bozza. Salva il quiz per confermare.');
 }
 
 function updateQuestionImagePreview(qIdx) {

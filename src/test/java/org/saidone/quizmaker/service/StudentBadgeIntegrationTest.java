@@ -306,6 +306,59 @@ class StudentBadgeIntegrationTest {
         assertThat(submissions.findById(id).orElseThrow().getSubmittedAt()).isNotNull();
     }
 
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void imageRemovalKeepsStoredQuizzesSafeUntilTheirLastReferenceIsSaved(boolean sharedWithAnotherQuiz) throws Exception {
+        val image = new UploadedImage();
+        val imageId = UUID.randomUUID();
+        image.setId(imageId);
+        image.setTeacherId(teacher.getId());
+        image.setCreatedAt(LocalDateTime.now(ZoneId.systemDefault()).minusDays(2));
+        image.setFilePath(String.format("target/removal-test-missing-%s.png", imageId));
+        uploadedImages.saveAndFlush(image);
+        quiz.getQuestions().getFirst().setImageId(imageId.toString());
+        quiz.getQuestions().getFirst().setImageUrl(String.format("/api/quizzes/images/%s", imageId));
+        quiz.setPublished(false);
+        quizzes.saveAndFlush(quiz);
+        if (sharedWithAnotherQuiz) {
+            val otherQuestion = new Question();
+            otherQuestion.setImageUrl(String.format("/api/quizzes/images/%s", imageId));
+            quizzes.saveAndFlush(Quiz.builder().title("Another quiz using the image").emoji("🖼️")
+                    .teacher(teacher).createdByUsername(teacher.getUsername())
+                    .questions(List.of(otherQuestion)).published(true).build());
+        }
+
+        mvc.perform(delete("/api/quizzes/images/{id}", imageId)
+                        .with(user(teacher.getUsername()).roles("TEACHER")).with(csrf()))
+                .andExpect(status().isForbidden());
+        val scheduler = new OrphanQuestionImageCleanupScheduler(quizzes, uploadedImages, imageStorageService);
+        scheduler.cleanupOrphanImages();
+        assertThat(uploadedImages.findById(imageId)).isPresent();
+        assertThat(quizzes.findById(quiz.getId()).orElseThrow().getQuestions().getFirst().getImageId())
+                .isEqualTo(imageId.toString());
+
+        val question = objectMapper.convertValue(quiz.getQuestions().getFirst(), QuestionDto.class);
+        question.setImageId(null);
+        question.setImageUrl(null);
+        val edit = QuizDto.Request.builder().title(quiz.getTitle()).emoji(quiz.getEmoji())
+                .questions(List.of(question)).build();
+        val json = objectMapper.writeValueAsString(edit);
+        mvc.perform(put("/api/quizzes/{id}", quiz.getId())
+                        .with(user(teacher.getUsername()).roles("TEACHER")).with(csrf())
+                        .contentType("application/json").content(json))
+                .andExpect(status().isOk());
+        entityManager.flush();
+        entityManager.clear();
+        val savedQuestion = quizzes.findById(quiz.getId()).orElseThrow().getQuestions().getFirst();
+        assertThat(savedQuestion.getImageId()).isNull();
+        assertThat(savedQuestion.getImageUrl()).isNull();
+        assertThat(uploadedImages.findById(imageId)).isPresent();
+
+        scheduler.cleanupOrphanImages();
+
+        assertThat(uploadedImages.existsById(imageId)).isEqualTo(sharedWithAnotherQuiz);
+    }
+
     @Test
     void imageCleanupTraversesDeletedBatchesAndPreservesArchivedQuizReferences() {
         val firstImageId = UUID.fromString("00000000-0000-0000-0000-000000000001");

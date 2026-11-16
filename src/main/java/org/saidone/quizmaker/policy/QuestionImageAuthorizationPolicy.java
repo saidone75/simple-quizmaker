@@ -45,10 +45,9 @@ public class QuestionImageAuthorizationPolicy {
 
     public boolean canDelete(UUID imageId, Teacher teacher) {
         if (!teacherAuthorizationPolicy.isTeacher(teacher) || !canUse(imageId, teacher)) return false;
-        // A shared reference must not let one teacher destroy another teacher's image.
+        // Persisted quizzes must keep their images until their references are saved without them.
         return quizRepository.findAll().stream()
-                .filter(quiz -> references(List.of(quiz), imageId))
-                .allMatch(quiz -> quiz.getTeacher().getId().equals(teacher.getId()));
+                .noneMatch(quiz -> references(List.of(quiz), imageId));
     }
 
     public void validateQuestions(List<QuestionDto> questions, Teacher teacher) {
