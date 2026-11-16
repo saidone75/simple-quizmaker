@@ -11,6 +11,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.jupiter.params.provider.EnumSource;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.saidone.quizmaker.dto.QuestionDto;
 import org.saidone.quizmaker.dto.QuizDto;
@@ -101,9 +102,11 @@ class StudentBadgeIntegrationTest {
         SecurityContextHolder.clearContext();
     }
 
+    private enum SessionRevocationAction { DISABLE, CHANGE_ADMIN_ROLE, RESET_PASSWORD }
+
     @ParameterizedTest
-    @ValueSource(booleans = {false, true})
-    void permissionChangesInvalidateEveryPreviouslyAuthenticatedTeacherSession(boolean changeAdminRole) throws Exception {
+    @EnumSource(SessionRevocationAction.class)
+    void accountChangesInvalidateEveryPreviouslyAuthenticatedTeacherSession(SessionRevocationAction action) throws Exception {
         val registry = context.getBean(SessionRegistry.class);
         teacher.setAdmin(true);
         teacher.setPassword(context.getBean(PasswordEncoder.class)
@@ -120,10 +123,19 @@ class StudentBadgeIntegrationTest {
             }
             val actingAdmin = teachers.saveAndFlush(Teacher.builder().username("session-admin")
                     .password("unused").admin(true).enabled(true).build());
-            mvc.perform(post("/teacher/system/teachers/{id}/{flag}", teacher.getId(), changeAdminRole ? "admin" : "enabled")
+            val flag = switch (action) {
+                case DISABLE -> "enabled";
+                case CHANGE_ADMIN_ROLE -> "admin";
+                case RESET_PASSWORD -> "reset-password";
+            };
+            mvc.perform(post("/teacher/system/teachers/{id}/{flag}", teacher.getId(), flag)
                             .with(user(actingAdmin.getUsername()).roles("TEACHER", "ADMIN")).with(csrf())
-                            .param(changeAdminRole ? "admin" : "enabled", "false"))
+                            .param(flag, "false"))
                     .andExpect(status().is3xxRedirection());
+            if (action == SessionRevocationAction.RESET_PASSWORD) {
+                assertThat(context.getBean(PasswordEncoder.class).matches("session-test-password",
+                        teachers.findById(teacher.getId()).orElseThrow().getPassword())).isFalse();
+            }
             // The test transaction rolls back; simulate only the post-commit session revocation.
             TransactionSynchronizationManager.getSynchronizations()
                     .forEach(TransactionSynchronization::afterCommit);

@@ -153,6 +153,7 @@ public class TeacherAdministrationService {
 
         targetTeacher.setPassword(passwordEncoder.encode(temporaryPassword));
         teacherRepository.save(targetTeacher);
+        expireSessionsAfterCommit(targetTeacher.getUsername());
         return temporaryPassword;
     }
 

@@ -24,6 +24,7 @@ in **Non rilasciato**.
 
 ### Corretto
 
+- Revocate tutte le sessioni aperte dell’insegnante dopo il commit del reset amministrativo della password.
 - La rimozione di un’immagine nell’editor modifica solo la bozza fino al salvataggio del quiz. Le API impediscono di eliminare immagini ancora usate da quiz salvati; la pulizia automatica rimuove quelle non più referenziate.
 - Aggiornata la data di consegna quando uno studente rifà un quiz sbloccato, mantenendola coerente con il nuovo tentativo e senza modificarla al solo sblocco.
 - Uniformati gli stili condivisi delle pagine e rimossi i riferimenti a variabili CSS inesistenti; centralizzati bordi e spaziature della tabella studenti.
