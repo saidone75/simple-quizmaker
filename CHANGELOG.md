@@ -19,6 +19,7 @@ in **Non rilasciato**.
 
 ### Modificato
 
+- Portati compilazione e workflow CI a Java 25, allineandoli al runtime Docker e di produzione; aggiornati i requisiti di sviluppo e il controllo Maven Enforcer.
 - Resi grigi e bloccati i pulsanti Modifica, Archivia ed Elimina dei quiz pubblicati nella dashboard, con messaggi specifici al clic. L'accesso diretto all'editor di un quiz pubblicato rimanda alla dashboard.
 - Aggiornato il tooltip del controllo di pubblicazione: “Pubblica” per i quiz non pubblicati e “Nascondi” per quelli pubblicati, con aggiornamento immediato al cambio di stato.
 

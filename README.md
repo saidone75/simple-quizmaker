@@ -53,7 +53,7 @@ Alice's Simple Quiz Maker è pensato per chi desidera:
 
 ## 🧰 Stack tecnologico
 
-- Java **21**
+- Java **25**
 - Spring Boot **4.1.x**
 - Spring Security
 - Thymeleaf
@@ -67,7 +67,7 @@ Alice's Simple Quiz Maker è pensato per chi desidera:
 
 Per avvio locale:
 
-- JDK 21
+- JDK 25
 - Maven 3.9+
 
 Per avvio Docker:
@@ -146,7 +146,7 @@ Variabili utili:
 - `START_APP=0` per verificare un'applicazione già avviata; altrimenti il test avvia Maven e arresta l'app al termine.
 - `DISABLE_TURNSTILE` (default `1`, applicato solo all'app avviata dal test)
 
-Richiede Babashka, `curl` e, per l'avvio automatico, Maven e Java 21.
+Richiede Babashka, `curl` e, per l'avvio automatico, Maven e Java 25.
 Il test usa sessioni separate per insegnante e studente, verifica la presenza del quiz pubblicato,
 il punteggio e il blocco dopo la consegna, e rimuove il quiz e lo studente creati anche in caso di errore.
 Per un'app già avviata, impostare credenziali valide: non vengono registrati nuovi insegnanti.
