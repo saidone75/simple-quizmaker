@@ -254,6 +254,59 @@ class StudentBadgeIntegrationTest {
     }
 
     @Test
+    void unlockedRetryPersistsTheNewSubmissionDateAndKeepsItConsistentWithTheAttempt() {
+        val quizId = quiz.getId();
+        val studentId = student.getId();
+        val teacherId = teacher.getId();
+        submissionService.submit(quizId, student, List.of(0));
+        entityManager.flush();
+        val originalId = submissions.findByStudentIdAndQuizId(studentId, quizId).orElseThrow().getId();
+        val oldDate = LocalDateTime.of(2025, 1, 1, 12, 0);
+        // Simulate a previous day's persisted submission without sleeping or changing the clock.
+        entityManager.createNativeQuery("UPDATE quiz_submissions SET submitted_at = :oldDate WHERE id = :id")
+                .setParameter("oldDate", "2025-01-01 12:00:00")
+                .setParameter("id", originalId.toString()).executeUpdate();
+        entityManager.clear();
+
+        val activeTeacher = teachers.findById(teacherId).orElseThrow();
+        SecurityContextHolder.getContext().setAuthentication(teacherAuthentication());
+        submissionService.unlockQuizForStudent(studentId, quizId, activeTeacher);
+        entityManager.flush();
+        entityManager.clear();
+        assertThat(submissions.findByStudentIdAndQuizId(studentId, quizId).orElseThrow().getSubmittedAt())
+                .isEqualTo(oldDate);
+
+        val activeStudent = students.findById(studentId).orElseThrow();
+        SecurityContextHolder.getContext().setAuthentication(new StudentAuthenticationToken(activeStudent));
+        val beforeRetry = LocalDateTime.now(ZoneId.systemDefault()).minusSeconds(1);
+        submissionService.submit(quizId, activeStudent, List.of(1));
+        entityManager.flush();
+        entityManager.clear();
+
+        val saved = submissions.findByStudentIdAndQuizId(studentId, quizId).orElseThrow();
+        assertThat(saved.getId()).isEqualTo(originalId);
+        assertThat(saved.getAnswers()).containsExactly(1);
+        assertThat(saved.getScore()).isZero();
+        assertThat(saved.getSubmittedAt()).isAfter(beforeRetry);
+        val history = attempts.findByStudentIdOrderByCompletedAtAscIdAsc(studentId);
+        assertThat(history).hasSize(2);
+        assertThat(saved.getSubmittedAt()).isEqualTo(history.getLast().getCompletedAt());
+        assertThat(submissionService.review(quizId, activeStudent).submittedAt()).isEqualTo(saved.getSubmittedAt());
+        assertThat(submissionService.findAllResults(activeTeacher)).singleElement()
+                .satisfies(result -> assertThat(result.submittedAt()).isEqualTo(saved.getSubmittedAt()));
+    }
+
+    @Test
+    void directSubmissionInsertionStillInitializesItsDate() {
+        val saved = submissions.saveAndFlush(QuizSubmission.builder().student(student).quiz(quiz)
+                .answers(List.of(0)).score(1).totalQuestions(1).build());
+        val id = saved.getId();
+        entityManager.clear();
+
+        assertThat(submissions.findById(id).orElseThrow().getSubmittedAt()).isNotNull();
+    }
+
+    @Test
     void imageCleanupTraversesDeletedBatchesAndPreservesArchivedQuizReferences() {
         val firstImageId = UUID.fromString("00000000-0000-0000-0000-000000000001");
         val lastImageId = UUID.fromString("ffffffff-ffff-ffff-ffff-ffffffffffff");

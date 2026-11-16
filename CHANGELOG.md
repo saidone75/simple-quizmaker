@@ -13,7 +13,7 @@ in **Non rilasciato**.
 
 ### Aggiunto
 
-- Musica di completamento que coriandoli alla consegna del quiz.
+- Musica di completamento e coriandoli alla consegna del quiz.
 - Bloccate le modifiche ai quiz pubblicati nell'editor e nelle API: l'insegnante deve prima spubblicarli tramite il controllo già presente nella dashboard.
 - Versione progressiva dei quiz, aggiornata quando cambiano le domande e salvata nelle consegne. Le consegne relative a una versione precedente sono segnalate a studenti e insegnanti; il risultato resta disponibile, mentre la revisione delle risposte è disabilitata.
 
@@ -24,6 +24,7 @@ in **Non rilasciato**.
 
 ### Corretto
 
+- Aggiornata la data di consegna quando uno studente rifà un quiz sbloccato, mantenendola coerente con il nuovo tentativo e senza modificarla al solo sblocco.
 - Uniformati gli stili condivisi delle pagine e rimossi i riferimenti a variabili CSS inesistenti; centralizzati bordi e spaziature della tabella studenti.
 - Ripristinato il focus visibile dei campi, resi adattabili gli input della parola chiave e consentito lo scorrimento delle modali sugli schermi bassi.
 - Neutralizzato l'HTML nel campo emoji delle domande durante la riproduzione dei quiz.
