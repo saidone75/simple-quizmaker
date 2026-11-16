@@ -25,6 +25,7 @@ let quizPopstateHandler = null;
 let quizBeforeUnloadHandler = null;
 let quizKeydownHandler = null;
 let skipLogoutConfirmation = false;
+let isSubmittingQuiz = false;
 
 function bindStudentLogoutConfirmation() {
     const logoutForm = document.querySelector('form[action="/student/logout"]');
@@ -226,10 +227,11 @@ function resumeQuizIfNeeded() {
             return false;
         }
 
+        const pendingSubmission = Number(progress.current) >= quiz.questions.length;
         const maxCurrent = Math.max(0, Math.min(Number(progress.current) || 0, quiz.questions.length - 1));
         playState = {
             quiz: { id: quiz.id, title: quiz.title, emoji: quiz.emoji, questions: quiz.questions },
-            current: maxCurrent,
+            current: pendingSubmission ? quiz.questions.length : maxCurrent,
             score: 0,
             wrong: 0,
             answered: false,
@@ -238,7 +240,8 @@ function resumeQuizIfNeeded() {
         recomputeScoreFromAnswers();
         enableQuizNavigationLock();
         goTo('quiz');
-        renderPlay();
+        if (pendingSubmission) renderQuizSubmission('Le tue risposte sono conservate. Puoi riprovare a consegnare.', true);
+        else renderPlay();
         return true;
     } catch (error) {
         // Restoring saved progress is optional: discard it if restoration fails so the quiz picker remains usable.
@@ -519,6 +522,7 @@ function pickAnswer(idx, restoring) {
 }
 
 function nextQuestion() {
+    if (isSubmittingQuiz || playState.current >= playState.quiz.questions.length) return;
     globalThis.quizCelebration?.unlock();
     playState.current++;
     persistQuizProgress();
@@ -526,8 +530,71 @@ function nextQuestion() {
     else renderPlay();
 }
 
+function renderQuizSubmission(message, canRetry = false, needsLogin = false) {
+    document.getElementById('play-progress-text').textContent = 'Quiz completato';
+    document.getElementById('play-pct').textContent = '100%';
+    document.getElementById('play-progress-fill').style.width = '100%';
+    document.getElementById('play-area').innerHTML = `
+        <div class="quiz-card">
+            <h2 class="quiz-question">Hai risposto a tutte le domande!</h2>
+            <output id="quiz-submission-message" class="quiz-feedback learning badge-editor-note" aria-live="polite" aria-atomic="true"></output>
+            <a id="quiz-submission-login" class="public-link badge-editor-note" href="/student/login" hidden>Accedi di nuovo</a>
+        </div>
+        <button type="button" class="quiz-next" id="quiz-submit-retry" aria-describedby="quiz-submission-message"></button>`;
+    document.getElementById('quiz-submission-message').textContent = message;
+    const retry = document.getElementById('quiz-submit-retry');
+    retry.textContent = canRetry ? 'Riprova a consegnare' : 'Consegna in corso…';
+    retry.disabled = !canRetry;
+    retry.addEventListener('click', () => {
+        globalThis.quizCelebration?.unlock();
+        void showResult();
+    });
+    const login = document.getElementById('quiz-submission-login');
+    login.hidden = !needsLogin;
+    login.addEventListener('click', disableQuizNavigationLock);
+    if (canRetry) (needsLogin ? login : retry).focus({ preventScroll: true });
+}
+
+async function readSubmissionResponse(response, quiz, answers, signal) {
+    if (response.redirected || response.status === 401 || response.status === 403) {
+        const error = new Error('La sessione non è più valida. Accedi di nuovo in questa scheda, poi riprova a consegnare.');
+        error.needsLogin = true;
+        throw error;
+    }
+    if (response.status === 413) throw new Error('La consegna è troppo grande. Avvisa la maestra.');
+    if (response.status === 408 || response.status === 504) throw new Error('Il server impiega troppo tempo a rispondere. Riprova tra poco.');
+    if (response.status === 429) throw new Error('Troppe richieste ravvicinate. Aspetta un momento e riprova.');
+    if (response.status >= 500) throw new Error('Il server non è disponibile al momento. Riprova tra poco.');
+
+    const contentType = (response.headers.get('Content-Type') || '').toLowerCase();
+    if (!contentType.includes('application/json') && !contentType.includes('+json')) {
+        throw new Error('Il server ha restituito una risposta non valida. Riprova tra poco.');
+    }
+    const payload = await response.json();
+    if (!response.ok) {
+        // A lost response may hide an already committed submission. Confirm it without creating a new attempt.
+        if (response.status === 400) {
+            const reviewResponse = await apiFetch('/api/quizzes/' + quiz.id + '/review', { signal });
+            if (reviewResponse.ok && !reviewResponse.redirected) {
+                const review = await reviewResponse.json();
+                if (!review.obsolete && Array.isArray(review.answers)
+                        && JSON.stringify(review.answers) === JSON.stringify(answers)) {
+                    return { score: review.score, total: review.total, newBadges: [] };
+                }
+            }
+        }
+        throw new Error(typeof payload?.message === 'string' ? payload.message : 'Non è stato possibile salvare la consegna.');
+    }
+    return payload;
+}
+
 async function showResult() {
+    if (isSubmittingQuiz) return;
+    isSubmittingQuiz = true;
     const { quiz, answers } = playState;
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 30000);
+    renderQuizSubmission('Sto consegnando le tue risposte…');
     let score;
     let total;
     let newBadges;
@@ -536,11 +603,13 @@ async function showResult() {
         const res = await apiFetch('/api/quizzes/' + quiz.id + '/submit', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ answers })
+            body: JSON.stringify({ answers }),
+            signal: controller.signal
         });
-        const payload = await res.json();
-        if (!res.ok) {
-            throw new Error(payload.message || 'Errore nel salvataggio');
+        const payload = await readSubmissionResponse(res, quiz, answers, controller.signal);
+        if (!Number.isInteger(payload?.score) || !Number.isInteger(payload?.total)
+                || payload.total <= 0 || payload.score < 0 || payload.score > payload.total) {
+            throw new Error('Il server ha restituito un risultato non valido. Riprova tra poco.');
         }
         score = payload.score;
         total = payload.total;
@@ -549,12 +618,18 @@ async function showResult() {
             globalThis.LOCKED_QUIZ_IDS.add(String(quiz.id));
         }
         markQuizCardAsLocked(quiz.id, false);
-    } catch (e) {
-        showStudentAlert('Errore nel salvataggio', e.message);
-        clearQuizProgress();
-        disableQuizNavigationLock();
-        goTo('student');
+    } catch (error) {
+        console.warn('Impossibile confermare la consegna del quiz', error);
+        const message = error.name === 'AbortError'
+                ? 'La consegna impiega troppo tempo. Riprova tra poco.'
+                : error instanceof TypeError ? 'Connessione non disponibile. Controlla la rete e riprova.'
+                : error instanceof SyntaxError ? 'Il server ha restituito una risposta non valida. Riprova tra poco.'
+                : error.message || 'Non è stato possibile confermare la consegna.';
+        renderQuizSubmission(message + ' Le tue risposte sono conservate.', true, error.needsLogin);
         return;
+    } finally {
+        clearTimeout(timeout);
+        isSubmittingQuiz = false;
     }
 
     clearQuizProgress();

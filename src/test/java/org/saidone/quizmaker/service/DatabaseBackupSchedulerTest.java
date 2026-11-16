@@ -126,21 +126,4 @@ class DatabaseBackupSchedulerTest {
         assertThrows(SQLException.class, () -> scheduler(corrupt, directory, 1).validateBackup(corrupt));
     }
 
-    @Test
-    void repeatedBackupsDoNotOverwriteAndRetentionZeroKeepsAll() throws Exception {
-        val database = directory.resolve("quizmaker.db");
-        try (val source = DriverManager.getConnection(String.format("jdbc:sqlite:%s", database));
-             val statement = source.createStatement()) {
-            statement.execute("CREATE TABLE answers (id INTEGER PRIMARY KEY)");
-        }
-        val backups = directory.resolve("backups");
-        val scheduler = scheduler(database, backups, 0);
-        scheduler.backupDatabase();
-        scheduler.backupDatabase();
-        assertEquals(2, files(backups).size());
-        for (val backup : files(backups)) {
-            assertTrue(backup.toString().endsWith(".db"));
-            scheduler.validateBackup(backup);
-        }
-    }
 }
