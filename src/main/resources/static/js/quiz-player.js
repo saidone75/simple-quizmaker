@@ -555,7 +555,7 @@ function renderQuizSubmission(message, canRetry = false, needsLogin = false) {
     if (canRetry) (needsLogin ? login : retry).focus({ preventScroll: true });
 }
 
-async function readSubmissionResponse(response, quiz, answers, signal) {
+function validateSubmissionResponse(response) {
     if (response.redirected || response.status === 401 || response.status === 403) {
         const error = new Error('La sessione non è più valida. Accedi di nuovo in questa scheda, poi riprova a consegnare.');
         error.needsLogin = true;
@@ -570,22 +570,29 @@ async function readSubmissionResponse(response, quiz, answers, signal) {
     if (!contentType.includes('application/json') && !contentType.includes('+json')) {
         throw new Error('Il server ha restituito una risposta non valida. Riprova tra poco.');
     }
-    const payload = await response.json();
-    if (!response.ok) {
-        // A lost response may hide an already committed submission. Confirm it without creating a new attempt.
-        if (response.status === 400) {
-            const reviewResponse = await apiFetch('/api/quizzes/' + quiz.id + '/review', { signal });
-            if (reviewResponse.ok && !reviewResponse.redirected) {
-                const review = await reviewResponse.json();
-                if (!review.obsolete && Array.isArray(review.answers)
-                        && JSON.stringify(review.answers) === JSON.stringify(answers)) {
-                    return { score: review.score, total: review.total, newBadges: [] };
-                }
-            }
-        }
-        throw new Error(typeof payload?.message === 'string' ? payload.message : 'Non è stato possibile salvare la consegna.');
+}
+
+async function recoverSavedSubmission(quiz, answers, signal) {
+    // A lost response may hide an already committed submission. Confirm it without creating a new attempt.
+    const response = await apiFetch('/api/quizzes/' + quiz.id + '/review', { signal });
+    if (!response.ok || response.redirected) return null;
+    const review = await response.json();
+    if (!review.obsolete && Array.isArray(review.answers)
+            && JSON.stringify(review.answers) === JSON.stringify(answers)) {
+        return { score: review.score, total: review.total, newBadges: [] };
     }
-    return payload;
+    return null;
+}
+
+async function readSubmissionResponse(response, quiz, answers, signal) {
+    validateSubmissionResponse(response);
+    const payload = await response.json();
+    if (response.ok) return payload;
+    if (response.status === 400) {
+        const saved = await recoverSavedSubmission(quiz, answers, signal);
+        if (saved) return saved;
+    }
+    throw new Error(typeof payload?.message === 'string' ? payload.message : 'Non è stato possibile salvare la consegna.');
 }
 
 async function showResult() {
