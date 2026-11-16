@@ -595,53 +595,43 @@ async function readSubmissionResponse(response, quiz, answers, signal) {
     throw new Error(typeof payload?.message === 'string' ? payload.message : 'Non è stato possibile salvare la consegna.');
 }
 
-async function showResult() {
-    if (isSubmittingQuiz) return;
-    isSubmittingQuiz = true;
-    const { quiz, answers } = playState;
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 30000);
-    renderQuizSubmission('Sto consegnando le tue risposte…');
-    let score;
-    let total;
-    let newBadges;
-
-    try {
-        const res = await apiFetch('/api/quizzes/' + quiz.id + '/submit', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ answers }),
-            signal: controller.signal
-        });
-        const payload = await readSubmissionResponse(res, quiz, answers, controller.signal);
-        if (!Number.isInteger(payload?.score) || !Number.isInteger(payload?.total)
-                || payload.total <= 0 || payload.score < 0 || payload.score > payload.total) {
-            throw new Error('Il server ha restituito un risultato non valido. Riprova tra poco.');
-        }
-        score = payload.score;
-        total = payload.total;
-        newBadges = Array.isArray(payload.newBadges) ? payload.newBadges : [];
-        if (globalThis.LOCKED_QUIZ_IDS) {
-            globalThis.LOCKED_QUIZ_IDS.add(String(quiz.id));
-        }
-        markQuizCardAsLocked(quiz.id, false);
-    } catch (error) {
-        console.warn('Impossibile confermare la consegna del quiz', error);
-        const message = error.name === 'AbortError'
-                ? 'La consegna impiega troppo tempo. Riprova tra poco.'
-                : error instanceof TypeError ? 'Connessione non disponibile. Controlla la rete e riprova.'
-                : error instanceof SyntaxError ? 'Il server ha restituito una risposta non valida. Riprova tra poco.'
-                : error.message || 'Non è stato possibile confermare la consegna.';
-        renderQuizSubmission(message + ' Le tue risposte sono conservate.', true, error.needsLogin);
-        return;
-    } finally {
-        clearTimeout(timeout);
-        isSubmittingQuiz = false;
+function validateSubmissionResult(payload) {
+    if (!Number.isInteger(payload?.score) || !Number.isInteger(payload?.total)
+            || payload.total <= 0 || payload.score < 0 || payload.score > payload.total) {
+        throw new Error('Il server ha restituito un risultato non valido. Riprova tra poco.');
     }
+}
 
-    clearQuizProgress();
-    disableQuizNavigationLock();
+function getSubmissionErrorMessage(error) {
+    if (error.name === 'AbortError') return 'La consegna impiega troppo tempo. Riprova tra poco.';
+    if (error instanceof TypeError) return 'Connessione non disponibile. Controlla la rete e riprova.';
+    if (error instanceof SyntaxError) return 'Il server ha restituito una risposta non valida. Riprova tra poco.';
+    return error.message || 'Non è stato possibile confermare la consegna.';
+}
 
+function renderEarnedBadges(newBadges) {
+    const badgeArea = document.getElementById('res-badges');
+    if (!badgeArea) return;
+    badgeArea.replaceChildren();
+    badgeArea.hidden = newBadges.length === 0;
+    if (newBadges.length === 0) return;
+
+    const title = document.createElement('h2');
+    title.textContent = newBadges.length === 1 ? 'Hai guadagnato un badge!' : 'Hai guadagnato nuovi badge!';
+    badgeArea.appendChild(title);
+    const list = document.createElement('ul');
+    list.className = 'new-badges-list';
+    for (const badge of newBadges) {
+        const item = document.createElement('li');
+        item.textContent = `${badge.emoji} ${badge.name}`;
+        item.title = badge.description;
+        list.appendChild(item);
+    }
+    badgeArea.appendChild(list);
+}
+
+function renderQuizResult(quiz, payload) {
+    const { score, total } = payload;
     const pct = score / total;
     let emoji, title, stars;
     if (pct === 1)       { emoji = '🏆'; title = 'Ottimo lavoro, tutte corrette!'; stars = '⭐⭐⭐⭐⭐'; }
@@ -659,25 +649,44 @@ async function showResult() {
         <span class="rpill rpill-ok">✅ ${score} corrette</span>
         <span class="rpill rpill-learn">🌱 ${total - score} da scoprire insieme</span>
     `;
-    const badgeArea = document.getElementById('res-badges');
-    if (badgeArea) {
-        badgeArea.replaceChildren();
-        badgeArea.hidden = newBadges.length === 0;
-        if (newBadges.length > 0) {
-            const title = document.createElement('h2');
-            title.textContent = newBadges.length === 1 ? 'Hai guadagnato un badge!' : 'Hai guadagnato nuovi badge!';
-            badgeArea.appendChild(title);
-            const list = document.createElement('ul');
-            list.className = 'new-badges-list';
-            for (const badge of newBadges) {
-                const item = document.createElement('li');
-                item.textContent = `${badge.emoji} ${badge.name}`;
-                item.title = badge.description;
-                list.appendChild(item);
-            }
-            badgeArea.appendChild(list);
-        }
-    }
+    renderEarnedBadges(Array.isArray(payload.newBadges) ? payload.newBadges : []);
     goTo('result');
     globalThis.quizCelebration?.play();
+}
+
+async function showResult() {
+    if (isSubmittingQuiz) return;
+    isSubmittingQuiz = true;
+    const { quiz, answers } = playState;
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 30000);
+    renderQuizSubmission('Sto consegnando le tue risposte…');
+    let payload;
+
+    try {
+        const res = await apiFetch('/api/quizzes/' + quiz.id + '/submit', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ answers }),
+            signal: controller.signal
+        });
+        payload = await readSubmissionResponse(res, quiz, answers, controller.signal);
+        validateSubmissionResult(payload);
+        if (globalThis.LOCKED_QUIZ_IDS) {
+            globalThis.LOCKED_QUIZ_IDS.add(String(quiz.id));
+        }
+        markQuizCardAsLocked(quiz.id, false);
+    } catch (error) {
+        console.warn('Impossibile confermare la consegna del quiz', error);
+        const message = getSubmissionErrorMessage(error);
+        renderQuizSubmission(message + ' Le tue risposte sono conservate.', true, error.needsLogin);
+        return;
+    } finally {
+        clearTimeout(timeout);
+        isSubmittingQuiz = false;
+    }
+
+    clearQuizProgress();
+    disableQuizNavigationLock();
+    renderQuizResult(quiz, payload);
 }
