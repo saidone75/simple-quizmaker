@@ -29,9 +29,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
 import javax.xml.XMLConstants;
 import javax.xml.parsers.SAXParserFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -130,76 +132,97 @@ public class DocumentTextExtractorService {
             if (zip.getEntry("word/document.xml") == null) throw new IOException("Documento DOCX non valido");
             val entries = zip.stream().filter(entry -> entry.getName().matches(
                     "word/(document|header[0-9]*|footer[0-9]*|footnotes|endnotes)\\.xml")).toList();
-            val factory = SAXParserFactory.newInstance();
-            factory.setNamespaceAware(true);
-            factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-            factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
-            factory.setFeature("http://xml.org/sax/features/external-general-entities", false);
-            factory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
-            val parser = factory.newSAXParser().getXMLReader();
-            parser.setContentHandler(new DefaultHandler() {
-                private boolean inText;
-
-                @Override
-                public void startElement(String uri, String localName, String name, Attributes attributes) {
-                    if (isWordNamespace(uri)) {
-                        inText = "t".equals(localName);
-                    }
-                }
-
-                @Override
-                public void characters(char[] chars, int start, int length) throws SAXException {
-                    if (inText) append(chars, start, length);
-                }
-
-                @Override
-                public void endElement(String uri, String localName, String name) throws SAXException {
-                    if (!isWordNamespace(uri)) return;
-                    if ("t".equals(localName)) inText = false;
-                    if ("p".equals(localName) || "tr".equals(localName) || "br".equals(localName)) {
-                        append(new char[]{'\n'}, 0, 1);
-                    } else if ("tc".equals(localName) || "tab".equals(localName)) {
-                        append(new char[]{'\t'}, 0, 1);
-                    }
-                }
-
-                private void append(char[] chars, int start, int length) throws SAXException {
-                    try {
-                        output.write(chars, start, length);
-                    } catch (TextLimitReachedException e) {
-                        throw new SAXException(e);
-                    }
-                }
-            });
+            val parser = createDocxParser(output);
             for (val entry : entries) {
-                try (val input = new FilterInputStream(zip.getInputStream(entry)) {
-                    @Override
-                    public int read(byte[] bytes, int offset, int length) throws IOException {
-                        val readLength = length > 0 ? Math.clamp(remainingBytes[0], 1, length) : length;
-                        val count = super.read(bytes, offset, readLength);
-                        if (count > 0) {
-                            remainingBytes[0] -= count;
-                            if (remainingBytes[0] < 0) throw new IOException("Limite XML DOCX decompresso superato");
-                        }
-                        return count;
-                    }
-
-                    @Override
-                    public int read() throws IOException {
-                        val value = super.read();
-                        if (value >= 0 && --remainingBytes[0] < 0) throw new IOException("Limite XML DOCX decompresso superato");
-                        return value;
-                    }
-                }) {
+                try (val input = new DocxXmlInputStream(zip.getInputStream(entry), remainingBytes)) {
                     parser.parse(new InputSource(input));
                 }
             }
         } catch (SAXException e) {
             if (!(e.getCause() instanceof TextLimitReachedException)) throw new IOException("XML DOCX non valido", e);
-        } catch (javax.xml.parsers.ParserConfigurationException e) {
+        } catch (ParserConfigurationException e) {
             throw new IOException("Parser DOCX non disponibile", e);
         }
         return output.toString();
+    }
+
+    private XMLReader createDocxParser(LimitedTextWriter output) throws ParserConfigurationException, SAXException {
+        val factory = SAXParserFactory.newInstance();
+        factory.setNamespaceAware(true);
+        factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+        factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+        factory.setFeature("http://xml.org/sax/features/external-general-entities", false);
+        factory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+        val parser = factory.newSAXParser().getXMLReader();
+        parser.setContentHandler(new DocxTextHandler(output));
+        return parser;
+    }
+
+    private static class DocxTextHandler extends DefaultHandler {
+        private final LimitedTextWriter output;
+        private boolean inText;
+
+        private DocxTextHandler(LimitedTextWriter output) {
+            this.output = output;
+        }
+
+        @Override
+        public void startElement(String uri, String localName, String name, Attributes attributes) {
+            if (isWordNamespace(uri)) {
+                inText = "t".equals(localName);
+            }
+        }
+
+        @Override
+        public void characters(char[] chars, int start, int length) throws SAXException {
+            if (inText) append(chars, start, length);
+        }
+
+        @Override
+        public void endElement(String uri, String localName, String name) throws SAXException {
+            if (!isWordNamespace(uri)) return;
+            if ("t".equals(localName)) inText = false;
+            if ("p".equals(localName) || "tr".equals(localName) || "br".equals(localName)) {
+                append(new char[]{'\n'}, 0, 1);
+            } else if ("tc".equals(localName) || "tab".equals(localName)) {
+                append(new char[]{'\t'}, 0, 1);
+            }
+        }
+
+        private void append(char[] chars, int start, int length) throws SAXException {
+            try {
+                output.write(chars, start, length);
+            } catch (TextLimitReachedException e) {
+                throw new SAXException(e);
+            }
+        }
+    }
+
+    private static class DocxXmlInputStream extends FilterInputStream {
+        private final long[] remainingBytes;
+
+        private DocxXmlInputStream(InputStream input, long[] remainingBytes) {
+            super(input);
+            this.remainingBytes = remainingBytes;
+        }
+
+        @Override
+        public int read(byte[] bytes, int offset, int length) throws IOException {
+            val readLength = length > 0 ? Math.clamp(remainingBytes[0], 1, length) : length;
+            val count = super.read(bytes, offset, readLength);
+            if (count > 0) {
+                remainingBytes[0] -= count;
+                if (remainingBytes[0] < 0) throw new IOException("Limite XML DOCX decompresso superato");
+            }
+            return count;
+        }
+
+        @Override
+        public int read() throws IOException {
+            val value = super.read();
+            if (value >= 0 && --remainingBytes[0] < 0) throw new IOException("Limite XML DOCX decompresso superato");
+            return value;
+        }
     }
 
     private static boolean isWordNamespace(String uri) {
@@ -225,10 +248,14 @@ public class DocumentTextExtractorService {
         }
 
         @Override
-        public void flush() { }
+        public void flush() {
+            // Characters are appended directly to the in-memory buffer; there is nothing to flush.
+        }
 
         @Override
-        public void close() { }
+        public void close() {
+            // This writer owns no external resources; retain its buffer for toString() after extraction.
+        }
 
         @Override
         public String toString() {

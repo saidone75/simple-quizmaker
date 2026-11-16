@@ -35,6 +35,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.zip.ZipEntry;
@@ -90,6 +91,36 @@ class DocumentTextExtractorServiceTest {
                 """;
         assertThat(service.extractText(streamingFile("notes.docx", docx(xml))))
                 .contains("Hello\n", "Cell\n\t");
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"http://schemas.openxmlformats.org/wordprocessingml/2006/main", "http://purl.oclc.org/ooxml/wordprocessingml/main"})
+    void extractsSelectedDocxPartsAndPreservesTextSeparators(String namespace) throws Exception {
+        val main = document("<w:p><w:r><w:t>Main</w:t><w:tab/><w:t>tab</w:t><w:br/><w:t>line</w:t></w:r></w:p>")
+                .replace("http://schemas.openxmlformats.org/wordprocessingml/2006/main", namespace);
+        val bytes = zippedDocuments(Map.of(
+                "word/document.xml", main,
+                "word/header1.xml", document("<w:p><w:r><w:t>Header</w:t></w:r></w:p>"),
+                "word/footer1.xml", document("<w:p><w:r><w:t>Footer</w:t></w:r></w:p>"),
+                "word/footnotes.xml", document("<w:p><w:r><w:t>Footnote</w:t></w:r></w:p>"),
+                "word/endnotes.xml", document("<w:p><w:r><w:t>Endnote</w:t></w:r></w:p>"),
+                "word/settings.xml", document("<w:p><w:r><w:t>Ignored settings</w:t></w:r></w:p>")));
+
+        assertThat(service.extractText(streamingFile("parts.docx", bytes)))
+                .contains("Main\ttab\nline\n", "Header", "Footer", "Footnote", "Endnote")
+                .doesNotContain("Ignored settings");
+    }
+
+    @Test
+    void appliesDecompressedByteLimitAcrossAllDocxParts() throws Exception {
+        ReflectionTestUtils.setField(service, "maxDocxXmlBytes", 1024L);
+        val xml = document(String.format("<!--%s-->", "A".repeat(600)));
+        val file = streamingFile("parts.docx", zippedDocuments(Map.of(
+                "word/document.xml", xml, "word/header1.xml", xml)));
+
+        assertThatThrownBy(() -> service.extractText(file))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasRootCauseMessage("Limite XML DOCX decompresso superato");
     }
 
     @Test
@@ -182,11 +213,17 @@ class DocumentTextExtractorServiceTest {
     }
 
     private byte[] zippedDocument(String xml) throws Exception {
+        return zippedDocuments(Map.of("word/document.xml", xml));
+    }
+
+    private byte[] zippedDocuments(Map<String, String> documents) throws Exception {
         val output = new ByteArrayOutputStream();
         try (val zip = new ZipOutputStream(output)) {
-            zip.putNextEntry(new ZipEntry("word/document.xml"));
-            zip.write(xml.getBytes(StandardCharsets.UTF_8));
-            zip.closeEntry();
+            for (val entry : documents.entrySet()) {
+                zip.putNextEntry(new ZipEntry(entry.getKey()));
+                zip.write(entry.getValue().getBytes(StandardCharsets.UTF_8));
+                zip.closeEntry();
+            }
         }
         return output.toByteArray();
     }
