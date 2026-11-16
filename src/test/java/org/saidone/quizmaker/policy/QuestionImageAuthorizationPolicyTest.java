@@ -5,6 +5,8 @@ import lombok.val;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -91,11 +93,33 @@ class QuestionImageAuthorizationPolicyTest {
     }
 
     @Test
-    void ownerCanDeleteOwnImage() {
+    void ownerCanDeleteUnreferencedOwnUpload() {
         when(teacherPolicy.isTeacher(owner)).thenReturn(true);
         when(images.findById(imageId)).thenReturn(Optional.of(image));
-        when(quizzes.findAll()).thenReturn(List.of(quiz(owner, false)));
+        when(quizzes.findAll()).thenReturn(List.of());
         assertThat(policy.canDelete(imageId, owner)).isTrue();
+    }
+
+    @ParameterizedTest
+    @CsvSource({"false,false,false", "true,false,false", "false,true,false", "true,true,false", "false,false,true"})
+    void ownerCannotDeleteReferencedImage(boolean published, boolean urlOnly, boolean archived) {
+        when(teacherPolicy.isTeacher(owner)).thenReturn(true);
+        when(images.findById(imageId)).thenReturn(Optional.of(image));
+        val referencingQuiz = quiz(owner, urlOnly);
+        referencingQuiz.setPublished(published);
+        referencingQuiz.setArchived(archived);
+        when(quizzes.findAll()).thenReturn(List.of(referencingQuiz));
+
+        assertThat(policy.canDelete(imageId, owner)).isFalse();
+    }
+
+    @Test
+    void missingImageCannotBeDeleted() {
+        when(teacherPolicy.isTeacher(owner)).thenReturn(true);
+        when(images.findById(imageId)).thenReturn(Optional.empty());
+
+        assertThat(policy.canDelete(imageId, owner)).isFalse();
+        verifyNoInteractions(quizzes);
     }
 
     @Test
@@ -107,7 +131,7 @@ class QuestionImageAuthorizationPolicyTest {
     }
 
     @Test
-    void legacyImageCanBeReadAndDeletedThroughOwnQuizReference() {
+    void legacyImageCanBeReadButNotDeletedThroughOwnQuizReference() {
         image.setTeacherId(null);
         loginTeacher(owner);
         when(images.findById(imageId)).thenReturn(Optional.of(image));
@@ -115,7 +139,7 @@ class QuestionImageAuthorizationPolicyTest {
         when(teacherPolicy.isTeacher(owner)).thenReturn(true);
         when(quizzes.findAll()).thenReturn(List.of(quiz(owner, true)));
         assertThat(policy.canRead(imageId)).isTrue();
-        assertThat(policy.canDelete(imageId, owner)).isTrue();
+        assertThat(policy.canDelete(imageId, owner)).isFalse();
     }
 
     @Test

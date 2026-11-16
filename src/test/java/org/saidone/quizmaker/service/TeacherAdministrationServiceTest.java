@@ -130,6 +130,22 @@ class TeacherAdministrationServiceTest {
         }
     }
 
+    @Test
+    void passwordResetRollbackDoesNotExpireSessions() {
+        val target = Teacher.builder().id(UUID.randomUUID()).username("teacher").enabled(true).build();
+        when(teacherRepository.findById(target.getId())).thenReturn(Optional.of(target));
+        when(passwordEncoder.encode(org.mockito.ArgumentMatchers.anyString())).thenReturn("encoded-password");
+        TransactionSynchronizationManager.initSynchronization();
+        try {
+            teacherAdministrationService.resetTeacherPassword(target.getId(), actingAdmin);
+            TransactionSynchronizationManager.getSynchronizations().forEach(synchronization ->
+                    synchronization.afterCompletion(TransactionSynchronization.STATUS_ROLLED_BACK));
+            org.mockito.Mockito.verifyNoInteractions(sessionRegistry);
+        } finally {
+            TransactionSynchronizationManager.clearSynchronization();
+        }
+    }
+
     private void assertSessionsExpiredAfterCommit(boolean changeRole) {
         val target = Teacher.builder().id(UUID.randomUUID()).username("teacher").admin(true).enabled(true).build();
         val principal = User.withUsername("teacher")

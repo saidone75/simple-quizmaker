@@ -11,6 +11,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.jupiter.params.provider.EnumSource;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.saidone.quizmaker.dto.QuestionDto;
 import org.saidone.quizmaker.dto.QuizDto;
@@ -101,9 +102,11 @@ class StudentBadgeIntegrationTest {
         SecurityContextHolder.clearContext();
     }
 
+    private enum SessionRevocationAction { DISABLE, CHANGE_ADMIN_ROLE, RESET_PASSWORD }
+
     @ParameterizedTest
-    @ValueSource(booleans = {false, true})
-    void permissionChangesInvalidateEveryPreviouslyAuthenticatedTeacherSession(boolean changeAdminRole) throws Exception {
+    @EnumSource(SessionRevocationAction.class)
+    void accountChangesInvalidateEveryPreviouslyAuthenticatedTeacherSession(SessionRevocationAction action) throws Exception {
         val registry = context.getBean(SessionRegistry.class);
         teacher.setAdmin(true);
         teacher.setPassword(context.getBean(PasswordEncoder.class)
@@ -120,10 +123,19 @@ class StudentBadgeIntegrationTest {
             }
             val actingAdmin = teachers.saveAndFlush(Teacher.builder().username("session-admin")
                     .password("unused").admin(true).enabled(true).build());
-            mvc.perform(post("/teacher/system/teachers/{id}/{flag}", teacher.getId(), changeAdminRole ? "admin" : "enabled")
+            val flag = switch (action) {
+                case DISABLE -> "enabled";
+                case CHANGE_ADMIN_ROLE -> "admin";
+                case RESET_PASSWORD -> "reset-password";
+            };
+            mvc.perform(post("/teacher/system/teachers/{id}/{flag}", teacher.getId(), flag)
                             .with(user(actingAdmin.getUsername()).roles("TEACHER", "ADMIN")).with(csrf())
-                            .param(changeAdminRole ? "admin" : "enabled", "false"))
+                            .param(flag, "false"))
                     .andExpect(status().is3xxRedirection());
+            if (action == SessionRevocationAction.RESET_PASSWORD) {
+                assertThat(context.getBean(PasswordEncoder.class).matches("session-test-password",
+                        teachers.findById(teacher.getId()).orElseThrow().getPassword())).isFalse();
+            }
             // The test transaction rolls back; simulate only the post-commit session revocation.
             TransactionSynchronizationManager.getSynchronizations()
                     .forEach(TransactionSynchronization::afterCommit);
@@ -251,6 +263,112 @@ class StudentBadgeIntegrationTest {
         submissionService.submit(quizId, student, List.of(0));
         entityManager.flush();
         assertThat(submissions.findByStudentIdAndQuizId(student.getId(), quizId).orElseThrow().getVersion()).isEqualTo(3);
+    }
+
+    @Test
+    void unlockedRetryPersistsTheNewSubmissionDateAndKeepsItConsistentWithTheAttempt() {
+        val quizId = quiz.getId();
+        val studentId = student.getId();
+        val teacherId = teacher.getId();
+        submissionService.submit(quizId, student, List.of(0));
+        entityManager.flush();
+        val originalId = submissions.findByStudentIdAndQuizId(studentId, quizId).orElseThrow().getId();
+        val oldDate = LocalDateTime.of(2025, 1, 1, 12, 0);
+        // Simulate a previous day's persisted submission without sleeping or changing the clock.
+        entityManager.createNativeQuery("UPDATE quiz_submissions SET submitted_at = :oldDate WHERE id = :id")
+                .setParameter("oldDate", "2025-01-01 12:00:00")
+                .setParameter("id", originalId.toString()).executeUpdate();
+        entityManager.clear();
+
+        val activeTeacher = teachers.findById(teacherId).orElseThrow();
+        SecurityContextHolder.getContext().setAuthentication(teacherAuthentication());
+        submissionService.unlockQuizForStudent(studentId, quizId, activeTeacher);
+        entityManager.flush();
+        entityManager.clear();
+        assertThat(submissions.findByStudentIdAndQuizId(studentId, quizId).orElseThrow().getSubmittedAt())
+                .isEqualTo(oldDate);
+
+        val activeStudent = students.findById(studentId).orElseThrow();
+        SecurityContextHolder.getContext().setAuthentication(new StudentAuthenticationToken(activeStudent));
+        val beforeRetry = LocalDateTime.now(ZoneId.systemDefault()).minusSeconds(1);
+        submissionService.submit(quizId, activeStudent, List.of(1));
+        entityManager.flush();
+        entityManager.clear();
+
+        val saved = submissions.findByStudentIdAndQuizId(studentId, quizId).orElseThrow();
+        assertThat(saved.getId()).isEqualTo(originalId);
+        assertThat(saved.getAnswers()).containsExactly(1);
+        assertThat(saved.getScore()).isZero();
+        assertThat(saved.getSubmittedAt()).isAfter(beforeRetry);
+        val history = attempts.findByStudentIdOrderByCompletedAtAscIdAsc(studentId);
+        assertThat(history).hasSize(2);
+        assertThat(saved.getSubmittedAt()).isEqualTo(history.getLast().getCompletedAt());
+        assertThat(submissionService.review(quizId, activeStudent).submittedAt()).isEqualTo(saved.getSubmittedAt());
+        assertThat(submissionService.findAllResults(activeTeacher)).singleElement()
+                .satisfies(result -> assertThat(result.submittedAt()).isEqualTo(saved.getSubmittedAt()));
+    }
+
+    @Test
+    void directSubmissionInsertionStillInitializesItsDate() {
+        val saved = submissions.saveAndFlush(QuizSubmission.builder().student(student).quiz(quiz)
+                .answers(List.of(0)).score(1).totalQuestions(1).build());
+        val id = saved.getId();
+        entityManager.clear();
+
+        assertThat(submissions.findById(id).orElseThrow().getSubmittedAt()).isNotNull();
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void imageRemovalKeepsStoredQuizzesSafeUntilTheirLastReferenceIsSaved(boolean sharedWithAnotherQuiz) throws Exception {
+        val image = new UploadedImage();
+        val imageId = UUID.randomUUID();
+        image.setId(imageId);
+        image.setTeacherId(teacher.getId());
+        image.setCreatedAt(LocalDateTime.now(ZoneId.systemDefault()).minusDays(2));
+        image.setFilePath(String.format("target/removal-test-missing-%s.png", imageId));
+        uploadedImages.saveAndFlush(image);
+        quiz.getQuestions().getFirst().setImageId(imageId.toString());
+        quiz.getQuestions().getFirst().setImageUrl(String.format("/api/quizzes/images/%s", imageId));
+        quiz.setPublished(false);
+        quizzes.saveAndFlush(quiz);
+        if (sharedWithAnotherQuiz) {
+            val otherQuestion = new Question();
+            otherQuestion.setImageUrl(String.format("/api/quizzes/images/%s", imageId));
+            quizzes.saveAndFlush(Quiz.builder().title("Another quiz using the image").emoji("🖼️")
+                    .teacher(teacher).createdByUsername(teacher.getUsername())
+                    .questions(List.of(otherQuestion)).published(true).build());
+        }
+
+        mvc.perform(delete("/api/quizzes/images/{id}", imageId)
+                        .with(user(teacher.getUsername()).roles("TEACHER")).with(csrf()))
+                .andExpect(status().isForbidden());
+        val scheduler = new OrphanQuestionImageCleanupScheduler(quizzes, uploadedImages, imageStorageService);
+        scheduler.cleanupOrphanImages();
+        assertThat(uploadedImages.findById(imageId)).isPresent();
+        assertThat(quizzes.findById(quiz.getId()).orElseThrow().getQuestions().getFirst().getImageId())
+                .isEqualTo(imageId.toString());
+
+        val question = objectMapper.convertValue(quiz.getQuestions().getFirst(), QuestionDto.class);
+        question.setImageId(null);
+        question.setImageUrl(null);
+        val edit = QuizDto.Request.builder().title(quiz.getTitle()).emoji(quiz.getEmoji())
+                .questions(List.of(question)).build();
+        val json = objectMapper.writeValueAsString(edit);
+        mvc.perform(put("/api/quizzes/{id}", quiz.getId())
+                        .with(user(teacher.getUsername()).roles("TEACHER")).with(csrf())
+                        .contentType("application/json").content(json))
+                .andExpect(status().isOk());
+        entityManager.flush();
+        entityManager.clear();
+        val savedQuestion = quizzes.findById(quiz.getId()).orElseThrow().getQuestions().getFirst();
+        assertThat(savedQuestion.getImageId()).isNull();
+        assertThat(savedQuestion.getImageUrl()).isNull();
+        assertThat(uploadedImages.findById(imageId)).isPresent();
+
+        scheduler.cleanupOrphanImages();
+
+        assertThat(uploadedImages.existsById(imageId)).isEqualTo(sharedWithAnotherQuiz);
     }
 
     @Test

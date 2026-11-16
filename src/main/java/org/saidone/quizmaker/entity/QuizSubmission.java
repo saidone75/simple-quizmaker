@@ -23,11 +23,11 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.UUID;
 
@@ -72,13 +72,15 @@ public class QuizSubmission {
     @Column(name = "unlocked", nullable = false)
     private Boolean unlocked = false;
 
-    @CreationTimestamp
     @Convert(converter = LocalDateTimeColumnConverter.class)
     @Column(name = "submitted_at", nullable = false)
     private LocalDateTime submittedAt;
 
     @PrePersist
     public void prePersist() {
+        if (submittedAt == null) {
+            submittedAt = LocalDateTime.now(ZoneId.systemDefault());
+        }
         if (id == null) {
             id = UUID.randomUUID();
         }
