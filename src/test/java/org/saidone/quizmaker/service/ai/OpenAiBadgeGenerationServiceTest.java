@@ -80,8 +80,10 @@ class OpenAiBadgeGenerationServiceTest {
     @Test
     void missingApiKeyFailsBeforeMakingAnHttpRequest() {
         val service = new OpenAiBadgeGenerationService(mapper, null);
-        assertThatThrownBy(() -> service.generate(new QuizBadgeGenerationRequest("Geografia", List.of()),
-                Teacher.builder().build())).isInstanceOf(IllegalStateException.class).hasMessageContaining("Chiave API");
+        val request = new QuizBadgeGenerationRequest("Geografia", List.of());
+        val teacher = Teacher.builder().build();
+        assertThatThrownBy(() -> service.generate(request, teacher))
+                .isInstanceOf(IllegalStateException.class).hasMessageContaining("Chiave API");
     }
 
     private String response(String content) throws Exception {
