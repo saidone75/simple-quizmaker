@@ -101,7 +101,7 @@ public class OrphanQuestionImageCleanupScheduler {
             if (path != null && path.startsWith(prefix)) {
                 return parseUuid(path.substring(prefix.length()));
             }
-        } catch (IllegalArgumentException ex) {
+        } catch (IllegalArgumentException _) {
             log.debug("URL immagine non valido ignorato durante la pulizia immagini orfane");
         }
         return Optional.empty();
@@ -134,7 +134,7 @@ public class OrphanQuestionImageCleanupScheduler {
     private Optional<UUID> parseUuid(String value) {
         try {
             return Optional.of(UUID.fromString(value.trim()));
-        } catch (IllegalArgumentException ex) {
+        } catch (IllegalArgumentException _) {
             log.debug("Image ID non valido ignorato durante la pulizia immagini orfane: {}", value);
             return Optional.empty();
         }

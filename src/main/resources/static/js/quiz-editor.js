@@ -498,12 +498,13 @@ async function generateQuizWithAi() {
     const msgEl = document.getElementById('ai-generation-msg');
     const topic = document.getElementById('ai-topic-input').value.trim();
     const fileInput = document.getElementById('ai-file-input');
+    const file = fileInput.files?.[0];
     const numberOfQuestions = document.getElementById('ai-number-input').value;
     const difficulty = document.getElementById('ai-difficulty-input').value;
     const tone = document.getElementById('ai-tone-input').value;
     const includeAiImages = document.getElementById('ai-include-images-input')?.checked === true;
 
-    if (!topic && (!fileInput.files || fileInput.files.length === 0)) {
+    if (!topic && !file) {
         msgEl.textContent = 'Inserisci un argomento o carica un file.';
         msgEl.style.display = 'block';
         return;
@@ -517,8 +518,8 @@ async function generateQuizWithAi() {
     formData.append('questionType', quizFormat === 'true-false' ? 'TRUE_FALSE' : 'MULTIPLE_CHOICE');
     formData.append('numberOfOptions', quizFormat === 'true-false' ? '2' : quizFormat);
     formData.append('includeAiImages', includeAiImages ? 'true' : 'false');
-    if (fileInput.files && fileInput.files.length > 0) {
-        formData.append('file', fileInput.files[0]);
+    if (file) {
+        formData.append('file', file);
     }
 
     msgEl.style.display = 'none';

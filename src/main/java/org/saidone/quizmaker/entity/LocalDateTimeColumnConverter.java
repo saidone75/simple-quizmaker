@@ -66,7 +66,7 @@ public class LocalDateTimeColumnConverter implements AttributeConverter<LocalDat
 
         try {
             return LocalDateTime.parse(rawValue, SQLITE_TIMESTAMP_FORMATTER);
-        } catch (DateTimeParseException ignored) {
+        } catch (DateTimeParseException _) {
             return LocalDateTime.parse(rawValue, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
         }
     }

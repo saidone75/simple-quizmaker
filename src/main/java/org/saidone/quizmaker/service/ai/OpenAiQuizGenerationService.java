@@ -170,7 +170,7 @@ public class OpenAiQuizGenerationService implements QuizGenerationService {
                         () -> wikimediaImageSearchService.searchImage(keywords, imageSearchMode));
                 tasks.add(new PendingImage(question, task));
             }
-        } catch (RejectedExecutionException e) {
+        } catch (RejectedExecutionException _) {
             // Keep accepted work; remaining questions simply have no image.
             log.warn("Coda ricerche Wikimedia satura: alcune immagini saranno omesse.");
         }
@@ -185,7 +185,7 @@ public class OpenAiQuizGenerationService implements QuizGenerationService {
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             log.warn("Risoluzione immagini Wikimedia interrotta: {}", e.getMessage());
-        } catch (TimeoutException e) {
+        } catch (TimeoutException _) {
             log.warn("Tempo massimo per la risoluzione immagini Wikimedia superato.");
         } catch (ExecutionException | CancellationException e) {
             log.warn("Errore durante la risoluzione immagini Wikimedia: {}", e.getMessage());

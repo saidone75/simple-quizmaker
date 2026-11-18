@@ -62,7 +62,7 @@ public class QuestionImageAuthorizationPolicy {
         UUID imageId;
         try {
             imageId = UUID.fromString(value.trim());
-        } catch (IllegalArgumentException ex) {
+        } catch (IllegalArgumentException _) {
             throw new AccessDeniedException("Riferimento immagine non valido");
         }
         if (!canUse(imageId, teacher)) throw new AccessDeniedException("Accesso immagine non consentito");
@@ -90,7 +90,7 @@ public class QuestionImageAuthorizationPolicy {
         if (value == null) return false;
         try {
             return imageId.equals(UUID.fromString(value.trim()));
-        } catch (IllegalArgumentException ex) {
+        } catch (IllegalArgumentException _) {
             return false;
         }
     }
@@ -100,7 +100,7 @@ public class QuestionImageAuthorizationPolicy {
         try {
             val path = URI.create(url.trim()).getPath();
             return path != null && path.startsWith(IMAGE_PATH) ? path.substring(IMAGE_PATH.length()) : null;
-        } catch (IllegalArgumentException ex) {
+        } catch (IllegalArgumentException _) {
             return null;
         }
     }

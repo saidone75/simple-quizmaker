@@ -71,7 +71,7 @@ public class StudentAuthenticationService {
         try {
             val studentId = UUID.fromString(String.valueOf(studentIdRaw));
             return studentRepository.findById(studentId);
-        } catch (IllegalArgumentException exception) {
+        } catch (IllegalArgumentException _) {
             session.removeAttribute(StudentSessionService.STUDENT_ID_SESSION_KEY);
             return Optional.empty();
         }

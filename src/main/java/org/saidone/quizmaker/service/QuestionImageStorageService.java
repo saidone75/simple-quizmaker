@@ -150,7 +150,7 @@ public class QuestionImageStorageService {
                 return MediaType.APPLICATION_OCTET_STREAM;
             }
             return MediaType.parseMediaType(contentType);
-        } catch (IOException exception) {
+        } catch (IOException _) {
             return MediaType.APPLICATION_OCTET_STREAM;
         }
     }
@@ -259,7 +259,7 @@ public class QuestionImageStorageService {
                 case "image/bmp", "image/x-ms-bmp" -> ".bmp";
                 default -> null;
             };
-        } catch (IOException ignored) {
+        } catch (IOException _) {
             return null;
         }
     }

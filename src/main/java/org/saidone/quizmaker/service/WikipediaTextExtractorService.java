@@ -54,7 +54,7 @@ public class WikipediaTextExtractorService {
         URI uri;
         try {
             uri = URI.create(trimmedInput);
-        } catch (IllegalArgumentException ex) {
+        } catch (IllegalArgumentException _) {
             return WikipediaExtractionResult.none();
         }
 

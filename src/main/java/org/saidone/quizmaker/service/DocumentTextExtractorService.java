@@ -118,7 +118,7 @@ public class DocumentTextExtractorService {
             stripper.setEndPage(Math.max(1, maxPdfPages));
             try {
                 stripper.writeText(document, output);
-            } catch (TextLimitReachedException e) {
+            } catch (TextLimitReachedException _) {
                 // The prefix is all that the generation request will use.
             }
             return output.toString();
@@ -189,6 +189,11 @@ public class DocumentTextExtractorService {
             }
         }
 
+        private static boolean isWordNamespace(String uri) {
+            return "http://schemas.openxmlformats.org/wordprocessingml/2006/main".equals(uri)
+                    || "http://purl.oclc.org/ooxml/wordprocessingml/main".equals(uri);
+        }
+
         private void append(char[] chars, int start, int length) throws SAXException {
             try {
                 output.write(chars, start, length);
@@ -223,11 +228,6 @@ public class DocumentTextExtractorService {
             if (value >= 0 && --remainingBytes[0] < 0) throw new IOException("Limite XML DOCX decompresso superato");
             return value;
         }
-    }
-
-    private static boolean isWordNamespace(String uri) {
-        return "http://schemas.openxmlformats.org/wordprocessingml/2006/main".equals(uri)
-                || "http://purl.oclc.org/ooxml/wordprocessingml/main".equals(uri);
     }
 
     private static class TextLimitReachedException extends IOException { }
