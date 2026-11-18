@@ -103,7 +103,7 @@ public class StudentService {
             try {
                 val saved = studentRepository.saveAndFlush(student);
                 return new StudentDto.Response(saved.getId(), saved.getFullName(), saved.getLoginKeyword());
-            } catch (DataIntegrityViolationException ex) {
+            } catch (DataIntegrityViolationException _) {
                 // collisione concorrente su vincolo unique a livello DB: riprova con una nuova keyword
             }
         }
