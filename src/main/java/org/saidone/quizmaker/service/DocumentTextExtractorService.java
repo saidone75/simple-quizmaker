@@ -118,7 +118,7 @@ public class DocumentTextExtractorService {
             stripper.setEndPage(Math.max(1, maxPdfPages));
             try {
                 stripper.writeText(document, output);
-            } catch (TextLimitReachedException e) {
+            } catch (TextLimitReachedException _) {
                 // The prefix is all that the generation request will use.
             }
             return output.toString();
