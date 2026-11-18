@@ -500,7 +500,7 @@ public class TeacherDashboardWebController {
     private String serializeQuestions(Object questions) {
         try {
             return objectMapper.writeValueAsString(questions);
-        } catch (JsonProcessingException e) {
+        } catch (JsonProcessingException _) {
             return "[]";
         }
     }
