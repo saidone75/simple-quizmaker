@@ -67,7 +67,7 @@ public class StudentWebController {
         try {
             model.addAttribute("quizzesJson", objectMapper.writeValueAsString(quizzes));
             model.addAttribute("lockedQuizIdsJson", objectMapper.writeValueAsString(lockedQuizIds));
-        } catch (JsonProcessingException e) {
+        } catch (JsonProcessingException _) {
             model.addAttribute("quizzesJson", "[]");
             model.addAttribute("lockedQuizIdsJson", "[]");
         }
