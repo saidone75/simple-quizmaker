@@ -11,6 +11,8 @@ in **Non rilasciato**.
 
 ## [Non rilasciato]
 
+## [1.4.0] - 2026-11-19
+
 ### Aggiunto
 
 - Musica di completamento e coriandoli alla consegna del quiz.
@@ -25,6 +27,7 @@ in **Non rilasciato**.
 
 ### Corretto
 
+- Corretti i cicli di reindirizzamento dopo il login degli studenti.
 - Conservate le risposte quando la consegna fallisce, con pulsante per ritentare, recupero dopo la riapertura della pagina e messaggi comprensibili per rete, timeout, sessioni scadute e risposte HTML. Una consegna già salvata viene riconosciuta senza duplicare i tentativi.
 - Revocate tutte le sessioni aperte dell’insegnante dopo il commit del reset amministrativo della password.
 - La rimozione di un’immagine nell’editor modifica solo la bozza fino al salvataggio del quiz. Le API impediscono di eliminare immagini ancora usate da quiz salvati; la pulizia automatica rimuove quelle non più referenziate.
@@ -38,6 +41,7 @@ in **Non rilasciato**.
 
 ### Aggiornamento
 
+- In produzione avviare con `--spring.liquibase.enabled=true` per applicare le migrazioni dello schema.
 - Applicare la migrazione Liquibase `011-quiz-versions`. I quiz e le consegne esistenti partono dalla versione 1: eventuali modifiche precedenti alla migrazione non sono ricostruibili.
 - Applicare anche la migrazione Liquibase `012-question-image-created-at`, che registra la data degli upload e assegna alle immagini esistenti la data della migrazione.
 
@@ -188,7 +192,8 @@ in **Non rilasciato**.
 - Database H2 per `dev`/`docker`, SQLite per `prod`.
 - Runtime embedded Jetty.
 
-[Non rilasciato]: https://github.com/saidone75/simple-quizmaker/compare/v1.3.0...HEAD
+[Non rilasciato]: https://github.com/saidone75/simple-quizmaker/compare/v1.4.0...HEAD
+[1.4.0]: https://github.com/saidone75/simple-quizmaker/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/saidone75/simple-quizmaker/compare/v1.2.1...v1.3.0
 [1.2.1]: https://github.com/saidone75/simple-quizmaker/compare/v1.2.0...v1.2.1
 [1.2.0]: https://github.com/saidone75/simple-quizmaker/compare/v1.1.0...v1.2.0
