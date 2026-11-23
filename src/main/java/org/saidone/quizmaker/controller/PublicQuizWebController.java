@@ -54,7 +54,7 @@ public class PublicQuizWebController {
     @GetMapping("/play/quizzes/{quizId}/images/{imageId}")
     public ResponseEntity<Resource> image(@PathVariable UUID quizId, @PathVariable UUID imageId) {
         if (!publicQuizService.canReadImage(quizId, imageId)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Immagine pubblica non disponibile");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Immagine del quiz anonimo non disponibile");
         }
         val type = imageStorage.resolvePublicMediaType(quizId, imageId);
         val resource = imageStorage.loadForPublicQuiz(quizId, imageId);

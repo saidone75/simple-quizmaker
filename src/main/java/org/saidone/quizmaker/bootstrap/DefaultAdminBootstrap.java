@@ -64,6 +64,7 @@ public class DefaultAdminBootstrap implements InitializingBean {
                     .aiEnabled(true)
                     .imageUploadEnabled(true)
                     .imageSearchMode(TeacherAuthenticationService.IMAGE_SEARCH_MODE_ADVANCED)
+                    .publicQuizzesEnabled(true)
                     .enabled(true)
                     .build());
             log.info("Creato amministratore predefinito '{}' con password '{}'", adminUsername, adminPassword);

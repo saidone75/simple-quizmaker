@@ -20,13 +20,11 @@ package org.saidone.quizmaker.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.val;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.web.client.RestClient;
-import org.springframework.web.client.RestTemplate;
 
 import java.time.Duration;
 
@@ -40,32 +38,24 @@ public class ApplicationConfig {
         return new ObjectMapper();
     }
 
-    @Bean(name = "openAiRestTemplate")
-    public RestTemplate openAiRestTemplate() {
+    @Bean(name = "openAiRestClient")
+    public RestClient openAiRestClient() {
         val requestFactory = new SimpleClientHttpRequestFactory();
         requestFactory.setConnectTimeout((int) Duration.ofSeconds(30).toMillis());
         requestFactory.setReadTimeout((int) Duration.ofSeconds(180).toMillis());
-        return new RestTemplate(requestFactory);
-    }
-
-    @Bean(name = "openAiRestClient")
-    public RestClient openAiRestClient(@Qualifier("openAiRestTemplate") RestTemplate openAiRestTemplate) {
-        return RestClient.builder(openAiRestTemplate)
+        return RestClient.builder()
+                .requestFactory(requestFactory)
                 .baseUrl("https://api.openai.com/v1")
                 .build();
     }
 
-    @Bean(name = "wikimediaRestTemplate")
-    public RestTemplate wikimediaRestTemplate() {
+    @Bean(name = "wikimediaRestClient")
+    public RestClient wikimediaRestClient() {
         val requestFactory = new SimpleClientHttpRequestFactory();
         requestFactory.setConnectTimeout((int) Duration.ofSeconds(15).toMillis());
         requestFactory.setReadTimeout((int) Duration.ofSeconds(30).toMillis());
-        return new RestTemplate(requestFactory);
-    }
-
-    @Bean(name = "wikimediaRestClient")
-    public RestClient wikimediaRestClient(@Qualifier("wikimediaRestTemplate") RestTemplate wikimediaRestTemplate) {
-        return RestClient.builder(wikimediaRestTemplate)
+        return RestClient.builder()
+                .requestFactory(requestFactory)
                 .baseUrl("https://commons.wikimedia.org/w/api.php")
                 .defaultHeader("User-Agent", wikimediaUserAgent)
                 .defaultHeader("Accept", "application/json")

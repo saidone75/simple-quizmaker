@@ -115,9 +115,6 @@ public class QuizService {
         if (Boolean.TRUE.equals(quiz.getPublished())) {
             throw new IllegalStateException("Spubblica il quiz dalla dashboard prima di modificarlo.");
         }
-        if (Boolean.TRUE.equals(quiz.getPublicAccess())) {
-            throw new IllegalStateException("Disattiva l’accesso pubblico prima di modificare il quiz.");
-        }
         quiz.setTitle(request.getTitle());
         quiz.setEmoji(request.getEmoji());
         if (request.getBadges() != null) {
@@ -182,10 +179,10 @@ public class QuizService {
         val quiz = quizRepository.findByIdAndTeacher(id, teacher)
                 .orElseThrow(() -> new EntityNotFoundException(String.format(QUIZ_NOT_FOUND_MESSAGE, id)));
         if (enabled && !teacher.isPublicQuizzesEnabled()) {
-            throw new AccessDeniedException("Abilita la creazione di quiz pubblici dal profilo insegnante.");
+            throw new AccessDeniedException("Abilita la creazione di quiz anonimi dal profilo insegnante.");
         }
         if (enabled && Boolean.TRUE.equals(quiz.getArchived())) {
-            throw new IllegalArgumentException("Riattiva il quiz prima di abilitare l’accesso pubblico.");
+            throw new IllegalArgumentException("Riattiva il quiz prima di abilitare l’accesso anonimo.");
         }
         quiz.setPublicAccess(enabled);
         quiz.setModifiedByUsername(teacher.getUsername());
