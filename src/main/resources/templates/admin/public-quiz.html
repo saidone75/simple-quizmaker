@@ -22,14 +22,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="quizmaker-theme-preference" th:content="${teacherThemePreference}">
-    <title>Accesso pubblico — Alice’s Simple Quiz Maker</title>
+    <title>Accesso anonimo — Alice’s Simple Quiz Maker</title>
     <script th:src="@{/js/theme-init.js}"></script>
     <link rel="stylesheet" th:href="@{/css/main.css}">
 </head>
 <body>
 <div class="screen active screen-admin">
     <div class="topbar">
-        <span class="topbar-title">🌐 Accesso pubblico</span>
+        <span class="topbar-title">🥷 Accesso anonimo</span>
         <a th:href="@{/teacher}" class="topbar-back">← Dashboard</a>
     </div>
     <div class="teacher-body">
@@ -39,16 +39,16 @@
             <output th:if="${publicAccessSuccess}" th:text="${publicAccessSuccess}" class="alert alert-success badge-editor-note" aria-live="polite"></output>
             <output th:if="${publicAccessError}" th:text="${publicAccessError}" class="alert alert-error badge-editor-note" aria-live="polite"></output>
             <p class="profile-subtitle" th:unless="${teacherPublicQuizzesEnabled}">
-                Per pubblicare un quiz, abilita la creazione di quiz pubblici nel <a class="public-link" th:href="@{/teacher/profile}">profilo insegnante</a>.
+                Per pubblicare un quiz, abilita la creazione di quiz anonimi nel <a class="public-link" th:href="@{/teacher/profile}">profilo insegnante</a>.
             </p>
             <form th:action="@{/teacher/quiz/{id}/public(id=${quiz.id})}" method="post">
                 <div class="form-group">
                     <label class="teacher-ai-toggle-label" for="public-access-enabled">
                         <input id="public-access-enabled" type="checkbox" name="enabled" value="true" th:checked="${quiz.publicAccess}" th:disabled="${!teacherPublicQuizzesEnabled}">
-                        Abilita accesso pubblico
+                        Abilita accesso anonimo
                     </label>
                 </div>
-                <p class="editor-mode-subtitle">Questa impostazione è separata dalla pubblicazione per la classe e consente di modificare il quiz anche con accesso pubblico attivo.</p>
+                <p class="editor-mode-subtitle">Questa impostazione è separata dalla pubblicazione per la classe e consente di modificare il quiz anche con accesso anonimo attivo.</p>
                 <button type="submit" class="btn-start-quiz" th:disabled="${!teacherPublicQuizzesEnabled}">Salva</button>
             </form>
         </div>
@@ -60,7 +60,7 @@
                 <a class="topbar-back" th:href="${publicQuizUrl}" target="_blank" rel="noopener">▶️ Apri il quiz</a>
             </div>
             <div class="quiz-media-box badge-editor-note">
-                <img class="quiz-media-img" th:src="@{/teacher/quiz/{id}/public-qr(id=${quiz.id})}" alt="QR code per aprire il quiz pubblico" width="256" height="256">
+                <img class="quiz-media-img" th:src="@{/teacher/quiz/{id}/public-qr(id=${quiz.id})}" alt="QR code per aprire il quiz anonimo" width="256" height="256">
             </div>
         </div>
     </div>

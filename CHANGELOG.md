@@ -13,21 +13,21 @@ in **Non rilasciato**.
 
 ### Aggiunto
 
-- Quiz pubblici aperti tramite link e QR code, attivabili separatamente dalla pubblicazione per la classe. Player senza login, punteggio calcolato solo nel browser e ripetizioni libere, senza salvataggio di risposte, risultati, badge o statistiche.
+- Quiz anonimi aperti tramite link e QR code, attivabili separatamente dalla pubblicazione per la classe. Player senza login, punteggio calcolato solo nel browser e ripetizioni libere, senza salvataggio di risposte, risultati, badge o statistiche.
 
 ### Corretto
 
-- Allineata la larghezza delle card dei quiz ai pulsanti della dashboard anche con accesso pubblico abilitato; i comandi vanno a capo sugli schermi stretti.
+- Allineata la larghezza delle card dei quiz ai pulsanti della dashboard anche con accesso anonimo abilitato; i comandi vanno a capo sugli schermi stretti.
 
-- Resa esplicita la modalità pubblica nel player e aggiornati gli URL degli script per evitare versioni in cache: completamento locale con musica e coriandoli, senza consegna al server.
+- Resa esplicita la modalità anonima nel player e aggiornati gli URL degli script per evitare versioni in cache: completamento locale con musica e coriandoli, senza consegna al server.
 
-- Ripristinato il login degli insegnanti preesistenti su SQLite: la migrazione `015-public-preferences-backfill` inizializza a falso le preferenze pubbliche rimaste nulle, preservando quelle già impostate.
+- Ripristinato il login degli insegnanti preesistenti su SQLite: la migrazione `015-public-preferences-backfill` inizializza a falso le preferenze di accesso anonimo rimaste nulle, preservando quelle già impostate.
 
 ### Aggiornamento
 
-- Applicare la migrazione Liquibase `015-public-preferences-backfill`: corregge i valori nulli delle preferenze pubbliche.
-- Applicare la migrazione Liquibase `014-teacher-public-quizzes-preference`: aggiunge la preferenza insegnante per i quiz pubblici.
-- Applicare la migrazione Liquibase `013-public-quizzes`: aggiunge l’accesso pubblico ai quiz.
+- Applicare la migrazione Liquibase `015-public-preferences-backfill`: corregge i valori nulli delle preferenze di accesso anonimo.
+- Applicare la migrazione Liquibase `014-teacher-public-quizzes-preference`: aggiunge la preferenza insegnante per i quiz anonimi.
+- Applicare la migrazione Liquibase `013-public-quizzes`: aggiunge l’accesso anonimo ai quiz.
 
 ## [1.4.0] - 2026-11-19
 

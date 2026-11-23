@@ -47,7 +47,7 @@ public class PublicQuizService {
 
     public QuizDto.PublicQuiz findPublicQuiz(UUID id) {
         val quiz = quizRepository.findByIdAndPublicAccessTrueAndArchivedFalseAndTeacherEnabledTrue(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Quiz pubblico non disponibile"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Quiz anonimo non disponibile"));
         return new QuizDto.PublicQuiz(quiz.getId(), quiz.getTitle(), quiz.getEmoji(),
                 quiz.getQuestions().stream().map(question -> publicQuestion(quiz, question)).toList());
     }
@@ -80,7 +80,7 @@ public class PublicQuizService {
             if (path == null || !path.startsWith(prefix)) return null;
             return UUID.fromString(path.substring(prefix.length()));
         } catch (IllegalArgumentException exception) {
-            log.warn("Riferimento immagine non valido in un quiz pubblico", exception);
+            log.warn("Riferimento immagine non valido in un quiz anonimo", exception);
             return null;
         }
     }

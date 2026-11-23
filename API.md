@@ -9,7 +9,7 @@ Documentazione delle API di Alice's Simple Quiz Maker. Torna al [README](README.
 - `GET /api/quizzes/{id}/review` riepilogo della propria consegna: punteggio, data, `version`, `currentVersion` e `obsolete`. Per una consegna obsoleta, `answers` è vuoto e la revisione delle risposte non è disponibile.
 - `POST /api/quizzes/{id}/submit` invio risposte studente.
 - `POST /api/quizzes` creazione quiz (insegnante).
-- `PUT /api/quizzes/{id}` modifica quiz non pubblicato (insegnante). Se il quiz è pubblicato per la classe, restituisce HTTP 400: spubblicarlo prima della modifica. L’accesso pubblico non impedisce le modifiche.
+- `PUT /api/quizzes/{id}` modifica quiz non pubblicato (insegnante). Se il quiz è pubblicato per la classe, restituisce HTTP 400: spubblicarlo prima della modifica. L’accesso anonimo non impedisce le modifiche.
 - `DELETE /api/quizzes/{id}` eliminazione quiz (insegnante).
 - `PUT /api/quizzes/{id}/public-access` attiva/disattiva il link pubblico (l’attivazione richiede la preferenza `publicQuizzesEnabled` nel profilo) con body `{"enabled": true|false}` (solo proprietario).
 - `PUT /api/quizzes/{id}/publication` pubblicazione/depubblicazione.
@@ -52,14 +52,14 @@ condivise non vengono modificate retroattivamente.
 
 - `GET /api/teacher/logs/tail?lines=200` ultime righe log applicazione (max 1000, solo amministratore).
 
-**Quiz pubblici**
+**Quiz anonimi**
 
 - `GET /play/quizzes/{id}` player anonimo per un quiz con `publicAccess=true`, non archiviato e appartenente a un insegnante abilitato; altrimenti HTTP 404.
-- `GET /play/quizzes/{quizId}/images/{imageId}` immagine locale solo se referenziata da quel quiz pubblico; altrimenti HTTP 404.
+- `GET /play/quizzes/{quizId}/images/{imageId}` immagine locale solo se referenziata da quel quiz anonimo; altrimenti HTTP 404.
 - `GET /teacher/quiz/{id}/public` configurazione del link (proprietario).
 - `POST /teacher/quiz/{id}/public` salva l’impostazione `enabled` tramite form con CSRF.
 - `GET /teacher/quiz/{id}/public-qr` QR code PNG del link attivo (proprietario), generato localmente.
 
-Il player pubblico non usa l’endpoint `/submit`: calcola il punteggio nel browser e non crea partecipazioni, consegne, tentativi o badge. Il DTO pubblico contiene soltanto ID, titolo, emoji e domande, senza dati dell’insegnante. L’archiviazione revoca l’accesso pubblico; la riattivazione non lo ripristina automaticamente.
+Il player anonimo non usa l’endpoint `/submit`: calcola il punteggio nel browser e non crea partecipazioni, consegne, tentativi o badge. Il DTO anonimo contiene soltanto ID, titolo, emoji e domande, senza dati dell’insegnante. L’archiviazione revoca l’accesso anonimo; la riattivazione non lo ripristina automaticamente.
 
-- `POST /teacher/profile/public-quizzes` aggiorna la preferenza personale `publicQuizzesEnabled` tramite form con CSRF; il pulsante Accesso pubblico è visibile solo se la preferenza è attiva. I link già pubblicati non vengono modificati.
+- `POST /teacher/profile/public-quizzes` aggiorna la preferenza personale `publicQuizzesEnabled` tramite form con CSRF; il pulsante Accesso anonimo è visibile solo se la preferenza è attiva. I link già pubblicati non vengono modificati.

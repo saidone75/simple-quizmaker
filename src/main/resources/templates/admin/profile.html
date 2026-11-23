@@ -90,13 +90,13 @@
 
         <div class="editor-mode-card editor-mode-card-spaced">
             <div class="section-label">Condivisione</div>
-            <h2 class="profile-heading">Quiz pubblici</h2>
-            <p class="profile-subtitle">Mostra il pulsante Accesso pubblico nella dashboard per condividere i quiz tramite link e QR code.</p>
+            <h2 class="profile-heading">Quiz anonimi</h2>
+            <p class="profile-subtitle">Mostra il pulsante Accesso anonimo nella dashboard per condividere i quiz tramite link e QR code.</p>
             <form th:action="@{/teacher/profile/public-quizzes}" method="post" id="publicQuizzesPreferenceForm">
                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                 <label class="teacher-ai-toggle-label" for="publicQuizzesEnabled">
                     <input type="checkbox" id="publicQuizzesEnabled" name="publicQuizzesEnabled" th:checked="${teacherPublicQuizzesEnabled}">
-                    Abilita la creazione di quiz pubblici
+                    Abilita la creazione di quiz anonimi
                 </label>
             </form>
         </div>

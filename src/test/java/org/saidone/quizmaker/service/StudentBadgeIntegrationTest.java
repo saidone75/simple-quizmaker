@@ -165,9 +165,9 @@ class StudentBadgeIntegrationTest {
         assertThat(teachers.findById(teacher.getId()).orElseThrow().isPublicQuizzesEnabled()).isFalse();
         val profile = mvc.perform(get("/teacher/profile").with(user(teacher.getUsername()).roles("TEACHER")))
                 .andExpect(status().isOk()).andExpect(model().attribute("teacherPublicQuizzesEnabled", false))
-                .andExpect(content().string(containsString("Abilita la creazione di quiz pubblici"))).andReturn();
+                .andExpect(content().string(containsString("Abilita la creazione di quiz anonimi"))).andReturn();
         val html = profile.getResponse().getContentAsString();
-        assertThat(html.indexOf("Quiz pubblici")).isBetween(html.indexOf("Editor dei quiz"), html.indexOf("Sicurezza account"));
+        assertThat(html.indexOf("Quiz anonimi")).isBetween(html.indexOf("Editor dei quiz"), html.indexOf("Sicurezza account"));
         mvc.perform(get("/teacher").with(user(teacher.getUsername()).roles("TEACHER")))
                 .andExpect(status().isOk()).andExpect(content().string(not(containsString(settingsUrl))));
         mvc.perform(put("/api/quizzes/{id}/public-access", id).with(user(teacher.getUsername()).roles("TEACHER"))
@@ -232,7 +232,7 @@ class StudentBadgeIntegrationTest {
                 .andExpect(status().isOk()).andExpect(content().string(containsString("public-quiz-link")));
         mvc.perform(get("/teacher").with(user(teacher.getUsername()).roles("TEACHER")))
                 .andExpect(status().isOk()).andExpect(content().string(containsString("btn-icon-action btn-retry-home")))
-                .andExpect(content().string(not(containsString("🌐 Accesso pubblico attivo"))));
+                .andExpect(content().string(not(containsString("🥷 Accesso anonimo attivo"))));
         assertThat(students.count()).isEqualTo(studentCount);
         assertThat(submissions.count()).isEqualTo(submissionCount);
         assertThat(attempts.count()).isEqualTo(attemptCount);

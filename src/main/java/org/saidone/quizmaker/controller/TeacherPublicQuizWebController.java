@@ -62,7 +62,7 @@ public class TeacherPublicQuizWebController {
                          RedirectAttributes attributes) {
         try {
             quizService.updatePublicAccess(id, enabled, teacherAuthenticationService.getCurrentTeacher());
-            attributes.addFlashAttribute("publicAccessSuccess", enabled ? "Accesso pubblico attivato." : "Accesso pubblico disattivato.");
+            attributes.addFlashAttribute("publicAccessSuccess", enabled ? "Accesso anonimo attivato." : "Accesso anonimo disattivato.");
         } catch (IllegalArgumentException exception) {
             attributes.addFlashAttribute("publicAccessError", exception.getMessage());
         }
@@ -73,7 +73,7 @@ public class TeacherPublicQuizWebController {
     public ResponseEntity<byte[]> qr(@PathVariable UUID id) throws IOException {
         val quiz = findOwnedQuiz(id, teacherAuthenticationService.getCurrentTeacher());
         if (!Boolean.TRUE.equals(quiz.getPublicAccess()) || Boolean.TRUE.equals(quiz.getArchived())) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Accesso pubblico non attivo");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Accesso anonimo non attivo");
         }
         return ResponseEntity.ok().cacheControl(CacheControl.noStore()).contentType(MediaType.IMAGE_PNG)
                 .body(qrCodeService.png(publicUrl(id)));

@@ -100,8 +100,8 @@
                 <div class="manage-card-actions">
                     <a th:if="${teacherPublicQuizzesEnabled}" class="btn-icon-action btn-retry-home"
                        th:href="@{/teacher/quiz/{id}/public(id=${quiz.id})}"
-                       title="Accesso pubblico"
-                       aria-label="Configura accesso pubblico">🌐</a>
+                       title="Accesso anonimo"
+                       aria-label="Configura accesso anonimo">🥷</a>
                     <label class="btn-icon-action btn-publish-toggle"
                            th:for="${'publish-toggle-' + quiz.id}"
                            th:aria-label="${(quiz.published ? 'Nascondi agli studenti: ' : 'Pubblica per gli studenti: ') + quiz.title}"

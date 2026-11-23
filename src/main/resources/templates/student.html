@@ -27,7 +27,7 @@
 <body>
 
 <div class="topbar" th:fragment="playerTopbar" style="position:sticky;top:0;z-index:10;">
-    <span class="topbar-title" th:text="${publicQuiz == null ? '🎒 Area Studente' : '🎒 Quiz pubblico'}">🎒 Area Studente</span>
+    <span class="topbar-title" th:text="${publicQuiz == null ? '🎒 Area Studente' : '🎒 Quiz anonimo'}">🎒 Area Studente</span>
     <div class="topbar-actions" th:if="${publicQuiz == null}">
         <a th:if="${publicQuiz == null}" th:href="@{/student/badges}" class="topbar-back">🏅 I miei badge</a>
         <span class="topbar-badge" th:text="${studentName}">Studente</span>
