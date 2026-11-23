@@ -81,7 +81,7 @@
         <div class="section-label">Quiz attivi (<span th:text="${quizzes.size()}">0</span>)</div>
 
         <div id="manage-list" class="manage-list" th:if="${!quizzes.isEmpty()}">
-            <div class="manage-card" th:each="quiz : ${quizzes}" th:data-public-access="${quiz.publicAccess}">
+            <div class="manage-card" th:each="quiz : ${quizzes}">
                 <span class="manage-card-icon" th:text="${quiz.emoji}">🦕</span>
                 <div class="manage-card-info">
                     <div class="manage-card-title" th:text="${quiz.title}">Titolo</div>
@@ -98,10 +98,10 @@
                     </div>
                 </div>
                 <div class="manage-card-actions">
-                    <a th:if="${teacherPublicQuizzesEnabled}" class="btn-icon-action" th:classappend="${quiz.publicAccess ? 'btn-teacher' : 'btn-retry-home'}"
+                    <a th:if="${teacherPublicQuizzesEnabled}" class="btn-icon-action btn-retry-home"
                        th:href="@{/teacher/quiz/{id}/public(id=${quiz.id})}"
-                       th:title="${quiz.publicAccess ? 'Accesso pubblico attivo' : 'Accesso pubblico disattivato'}"
-                       th:aria-label="${quiz.publicAccess ? 'Configura accesso pubblico attivo' : 'Configura accesso pubblico disattivato'}">🌐</a>
+                       title="Accesso pubblico"
+                       aria-label="Configura accesso pubblico">🌐</a>
                     <label class="btn-icon-action btn-publish-toggle"
                            th:for="${'publish-toggle-' + quiz.id}"
                            th:aria-label="${(quiz.published ? 'Nascondi agli studenti: ' : 'Pubblica per gli studenti: ') + quiz.title}"
@@ -114,17 +114,17 @@
                                th:data-id="${quiz.id}"
                                class="js-toggle-publication">
                     </label>
-                    <a th:href="@{/teacher/quiz/{id}/edit(id=${quiz.id})}" class="btn-icon-action btn-edit-quiz" th:aria-disabled="${quiz.published or quiz.publicAccess}" title="Modifica">✏️</a>
+                    <a th:href="@{/teacher/quiz/{id}/edit(id=${quiz.id})}" class="btn-icon-action btn-edit-quiz" th:aria-disabled="${quiz.published}" title="Modifica">✏️</a>
                     <button sec:authorize="hasRole('ADMIN')"
                             th:if="${!#lists.isEmpty(shareTeachers)}"
                             class="btn-icon-action btn-share-quiz js-open-share-modal"
                             title="Invia ad altri insegnanti"
                             th:data-id="${quiz.id}"
                             th:data-title="${quiz.title}">📤</button>
-                    <button class="btn-icon-action btn-archive-quiz js-toggle-archive" th:aria-disabled="${quiz.published or quiz.publicAccess}" title="Archivia"
+                    <button class="btn-icon-action btn-archive-quiz js-toggle-archive" th:aria-disabled="${quiz.published}" title="Archivia"
                             th:data-id="${quiz.id}"
                             th:data-title="${quiz.title}">🗄️</button>
-                    <button class="btn-icon-action btn-delete-quiz js-open-delete-modal" th:aria-disabled="${quiz.published or quiz.publicAccess}" title="Elimina"
+                    <button class="btn-icon-action btn-delete-quiz js-open-delete-modal" th:aria-disabled="${quiz.published}" title="Elimina"
                             th:data-id="${quiz.id}"
                             th:data-title="${quiz.title}">🗑</button>
                 </div>

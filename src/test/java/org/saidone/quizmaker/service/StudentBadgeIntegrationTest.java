@@ -231,7 +231,7 @@ class StudentBadgeIntegrationTest {
         mvc.perform(get("/teacher/quiz/{id}/public", id).with(user(teacher.getUsername()).roles("TEACHER")))
                 .andExpect(status().isOk()).andExpect(content().string(containsString("public-quiz-link")));
         mvc.perform(get("/teacher").with(user(teacher.getUsername()).roles("TEACHER")))
-                .andExpect(status().isOk()).andExpect(content().string(containsString("btn-icon-action btn-teacher")))
+                .andExpect(status().isOk()).andExpect(content().string(containsString("btn-icon-action btn-retry-home")))
                 .andExpect(content().string(not(containsString("🌐 Accesso pubblico attivo"))));
         assertThat(students.count()).isEqualTo(studentCount);
         assertThat(submissions.count()).isEqualTo(submissionCount);
@@ -250,7 +250,7 @@ class StudentBadgeIntegrationTest {
     }
 
     @Test
-    void publicAccessRequiresOwnershipAndCsrfAndLocksEditing() throws Exception {
+    void publicAccessRequiresOwnershipAndCsrfAndAllowsEditing() throws Exception {
         teacher.setPublicQuizzesEnabled(true);
         teachers.saveAndFlush(teacher);
         val id = quiz.getId();
@@ -269,9 +269,11 @@ class StudentBadgeIntegrationTest {
         val json = objectMapper.writeValueAsString(request);
         mvc.perform(put("/api/quizzes/{id}", id).with(user(teacher.getUsername()).roles("TEACHER"))
                         .with(csrf()).contentType("application/json").content(json))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isOk()).andExpect(jsonPath("$.publicAccess").value(true));
+        mvc.perform(get("/play/quizzes/{id}", id).with(anonymous()))
+                .andExpect(status().isOk()).andExpect(content().string(containsString("Changed title")));
         mvc.perform(get("/teacher/quiz/{id}/edit", id).with(user(teacher.getUsername()).roles("TEACHER")))
-                .andExpect(redirectedUrl("/teacher"));
+                .andExpect(status().isOk());
         mvc.perform(get("/teacher/quiz/{id}/public", id).with(user(other.getUsername()).roles("TEACHER")))
                 .andExpect(status().isNotFound());
         mvc.perform(put("/api/quizzes/{id}/archived", id).with(user(teacher.getUsername()).roles("TEACHER"))

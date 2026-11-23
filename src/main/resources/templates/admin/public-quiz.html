@@ -43,12 +43,12 @@
             </p>
             <form th:action="@{/teacher/quiz/{id}/public(id=${quiz.id})}" method="post">
                 <div class="form-group">
-                    <label class="form-label" for="public-access-enabled">
+                    <label class="teacher-ai-toggle-label" for="public-access-enabled">
                         <input id="public-access-enabled" type="checkbox" name="enabled" value="true" th:checked="${quiz.publicAccess}" th:disabled="${!teacherPublicQuizzesEnabled}">
                         Abilita accesso pubblico
                     </label>
                 </div>
-                <p class="editor-mode-subtitle">Questa impostazione è separata dalla pubblicazione per la classe. Disattivala prima di modificare il quiz.</p>
+                <p class="editor-mode-subtitle">Questa impostazione è separata dalla pubblicazione per la classe e consente di modificare il quiz anche con accesso pubblico attivo.</p>
                 <button type="submit" class="btn-start-quiz" th:disabled="${!teacherPublicQuizzesEnabled}">Salva</button>
             </form>
         </div>

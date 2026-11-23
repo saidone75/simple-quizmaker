@@ -115,9 +115,6 @@ public class QuizService {
         if (Boolean.TRUE.equals(quiz.getPublished())) {
             throw new IllegalStateException("Spubblica il quiz dalla dashboard prima di modificarlo.");
         }
-        if (Boolean.TRUE.equals(quiz.getPublicAccess())) {
-            throw new IllegalStateException("Disattiva l’accesso pubblico prima di modificare il quiz.");
-        }
         quiz.setTitle(request.getTitle());
         quiz.setEmoji(request.getEmoji());
         if (request.getBadges() != null) {

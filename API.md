@@ -9,7 +9,7 @@ Documentazione delle API di Alice's Simple Quiz Maker. Torna al [README](README.
 - `GET /api/quizzes/{id}/review` riepilogo della propria consegna: punteggio, data, `version`, `currentVersion` e `obsolete`. Per una consegna obsoleta, `answers` è vuoto e la revisione delle risposte non è disponibile.
 - `POST /api/quizzes/{id}/submit` invio risposte studente.
 - `POST /api/quizzes` creazione quiz (insegnante).
-- `PUT /api/quizzes/{id}` modifica quiz non pubblicato (insegnante). Se il quiz è pubblicato per la classe o ha accesso pubblico attivo, restituisce HTTP 400: disattivare entrambe le pubblicazioni prima della modifica.
+- `PUT /api/quizzes/{id}` modifica quiz non pubblicato (insegnante). Se il quiz è pubblicato per la classe, restituisce HTTP 400: spubblicarlo prima della modifica. L’accesso pubblico non impedisce le modifiche.
 - `DELETE /api/quizzes/{id}` eliminazione quiz (insegnante).
 - `PUT /api/quizzes/{id}/public-access` attiva/disattiva il link pubblico (l’attivazione richiede la preferenza `publicQuizzesEnabled` nel profilo) con body `{"enabled": true|false}` (solo proprietario).
 - `PUT /api/quizzes/{id}/publication` pubblicazione/depubblicazione.

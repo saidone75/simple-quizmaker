@@ -154,7 +154,7 @@
             const card = checkbox.closest('.manage-card');
             card?.querySelectorAll(
                 '.btn-edit-quiz, .btn-archive-quiz, .btn-delete-quiz'
-            ).forEach(action => action.setAttribute('aria-disabled', String(published || card.dataset.publicAccess === 'true')));
+            ).forEach(action => action.setAttribute('aria-disabled', String(published)));
             const publicationLabel = checkbox.closest('.btn-publish-toggle');
             if (publicationLabel) {
                 const label = published ? 'Nascondi agli studenti' : 'Pubblica per gli studenti';
