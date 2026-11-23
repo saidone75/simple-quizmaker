@@ -31,7 +31,7 @@ globalThis.createGameSounds = function createGameSounds({ button: soundButton, s
             [89, 1], [88, 1], [84, 1], [81, 2], [84, 2],
             [83, 1], [86, 1], [79, 1], [83, 1], [84, 7]
         ] },
-        { id: 'fantasia', name: 'Fantasia', beat: .14, melody: [
+        { id: 'fantasia', name: 'Fantasia', beat: .115, melody: [
             [67, 1], [72, 1], [76, 1], [79, 2], [76, 1], [72, 3],
             [77, 2], [81, 1], [84, 1], [81, 1], [77, 2],
             [79, 2], [83, 1], [86, 1], [79, 1], [84, 7]
