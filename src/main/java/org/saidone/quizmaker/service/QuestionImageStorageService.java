@@ -124,6 +124,16 @@ public class QuestionImageStorageService {
     @Transactional(readOnly = true)
     @PreAuthorize("@questionImageAuthorizationPolicy.canRead(#imageId)")
     public Resource load(UUID imageId) {
+        return loadStoredImage(imageId);
+    }
+
+    @Transactional(readOnly = true)
+    @PreAuthorize("@publicQuizService.canReadImage(#quizId, #imageId)")
+    public Resource loadForPublicQuiz(UUID quizId, UUID imageId) {
+        return loadStoredImage(imageId);
+    }
+
+    private Resource loadStoredImage(UUID imageId) {
         val image = uploadedImageRepository.findById(imageId)
                 .orElseThrow(() -> new EntityNotFoundException(String.format("Immagine non trovata: %s", imageId)));
 
@@ -141,6 +151,16 @@ public class QuestionImageStorageService {
     @Transactional(readOnly = true)
     @PreAuthorize("@questionImageAuthorizationPolicy.canRead(#imageId)")
     public MediaType resolveMediaType(UUID imageId) {
+        return storedMediaType(imageId);
+    }
+
+    @Transactional(readOnly = true)
+    @PreAuthorize("@publicQuizService.canReadImage(#quizId, #imageId)")
+    public MediaType resolvePublicMediaType(UUID quizId, UUID imageId) {
+        return storedMediaType(imageId);
+    }
+
+    private MediaType storedMediaType(UUID imageId) {
         val image = uploadedImageRepository.findById(imageId)
                 .orElseThrow(() -> new EntityNotFoundException(String.format("Immagine non trovata: %s", imageId)));
 

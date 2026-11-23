@@ -86,6 +86,11 @@ public class TeacherDashboardWebController {
         );
     }
 
+    @ModelAttribute("teacherPublicQuizzesEnabled")
+    public boolean teacherPublicQuizzesEnabled() {
+        return teacherAuthenticationService.getCurrentTeacher().isPublicQuizzesEnabled();
+    }
+
     @ModelAttribute("teacherAiEnabled")
     public boolean teacherAiEnabled() {
         return teacherAuthenticationService.getCurrentTeacher().isAiEnabled();
@@ -316,6 +321,12 @@ public class TeacherDashboardWebController {
         }
     }
 
+    @PostMapping("/teacher/profile/public-quizzes")
+    public String updatePublicQuizzesPreference(@RequestParam(defaultValue = "false") boolean publicQuizzesEnabled) {
+        teacherAuthenticationService.updatePublicQuizzesPreference(teacherAuthenticationService.getCurrentTeacher(), publicQuizzesEnabled);
+        return "redirect:/teacher/profile";
+    }
+
     @PostMapping("/teacher/profile/image-upload")
     public String updateTeacherImageUploadPreference(@RequestParam(value = "imageUploadEnabled", defaultValue = "false") boolean imageUploadEnabled) {
         teacherAuthenticationService.updateImageUploadPreference(teacherAuthenticationService.getCurrentTeacher(), imageUploadEnabled);
@@ -350,7 +361,7 @@ public class TeacherDashboardWebController {
     public String editQuiz(@PathVariable UUID id, Model model) {
         model.addAttribute("aiEnabled", teacherAuthenticationService.getCurrentTeacher().isAiEnabled());
         val quiz = quizService.findByIdForTeacher(id, teacherAuthenticationService.getCurrentTeacher());
-        if (Boolean.TRUE.equals(quiz.getPublished())) {
+        if (Boolean.TRUE.equals(quiz.getPublished()) || Boolean.TRUE.equals(quiz.getPublicAccess())) {
             return "redirect:/teacher";
         }
         model.addAttribute("quiz", quiz);

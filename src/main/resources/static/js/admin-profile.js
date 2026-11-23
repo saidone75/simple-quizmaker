@@ -23,6 +23,12 @@ document.addEventListener('DOMContentLoaded', () => {
         themeSelect.addEventListener('change', () => themeForm.submit());
     }
 
+    const publicQuizzesForm = document.getElementById('publicQuizzesPreferenceForm');
+    const publicQuizzesCheckbox = document.getElementById('publicQuizzesEnabled');
+    if (publicQuizzesForm && publicQuizzesCheckbox) {
+        publicQuizzesCheckbox.addEventListener('change', () => publicQuizzesForm.submit());
+    }
+
     const imageUploadForm = document.getElementById('imageUploadPreferenceForm');
     const imageUploadCheckbox = document.getElementById('imageUploadEnabled');
     if (imageUploadForm && imageUploadCheckbox) {

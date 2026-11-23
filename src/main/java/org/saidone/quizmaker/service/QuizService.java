@@ -33,6 +33,7 @@ import org.saidone.quizmaker.repository.QuizRepository;
 import org.saidone.quizmaker.repository.QuizSubmissionRepository;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
@@ -114,6 +115,9 @@ public class QuizService {
         if (Boolean.TRUE.equals(quiz.getPublished())) {
             throw new IllegalStateException("Spubblica il quiz dalla dashboard prima di modificarlo.");
         }
+        if (Boolean.TRUE.equals(quiz.getPublicAccess())) {
+            throw new IllegalStateException("Disattiva l’accesso pubblico prima di modificare il quiz.");
+        }
         quiz.setTitle(request.getTitle());
         quiz.setEmoji(request.getEmoji());
         if (request.getBadges() != null) {
@@ -163,12 +167,30 @@ public class QuizService {
         quiz.setArchived(archived);
         if (archived) {
             quiz.setPublished(false);
+            quiz.setPublicAccess(false);
         }
         quiz.setModifiedByUsername(teacher.getUsername());
         quiz.setModifiedAt(LocalDateTime.now(ZoneId.systemDefault()));
         val saved = quizRepository.save(quiz);
         log.info("Stato archiviazione del quiz aggiornato: {} ({}) => {}", saved.getTitle(), saved.getId(), saved.getArchived());
         return toResponse(saved);
+    }
+
+    @Transactional
+    @PreAuthorize("@teacherAuthorizationPolicy.canManageQuiz(#id, #teacher)")
+    public QuizDto.Response updatePublicAccess(UUID id, boolean enabled, Teacher teacher) {
+        val quiz = quizRepository.findByIdAndTeacher(id, teacher)
+                .orElseThrow(() -> new EntityNotFoundException(String.format(QUIZ_NOT_FOUND_MESSAGE, id)));
+        if (enabled && !teacher.isPublicQuizzesEnabled()) {
+            throw new AccessDeniedException("Abilita la creazione di quiz pubblici dal profilo insegnante.");
+        }
+        if (enabled && Boolean.TRUE.equals(quiz.getArchived())) {
+            throw new IllegalArgumentException("Riattiva il quiz prima di abilitare l’accesso pubblico.");
+        }
+        quiz.setPublicAccess(enabled);
+        quiz.setModifiedByUsername(teacher.getUsername());
+        quiz.setModifiedAt(LocalDateTime.now(ZoneId.systemDefault()));
+        return toResponse(quizRepository.save(quiz));
     }
 
     private void validateQuestions(QuizDto.Request request) {

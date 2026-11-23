@@ -26,12 +26,12 @@
 </head>
 <body>
 
-<div class="topbar" style="position:sticky;top:0;z-index:10;">
-    <span class="topbar-title">🎒 Area Studente</span>
-    <div class="topbar-actions">
-        <a th:href="@{/student/badges}" class="topbar-back">🏅 I miei badge</a>
+<div class="topbar" th:fragment="playerTopbar" style="position:sticky;top:0;z-index:10;">
+    <span class="topbar-title" th:text="${publicQuiz == null ? '🎒 Area Studente' : '🎒 Quiz pubblico'}">🎒 Area Studente</span>
+    <div class="topbar-actions" th:if="${publicQuiz == null}">
+        <a th:if="${publicQuiz == null}" th:href="@{/student/badges}" class="topbar-back">🏅 I miei badge</a>
         <span class="topbar-badge" th:text="${studentName}">Studente</span>
-        <form th:action="@{/student/logout}" method="post" class="topbar-inline-form">
+        <form th:if="${publicQuiz == null}" th:action="@{/student/logout}" method="post" class="topbar-inline-form">
             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
             <button type="submit" class="topbar-back">Esci</button>
         </form>
@@ -67,7 +67,7 @@
     </div>
 </div>
 
-<div id="screen-quiz" class="screen">
+<div id="screen-quiz" class="screen" th:fragment="quizPlayer">
     <div class="quiz-container">
         <div class="quiz-topbar">
             <span class="quiz-title-small" id="play-title">Quiz</span>
@@ -86,7 +86,7 @@
     </div>
 </div>
 
-<div id="screen-result" class="screen">
+<div id="screen-result" class="screen" th:fragment="quizResult">
     <div class="result-card">
         <div id="result-confetti" class="result-confetti" aria-hidden="true"></div>
         <span class="result-emoji" id="res-emoji">🏆</span>
@@ -97,14 +97,15 @@
         <div class="result-pills" id="res-pills"></div>
         <div id="res-badges" class="result-badges" aria-live="polite" hidden></div>
         <div class="result-btns">
-            <a th:href="@{/student/badges}" class="btn-retry btn-retry-home">🏅 Guarda i miei badge</a>
-            <button class="btn-retry btn-retry-home" id="student-back-home-btn">🎒 Torna ai quiz</button>
+            <a th:if="${publicQuiz == null}" th:href="@{/student/badges}" class="btn-retry btn-retry-home">🏅 Guarda i miei badge</a>
+            <button th:if="${publicQuiz != null}" type="button" class="btn-retry btn-retry-home" id="public-replay-btn">🔄 Gioca ancora</button>
+            <button th:if="${publicQuiz == null}" type="button" class="btn-retry btn-retry-home" id="student-back-home-btn">🎒 Torna ai quiz</button>
         </div>
     </div>
 </div>
 
 
-<div id="student-alert" class="student-alert" role="alert" aria-live="polite" hidden>
+<div id="student-alert" th:fragment="studentAlert" class="student-alert" role="alert" aria-live="polite" hidden>
     <div>
         <p class="student-alert-title">Quiz già completato</p>
         <p class="student-alert-text">Hai già finito questo quiz. Chiedi alla maestra di sbloccarlo.</p>
@@ -130,7 +131,7 @@
 <script th:src="@{/js/game-sounds.js}"></script>
 <script th:src="@{/js/quiz-celebration.js}"></script>
 <script th:src="@{/js/main.js}"></script>
-<script th:src="@{/js/quiz-player.js}"></script>
+<script th:src="@{/js/quiz-player.js(v=public-completion-1)}"></script>
 <script th:src="@{/js/student-page.js}"></script>
 </body>
 </html>

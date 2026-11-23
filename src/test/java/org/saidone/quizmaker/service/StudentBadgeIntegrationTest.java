@@ -3,6 +3,13 @@ package org.saidone.quizmaker.service;
 import ai.djl.repository.zoo.ZooModel;
 import jakarta.persistence.EntityManager;
 import lombok.val;
+import com.google.zxing.qrcode.QRCodeReader;
+import com.google.zxing.common.HybridBinarizer;
+import com.google.zxing.RGBLuminanceSource;
+import com.google.zxing.BinaryBitmap;
+import javax.imageio.ImageIO;
+import java.io.ByteArrayInputStream;
+import java.nio.file.Files;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -149,6 +156,182 @@ class StudentBadgeIntegrationTest {
         } finally {
             sessions.forEach(session -> registry.removeSessionInformation(session.getId()));
         }
+    }
+
+    @Test
+    void profilePreferenceControlsThePublicAccessButtonAndNewPublications() throws Exception {
+        val id = quiz.getId();
+        val settingsUrl = String.format("/teacher/quiz/%s/public", id);
+        assertThat(teachers.findById(teacher.getId()).orElseThrow().isPublicQuizzesEnabled()).isFalse();
+        val profile = mvc.perform(get("/teacher/profile").with(user(teacher.getUsername()).roles("TEACHER")))
+                .andExpect(status().isOk()).andExpect(model().attribute("teacherPublicQuizzesEnabled", false))
+                .andExpect(content().string(containsString("Abilita la creazione di quiz pubblici"))).andReturn();
+        val html = profile.getResponse().getContentAsString();
+        assertThat(html.indexOf("Quiz pubblici")).isBetween(html.indexOf("Editor dei quiz"), html.indexOf("Sicurezza account"));
+        mvc.perform(get("/teacher").with(user(teacher.getUsername()).roles("TEACHER")))
+                .andExpect(status().isOk()).andExpect(content().string(not(containsString(settingsUrl))));
+        mvc.perform(put("/api/quizzes/{id}/public-access", id).with(user(teacher.getUsername()).roles("TEACHER"))
+                        .with(csrf()).contentType("application/json").content("{\"enabled\":true}"))
+                .andExpect(status().isForbidden());
+        mvc.perform(post("/teacher/profile/public-quizzes").with(user(teacher.getUsername()).roles("TEACHER"))
+                        .param("publicQuizzesEnabled", "true"))
+                .andExpect(status().isForbidden());
+        mvc.perform(post("/teacher/profile/public-quizzes").with(user(teacher.getUsername()).roles("TEACHER"))
+                        .with(csrf()).param("publicQuizzesEnabled", "true"))
+                .andExpect(redirectedUrl("/teacher/profile"));
+        entityManager.flush();
+        entityManager.clear();
+        assertThat(teachers.findById(teacher.getId()).orElseThrow().isPublicQuizzesEnabled()).isTrue();
+        mvc.perform(get("/teacher").with(user(teacher.getUsername()).roles("TEACHER")))
+                .andExpect(status().isOk()).andExpect(content().string(containsString(settingsUrl)));
+        mvc.perform(put("/api/quizzes/{id}/public-access", id).with(user(teacher.getUsername()).roles("TEACHER"))
+                        .with(csrf()).contentType("application/json").content("{\"enabled\":true}"))
+                .andExpect(status().isOk());
+        mvc.perform(post("/teacher/profile/public-quizzes").with(user(teacher.getUsername()).roles("TEACHER")).with(csrf()))
+                .andExpect(redirectedUrl("/teacher/profile"));
+        entityManager.flush();
+        entityManager.clear();
+        assertThat(teachers.findById(teacher.getId()).orElseThrow().isPublicQuizzesEnabled()).isFalse();
+        mvc.perform(get("/teacher").with(user(teacher.getUsername()).roles("TEACHER")))
+                .andExpect(status().isOk()).andExpect(content().string(not(containsString(settingsUrl))));
+        mvc.perform(get("/play/quizzes/{id}", id).with(anonymous())).andExpect(status().isOk());
+        mvc.perform(put("/api/quizzes/{id}/public-access", id).with(user(teacher.getUsername()).roles("TEACHER"))
+                        .with(csrf()).contentType("application/json").content("{\"enabled\":false}"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void publicQuizIsIndependentFromClassPublicationAndDoesNotRecordParticipants() throws Exception {
+        teacher.setPublicQuizzesEnabled(true);
+        teachers.saveAndFlush(teacher);
+        val id = quiz.getId();
+        quiz.setPublished(false);
+        quizzes.saveAndFlush(quiz);
+        val studentCount = students.count();
+        val submissionCount = submissions.count();
+        val attemptCount = attempts.count();
+        mvc.perform(get("/play/quizzes/{id}", id).with(anonymous())).andExpect(status().isNotFound());
+        mvc.perform(put("/api/quizzes/{id}/public-access", id).with(user(teacher.getUsername()).roles("TEACHER"))
+                        .with(csrf()).contentType("application/json").content("{\"enabled\":true}"))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.publicAccess").value(true))
+                .andExpect(jsonPath("$.published").value(false));
+        for (int i = 0; i < 2; i++) {
+            mvc.perform(get("/play/quizzes/{id}", id).with(anonymous()))
+                    .andExpect(status().isOk()).andExpect(view().name("public-quiz"))
+                    .andExpect(content().string(containsString("public-quiz-data")))
+                    .andExpect(content().string(containsString("public-replay-btn")))
+                    .andExpect(content().string(not(containsString(teacher.getUsername()))))
+                    .andExpect(content().string(not(containsString("student-back-home-btn"))))
+                    .andExpect(content().string(not(containsString("screen-student"))))
+                    .andExpect(content().string(not(containsString("Accesso libero"))))
+                    .andExpect(content().string(not(containsString("login-screen"))))
+                    .andExpect(content().string(not(containsString("/student/badges"))));
+        }
+        mvc.perform(get("/api/quizzes/{id}", id).with(anonymous())).andExpect(status().is3xxRedirection());
+        mvc.perform(get("/teacher/quiz/{id}/public", id).with(user(teacher.getUsername()).roles("TEACHER")))
+                .andExpect(status().isOk()).andExpect(content().string(containsString("public-quiz-link")));
+        mvc.perform(get("/teacher").with(user(teacher.getUsername()).roles("TEACHER")))
+                .andExpect(status().isOk()).andExpect(content().string(containsString("btn-icon-action btn-teacher")))
+                .andExpect(content().string(not(containsString("🌐 Accesso pubblico attivo"))));
+        assertThat(students.count()).isEqualTo(studentCount);
+        assertThat(submissions.count()).isEqualTo(submissionCount);
+        assertThat(attempts.count()).isEqualTo(attemptCount);
+        teacher.setEnabled(false);
+        teachers.saveAndFlush(teacher);
+        mvc.perform(get("/play/quizzes/{id}", id).with(anonymous())).andExpect(status().isNotFound());
+        teacher.setEnabled(true);
+        teachers.saveAndFlush(teacher);
+        mvc.perform(put("/api/quizzes/{id}/public-access", id).with(user(teacher.getUsername()).roles("TEACHER"))
+                        .with(csrf()).contentType("application/json").content("{\"enabled\":false}"))
+                .andExpect(status().isOk());
+        mvc.perform(get("/play/quizzes/{id}", id).with(anonymous())).andExpect(status().isNotFound());
+        mvc.perform(get("/teacher").with(user(teacher.getUsername()).roles("TEACHER")))
+                .andExpect(status().isOk()).andExpect(content().string(containsString("btn-icon-action btn-retry-home")));
+    }
+
+    @Test
+    void publicAccessRequiresOwnershipAndCsrfAndLocksEditing() throws Exception {
+        teacher.setPublicQuizzesEnabled(true);
+        teachers.saveAndFlush(teacher);
+        val id = quiz.getId();
+        val other = teachers.saveAndFlush(Teacher.builder().username("public-other").password("unused").build());
+        mvc.perform(put("/api/quizzes/{id}/public-access", id).with(user(other.getUsername()).roles("TEACHER"))
+                        .with(csrf()).contentType("application/json").content("{\"enabled\":true}"))
+                .andExpect(status().isForbidden());
+        mvc.perform(put("/api/quizzes/{id}/public-access", id).with(user(teacher.getUsername()).roles("TEACHER"))
+                        .contentType("application/json").content("{\"enabled\":true}"))
+                .andExpect(status().isForbidden());
+        quiz.setPublished(false);
+        quiz.setPublicAccess(true);
+        quizzes.saveAndFlush(quiz);
+        val request = QuizDto.Request.builder().title("Changed title").emoji(quiz.getEmoji())
+                .questions(List.of(objectMapper.convertValue(quiz.getQuestions().getFirst(), QuestionDto.class))).build();
+        val json = objectMapper.writeValueAsString(request);
+        mvc.perform(put("/api/quizzes/{id}", id).with(user(teacher.getUsername()).roles("TEACHER"))
+                        .with(csrf()).contentType("application/json").content(json))
+                .andExpect(status().isBadRequest());
+        mvc.perform(get("/teacher/quiz/{id}/edit", id).with(user(teacher.getUsername()).roles("TEACHER")))
+                .andExpect(redirectedUrl("/teacher"));
+        mvc.perform(get("/teacher/quiz/{id}/public", id).with(user(other.getUsername()).roles("TEACHER")))
+                .andExpect(status().isNotFound());
+        mvc.perform(put("/api/quizzes/{id}/archived", id).with(user(teacher.getUsername()).roles("TEACHER"))
+                        .with(csrf()).contentType("application/json").content("{\"published\":true}"))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.publicAccess").value(false));
+        mvc.perform(get("/play/quizzes/{id}", id).with(anonymous())).andExpect(status().isNotFound());
+        mvc.perform(put("/api/quizzes/{id}/public-access", id).with(user(teacher.getUsername()).roles("TEACHER"))
+                        .with(csrf()).contentType("application/json").content("{\"enabled\":true}"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void publicImagesAreLimitedToTheEnabledQuizAndRevokedWithIt() throws Exception {
+        val imageId = UUID.randomUUID();
+        val path = Files.createTempFile("quizmaker-public-test-", ".png");
+        val bytes = new byte[]{(byte) 0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a};
+        try {
+            Files.write(path, bytes);
+            val image = new UploadedImage();
+            image.setId(imageId);
+            image.setTeacherId(teacher.getId());
+            image.setFilePath(path.toString());
+            uploadedImages.saveAndFlush(image);
+            quiz.setPublicAccess(true);
+            quiz.getQuestions().getFirst().setImageUrl(String.format("/api/quizzes/images/%s", imageId));
+            quizzes.saveAndFlush(quiz);
+            val page = mvc.perform(get("/play/quizzes/{id}", quiz.getId()).with(anonymous()))
+                    .andExpect(status().isOk()).andReturn();
+            val publicQuiz = (QuizDto.PublicQuiz) page.getModelAndView().getModel().get("publicQuiz");
+            assertThat(publicQuiz.questions().getFirst().getImageUrl())
+                    .isEqualTo(String.format("/play/quizzes/%s/images/%s", quiz.getId(), imageId));
+            assertThat(publicQuiz.questions().getFirst().getImageId()).isNull();
+            mvc.perform(get("/play/quizzes/{quizId}/images/{id}", quiz.getId(), imageId).with(anonymous()))
+                    .andExpect(status().isOk()).andExpect(content().bytes(bytes));
+            mvc.perform(get("/play/quizzes/{quizId}/images/{id}", quiz.getId(), UUID.randomUUID()).with(anonymous()))
+                    .andExpect(status().isNotFound());
+            quiz.setPublicAccess(false);
+            quizzes.saveAndFlush(quiz);
+            mvc.perform(get("/play/quizzes/{quizId}/images/{id}", quiz.getId(), imageId).with(anonymous()))
+                    .andExpect(status().isNotFound());
+        } finally {
+            Files.deleteIfExists(path);
+        }
+    }
+
+    @Test
+    void qrCodeContainsThePublicLinkAndIsRestrictedToTheOwner() throws Exception {
+        quiz.setPublicAccess(true);
+        quizzes.saveAndFlush(quiz);
+        val result = mvc.perform(get("/teacher/quiz/{id}/public-qr", quiz.getId())
+                        .with(user(teacher.getUsername()).roles("TEACHER")))
+                .andExpect(status().isOk()).andExpect(content().contentType("image/png")).andReturn();
+        val image = ImageIO.read(new ByteArrayInputStream(result.getResponse().getContentAsByteArray()));
+        val pixels = image.getRGB(0, 0, image.getWidth(), image.getHeight(), null, 0, image.getWidth());
+        val source = new RGBLuminanceSource(image.getWidth(), image.getHeight(), pixels);
+        val bitmap = new BinaryBitmap(new HybridBinarizer(source));
+        assertThat(new QRCodeReader().decode(bitmap).getText())
+                .isEqualTo(String.format("http://localhost/play/quizzes/%s", quiz.getId()));
+        mvc.perform(get("/teacher/quiz/{id}/public-qr", quiz.getId()).with(anonymous()))
+                .andExpect(status().is3xxRedirection());
     }
 
     @Test

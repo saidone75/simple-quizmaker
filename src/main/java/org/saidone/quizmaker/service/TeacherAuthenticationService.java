@@ -157,6 +157,15 @@ public class TeacherAuthenticationService implements UserDetailsService {
     }
 
     @Transactional
+    public void updatePublicQuizzesPreference(Teacher teacher, boolean enabled) {
+        if (teacher == null) {
+            throw new IllegalArgumentException("Insegnante non valido");
+        }
+        teacher.setPublicQuizzesEnabled(enabled);
+        teacherRepository.save(teacher);
+    }
+
+    @Transactional
     public void updateImageUploadPreference(Teacher teacher, boolean imageUploadEnabled) {
         if (teacher == null) {
             throw new IllegalArgumentException("Insegnante non valido");

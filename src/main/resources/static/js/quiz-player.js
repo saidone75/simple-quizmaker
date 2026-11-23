@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+let isPublicQuiz = document.getElementById('public-quiz-data') !== null;
 const LETTERS = ['A', 'B', 'C', 'D'];
 const QUIZ_PROGRESS_STORAGE_KEY = 'quizmaker.activeQuizProgress';
 let playState = { quiz: null, current: 0, score: 0, wrong: 0, answered: false, answers: [] };
@@ -167,6 +168,7 @@ function isStoredProgressForActiveStudent(progress) {
 }
 
 function persistQuizProgress() {
+    if (isPublicQuiz) return;
     if (!playState?.quiz?.id) return;
     sessionStorage.setItem(QUIZ_PROGRESS_STORAGE_KEY, JSON.stringify({
         student: getActiveStudentContext(),
@@ -185,6 +187,7 @@ function persistQuizProgress() {
 }
 
 function clearQuizProgress() {
+    if (isPublicQuiz) return;
     sessionStorage.removeItem(QUIZ_PROGRESS_STORAGE_KEY);
 }
 
@@ -207,6 +210,7 @@ function recomputeScoreFromAnswers() {
 }
 
 function resumeQuizIfNeeded() {
+    if (isPublicQuiz) return false;
     const raw = sessionStorage.getItem(QUIZ_PROGRESS_STORAGE_KEY);
     if (!raw) return false;
 
@@ -401,6 +405,7 @@ function refreshLockedQuizCards() {
     }
 }
 function bindQuizPickerCards() {
+    if (isPublicQuiz) return;
     refreshLockedQuizCards();
     const cards = document.querySelectorAll('.quiz-picker .quiz-pick-item');
     for (const card of cards) {
@@ -418,7 +423,8 @@ if (document.readyState === 'loading') {
     bindStudentLogoutConfirmation();
 }
 
-function startQuiz(quiz) {
+function startQuiz(quiz, publicAccess = isPublicQuiz) {
+    isPublicQuiz = publicAccess;
     playState = { quiz, current: 0, score: 0, wrong: 0, answered: false, answers: [] };
     enableQuizNavigationLock();
     persistQuizProgress();
@@ -500,6 +506,7 @@ function pickAnswer(idx, restoring) {
     if (typeof playState.answers[playState.current] === 'number' && !restoring) {
         return;
     }
+    if (!restoring) globalThis.quizCelebration?.unlock();
     playState.answered = true;
     const btns = document.querySelectorAll('.quiz-opt');
     btns.forEach(b => b.disabled = true);
@@ -655,6 +662,12 @@ function renderQuizResult(quiz, payload) {
 }
 
 async function showResult() {
+    if (isPublicQuiz) {
+        recomputeScoreFromAnswers();
+        disableQuizNavigationLock();
+        renderQuizResult(playState.quiz, { score: playState.score, total: playState.quiz.questions.length, newBadges: [] });
+        return;
+    }
     if (isSubmittingQuiz) return;
     isSubmittingQuiz = true;
     const { quiz, answers } = playState;

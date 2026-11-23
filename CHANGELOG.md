@@ -11,6 +11,24 @@ in **Non rilasciato**.
 
 ## [Non rilasciato]
 
+### Aggiunto
+
+- Quiz pubblici aperti tramite link e QR code, attivabili separatamente dalla pubblicazione per la classe. Player senza login, punteggio calcolato solo nel browser e ripetizioni libere, senza salvataggio di risposte, risultati, badge o statistiche.
+
+### Corretto
+
+- Allineata la larghezza delle card dei quiz ai pulsanti della dashboard anche con accesso pubblico abilitato; i comandi vanno a capo sugli schermi stretti.
+
+- Resa esplicita la modalità pubblica nel player e aggiornati gli URL degli script per evitare versioni in cache: completamento locale con musica e coriandoli, senza consegna al server.
+
+- Ripristinato il login degli insegnanti preesistenti su SQLite: la migrazione `015-public-preferences-backfill` inizializza a falso le preferenze pubbliche rimaste nulle, preservando quelle già impostate.
+
+### Aggiornamento
+
+- Applicare la migrazione Liquibase `015-public-preferences-backfill`: corregge i valori nulli delle preferenze pubbliche.
+- Applicare la migrazione Liquibase `014-teacher-public-quizzes-preference`: aggiunge la preferenza insegnante per i quiz pubblici.
+- Applicare la migrazione Liquibase `013-public-quizzes`: aggiunge l’accesso pubblico ai quiz.
+
 ## [1.4.0] - 2026-11-19
 
 ### Aggiunto
@@ -23,7 +41,7 @@ in **Non rilasciato**.
 
 - Portati compilazione e workflow CI a Java 25, allineandoli al runtime Docker e di produzione; aggiornati i requisiti di sviluppo e il controllo Maven Enforcer.
 - Resi grigi e bloccati i pulsanti Modifica, Archivia ed Elimina dei quiz pubblicati nella dashboard, con messaggi specifici al clic. L'accesso diretto all'editor di un quiz pubblicato rimanda alla dashboard.
-- Aggiornato il tooltip del controllo di pubblicazione: “Pubblica” per i quiz non pubblicati e “Nascondi” per quelli pubblicati, con aggiornamento immediato al cambio di stato.
+- Aggiornato il tooltip del controllo di pubblicazione: “Pubblica per gli studenti” per i quiz non pubblicati e “Nascondi agli studenti” per quelli pubblicati, con aggiornamento immediato al cambio di stato.
 
 ### Corretto
 
@@ -41,9 +59,8 @@ in **Non rilasciato**.
 
 ### Aggiornamento
 
-- In produzione avviare con `--spring.liquibase.enabled=true` per applicare le migrazioni dello schema.
-- Applicare la migrazione Liquibase `011-quiz-versions`. I quiz e le consegne esistenti partono dalla versione 1: eventuali modifiche precedenti alla migrazione non sono ricostruibili.
-- Applicare anche la migrazione Liquibase `012-question-image-created-at`, che registra la data degli upload e assegna alle immagini esistenti la data della migrazione.
+- Applicare la migrazione Liquibase `011-quiz-versions`: aggiunge la versione a quiz e consegne.
+- Applicare la migrazione Liquibase `012-question-image-created-at`: aggiunge la data di caricamento delle immagini.
 
 ## [1.3.0] - 2026-11-10
 
@@ -68,7 +85,7 @@ in **Non rilasciato**.
 
 ### Aggiornamento
 
-- Applicare la migrazione Liquibase `010-class-badge-settings` prima di usare la nuova versione. In produzione avviare con `--spring.liquibase.enabled=true` per aggiornare lo schema; le impostazioni iniziali dei badge restano quelle precedenti.
+- Applicare la migrazione Liquibase `010-class-badge-settings`: aggiunge le impostazioni dei badge della classe.
 - Per mantenere la directory dei backup esistente, impostare `DB_BACKUP_DIRECTORY=./backups` o il percorso già utilizzato.
 
 ## [1.2.1] - 2026-10-27
