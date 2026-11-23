@@ -75,6 +75,10 @@ public class QuestionImageAuthorizationPolicy {
         }).orElse(false);
     }
 
+    public boolean referencesImage(Quiz quiz, UUID imageId) {
+        return references(List.of(quiz), imageId);
+    }
+
     private boolean references(List<Quiz> quizzes, UUID imageId) {
         return quizzes.stream().filter(quiz -> quiz.getQuestions() != null)
                 .flatMap(quiz -> quiz.getQuestions().stream())

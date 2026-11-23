@@ -80,6 +80,10 @@ public class Teacher implements Serializable {
     private String themePreference;
 
     @Default
+    @Column(name = "public_quizzes_enabled", nullable = false)
+    private boolean publicQuizzesEnabled = false;
+
+    @Default
     @Column(name = "image_upload_enabled", nullable = false)
     private boolean imageUploadEnabled = false;
 

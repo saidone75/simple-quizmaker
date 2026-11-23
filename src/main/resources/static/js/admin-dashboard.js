@@ -151,12 +151,13 @@
             if (!res.ok) {
                 throw new Error('Errore server');
             }
-            checkbox.closest('.manage-card')?.querySelectorAll(
+            const card = checkbox.closest('.manage-card');
+            card?.querySelectorAll(
                 '.btn-edit-quiz, .btn-archive-quiz, .btn-delete-quiz'
-            ).forEach(action => action.setAttribute('aria-disabled', String(published)));
+            ).forEach(action => action.setAttribute('aria-disabled', String(published || card.dataset.publicAccess === 'true')));
             const publicationLabel = checkbox.closest('.btn-publish-toggle');
             if (publicationLabel) {
-                const label = published ? 'Nascondi' : 'Pubblica';
+                const label = published ? 'Nascondi agli studenti' : 'Pubblica per gli studenti';
                 publicationLabel.title = label;
                 publicationLabel.setAttribute('aria-label', label + ': ' +
                     (checkbox.closest('.manage-card')?.querySelector('.manage-card-title')?.textContent.trim() || 'quiz'));

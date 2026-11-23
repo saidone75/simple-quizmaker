@@ -89,6 +89,10 @@ public class Quiz {
     private Boolean published = false;
 
     @Builder.Default
+    @Column(name = "public_access", nullable = false)
+    private Boolean publicAccess = false;
+
+    @Builder.Default
     @Column(name = "archived", nullable = false)
     private Boolean archived = false;
 

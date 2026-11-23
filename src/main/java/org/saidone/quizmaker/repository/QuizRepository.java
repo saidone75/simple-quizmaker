@@ -41,6 +41,8 @@ public interface QuizRepository extends JpaRepository<Quiz, UUID> {
 
     Optional<Quiz> findByIdAndTeacherAndPublishedTrueAndArchivedFalse(UUID id, Teacher teacher);
 
+    Optional<Quiz> findByIdAndPublicAccessTrueAndArchivedFalseAndTeacherEnabledTrue(UUID id);
+
     boolean existsByTitleAndTeacher(String title, Teacher teacher);
 
     boolean existsByTitleAndTeacherAndCreatedByUsername(String title, Teacher teacher, String createdByUsername);

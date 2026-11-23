@@ -1,0 +1,71 @@
+<!--
+  ~ Alice's Simple Quiz Maker - fun quizzes for curious minds
+  ~ Copyright (C) 2026 Miss Alice & Saidone
+  ~
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as published by
+  ~ the Free Software Foundation, either version 3 of the License, or
+  ~ (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU General Public License
+  ~ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<!DOCTYPE html>
+<html lang="it" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="quizmaker-theme-preference" th:content="${teacherThemePreference}">
+    <title>Accesso pubblico — Alice’s Simple Quiz Maker</title>
+    <script th:src="@{/js/theme-init.js}"></script>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+</head>
+<body>
+<div class="screen active screen-admin">
+    <div class="topbar">
+        <span class="topbar-title">🌐 Accesso pubblico</span>
+        <a th:href="@{/teacher}" class="topbar-back">← Dashboard</a>
+    </div>
+    <div class="teacher-body">
+        <div class="editor-mode-card editor-mode-card-spaced">
+            <h1 class="profile-heading" th:text="${quiz.emoji + ' ' + quiz.title}">Quiz</h1>
+            <p class="profile-subtitle">Chi ha il link può giocare senza account e ripetere il quiz liberamente. Risposte e punteggi non vengono registrati.</p>
+            <output th:if="${publicAccessSuccess}" th:text="${publicAccessSuccess}" class="alert alert-success badge-editor-note" aria-live="polite"></output>
+            <output th:if="${publicAccessError}" th:text="${publicAccessError}" class="alert alert-error badge-editor-note" aria-live="polite"></output>
+            <p class="profile-subtitle" th:unless="${teacherPublicQuizzesEnabled}">
+                Per pubblicare un quiz, abilita la creazione di quiz pubblici nel <a class="public-link" th:href="@{/teacher/profile}">profilo insegnante</a>.
+            </p>
+            <form th:action="@{/teacher/quiz/{id}/public(id=${quiz.id})}" method="post">
+                <div class="form-group">
+                    <label class="form-label" for="public-access-enabled">
+                        <input id="public-access-enabled" type="checkbox" name="enabled" value="true" th:checked="${quiz.publicAccess}" th:disabled="${!teacherPublicQuizzesEnabled}">
+                        Abilita accesso pubblico
+                    </label>
+                </div>
+                <p class="editor-mode-subtitle">Questa impostazione è separata dalla pubblicazione per la classe. Disattivala prima di modificare il quiz.</p>
+                <button type="submit" class="btn-start-quiz" th:disabled="${!teacherPublicQuizzesEnabled}">Salva</button>
+            </form>
+        </div>
+        <div class="editor-mode-card" th:if="${quiz.publicAccess}">
+            <label class="form-label" for="public-quiz-link">Link da condividere</label>
+            <input id="public-quiz-link" class="input-field" readonly th:value="${publicQuizUrl}">
+            <div class="manage-list badge-editor-note">
+                <button type="button" class="topbar-back" id="copy-public-quiz-link">📋 Copia link</button>
+                <a class="topbar-back" th:href="${publicQuizUrl}" target="_blank" rel="noopener">▶️ Apri il quiz</a>
+            </div>
+            <div class="quiz-media-box badge-editor-note">
+                <img class="quiz-media-img" th:src="@{/teacher/quiz/{id}/public-qr(id=${quiz.id})}" alt="QR code per aprire il quiz pubblico" width="256" height="256">
+            </div>
+        </div>
+    </div>
+</div>
+<script th:src="@{/js/main.js}"></script>
+<script th:src="@{/js/public-quiz-settings.js}"></script>
+</body>
+</html>

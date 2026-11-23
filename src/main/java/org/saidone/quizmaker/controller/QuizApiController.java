@@ -155,6 +155,12 @@ public class QuizApiController {
         return ResponseEntity.ok(quizService.updatePublicationStatus(id, request.getPublished(), teacherAuthenticationService.getCurrentTeacher()));
     }
 
+    @PutMapping("/{id}/public-access")
+    public ResponseEntity<QuizDto.Response> updatePublicAccess(@PathVariable UUID id,
+            @Valid @RequestBody QuizDto.PublicAccessUpdateRequest request) {
+        return ResponseEntity.ok(quizService.updatePublicAccess(id, request.getEnabled(), teacherAuthenticationService.getCurrentTeacher()));
+    }
+
     @PutMapping("/{id}/archived")
     public ResponseEntity<QuizDto.Response> updateArchivedStatus(
             @PathVariable UUID id,

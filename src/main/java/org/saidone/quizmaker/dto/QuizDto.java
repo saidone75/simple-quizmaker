@@ -71,6 +71,7 @@ public class QuizDto {
         private LocalDateTime modifiedAt;
         private String modifiedByUsername;
         private Boolean published;
+        private Boolean publicAccess;
         private Boolean archived;
     }
 
@@ -80,6 +81,16 @@ public class QuizDto {
     public static class PublicationUpdateRequest {
         @NotNull(message = "Il campo published è obbligatorio")
         private Boolean published;
+    }
+
+    public record PublicQuiz(UUID id, String title, String emoji, List<QuestionDto> questions) {}
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class PublicAccessUpdateRequest {
+        @NotNull(message = "Il campo enabled è obbligatorio")
+        private Boolean enabled;
     }
 
     @Data

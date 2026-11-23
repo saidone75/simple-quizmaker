@@ -9,8 +9,9 @@ Documentazione delle API di Alice's Simple Quiz Maker. Torna al [README](README.
 - `GET /api/quizzes/{id}/review` riepilogo della propria consegna: punteggio, data, `version`, `currentVersion` e `obsolete`. Per una consegna obsoleta, `answers` è vuoto e la revisione delle risposte non è disponibile.
 - `POST /api/quizzes/{id}/submit` invio risposte studente.
 - `POST /api/quizzes` creazione quiz (insegnante).
-- `PUT /api/quizzes/{id}` modifica quiz non pubblicato (insegnante). Se il quiz è pubblicato, restituisce HTTP 400: spubblicarlo prima tramite `/publication`.
+- `PUT /api/quizzes/{id}` modifica quiz non pubblicato (insegnante). Se il quiz è pubblicato per la classe o ha accesso pubblico attivo, restituisce HTTP 400: disattivare entrambe le pubblicazioni prima della modifica.
 - `DELETE /api/quizzes/{id}` eliminazione quiz (insegnante).
+- `PUT /api/quizzes/{id}/public-access` attiva/disattiva il link pubblico (l’attivazione richiede la preferenza `publicQuizzesEnabled` nel profilo) con body `{"enabled": true|false}` (solo proprietario).
 - `PUT /api/quizzes/{id}/publication` pubblicazione/depubblicazione.
 - `PUT /api/quizzes/{id}/archived` archiviazione/riattivazione quiz.
 - `POST /api/quizzes/{id}/share` condivisione quiz a più insegnanti.
@@ -19,7 +20,7 @@ Documentazione delle API di Alice's Simple Quiz Maker. Torna al [README](README.
 - `POST /api/quizzes/generate` generazione quiz via AI (multipart, allegato opzionale, topic anche da URL Wikipedia).
 - `POST /api/quizzes/images` upload immagine domanda (insegnante con upload abilitato).
 - `GET /api/quizzes/images/{imageId}` download consentito al proprietario o agli insegnanti con un quiz che usa l'immagine; gli studenti accedono solo tramite quiz pubblicati e non archiviati del proprio insegnante.
-- `DELETE /api/quizzes/images/{imageId}` eliminazione consentita al proprietario (per immagini precedenti alla migrazione, all'insegnante del quiz che le usa), purché nessun quiz di altri insegnanti usi l'immagine. Accessi non consentiti restituiscono HTTP 403.
+- `DELETE /api/quizzes/images/{imageId}` eliminazione consentita al proprietario (per immagini precedenti alla migrazione, all'insegnante del quiz che le usa), purché nessun quiz salvato usi l'immagine. Accessi non consentiti restituiscono HTTP 403.
 
 Il quiz espone `version`, inizialmente 1, incrementata quando cambia il contenuto delle domande.
 La consegna salva la versione attuale sul server; non è richiesto un numero di versione nella richiesta di invio.
@@ -50,3 +51,15 @@ condivise non vengono modificate retroattivamente.
 **Log (`/api/teacher/logs`)**
 
 - `GET /api/teacher/logs/tail?lines=200` ultime righe log applicazione (max 1000, solo amministratore).
+
+**Quiz pubblici**
+
+- `GET /play/quizzes/{id}` player anonimo per un quiz con `publicAccess=true`, non archiviato e appartenente a un insegnante abilitato; altrimenti HTTP 404.
+- `GET /play/quizzes/{quizId}/images/{imageId}` immagine locale solo se referenziata da quel quiz pubblico; altrimenti HTTP 404.
+- `GET /teacher/quiz/{id}/public` configurazione del link (proprietario).
+- `POST /teacher/quiz/{id}/public` salva l’impostazione `enabled` tramite form con CSRF.
+- `GET /teacher/quiz/{id}/public-qr` QR code PNG del link attivo (proprietario), generato localmente.
+
+Il player pubblico non usa l’endpoint `/submit`: calcola il punteggio nel browser e non crea partecipazioni, consegne, tentativi o badge. Il DTO pubblico contiene soltanto ID, titolo, emoji e domande, senza dati dell’insegnante. L’archiviazione revoca l’accesso pubblico; la riattivazione non lo ripristina automaticamente.
+
+- `POST /teacher/profile/public-quizzes` aggiorna la preferenza personale `publicQuizzesEnabled` tramite form con CSRF; il pulsante Accesso pubblico è visibile solo se la preferenza è attiva. I link già pubblicati non vengono modificati.

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+    <changeSet id="015-public-preferences-backfill-sqlite" author="quizmaker" dbms="sqlite">
+        <update tableName="teachers">
+            <column name="public_quizzes_enabled" valueNumeric="0"/>
+            <where>public_quizzes_enabled IS NULL</where>
+        </update>
+        <update tableName="quizzes">
+            <column name="public_access" valueNumeric="0"/>
+            <where>public_access IS NULL</where>
+        </update>
+    </changeSet>
+    <changeSet id="015-public-preferences-backfill-default" author="quizmaker" dbms="h2,postgresql">
+        <update tableName="teachers">
+            <column name="public_quizzes_enabled" valueBoolean="false"/>
+            <where>public_quizzes_enabled IS NULL</where>
+        </update>
+        <update tableName="quizzes">
+            <column name="public_access" valueBoolean="false"/>
+            <where>public_access IS NULL</where>
+        </update>
+    </changeSet>
+</databaseChangeLog>
