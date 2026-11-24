@@ -16,6 +16,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+document.getElementById('public-access-enabled')?.addEventListener('change', (event) => {
+    event.currentTarget.form?.requestSubmit();
+});
+
 document.getElementById('copy-public-quiz-link')?.addEventListener('click', async () => {
     const input = document.getElementById('public-quiz-link');
     try {
