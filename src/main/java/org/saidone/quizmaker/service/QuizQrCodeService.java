@@ -19,6 +19,7 @@
 package org.saidone.quizmaker.service;
 
 import com.google.zxing.BarcodeFormat;
+import com.google.zxing.EncodeHintType;
 import com.google.zxing.WriterException;
 import com.google.zxing.qrcode.QRCodeWriter;
 import lombok.val;
@@ -28,12 +29,14 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Map;
 
 @Service
 public class QuizQrCodeService {
     public byte[] png(String url) throws IOException {
         try {
-            val matrix = new QRCodeWriter().encode(url, BarcodeFormat.QR_CODE, 256, 256);
+            val matrix = new QRCodeWriter().encode(url, BarcodeFormat.QR_CODE, 256, 256,
+                    Map.of(EncodeHintType.MARGIN, 1));
             val image = new BufferedImage(matrix.getWidth(), matrix.getHeight(), BufferedImage.TYPE_INT_RGB);
             for (int y = 0; y < matrix.getHeight(); y++) {
                 for (int x = 0; x < matrix.getWidth(); x++) {

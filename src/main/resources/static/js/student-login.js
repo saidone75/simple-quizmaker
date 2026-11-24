@@ -17,6 +17,34 @@
  */
 
 (function () {
+    const qrPanel = document.getElementById('login-qr-panel');
+    const qrTrigger = document.getElementById('login-qr-trigger');
+    const qrImage = document.getElementById('login-qr-image');
+    const qrError = document.getElementById('login-qr-error');
+    const setQrVisible = (visible) => {
+        qrPanel.hidden = !visible;
+        qrTrigger.setAttribute('aria-expanded', String(visible));
+        qrTrigger.setAttribute('aria-label', visible ? 'Nascondi QR code' : 'Mostra il QR code per accedere al sito');
+        qrTrigger.title = visible ? 'Nascondi QR code' : 'Mostra QR code';
+    };
+    qrTrigger?.addEventListener('click', () => {
+        const opening = qrPanel.hidden;
+        if (opening) {
+            qrError.hidden = true;
+            qrImage.hidden = false;
+            qrImage.src = qrImage.dataset.src;
+        }
+        setQrVisible(opening);
+    });
+    document.getElementById('login-qr-close')?.addEventListener('click', () => {
+        setQrVisible(false);
+        qrTrigger.focus();
+    });
+    qrImage?.addEventListener('error', () => {
+        qrImage.hidden = true;
+        qrError.hidden = false;
+    });
+
     const form = document.getElementById('student-login-form');
     const hiddenKeyword = document.getElementById('keyword-hidden');
     const otpInputs = Array.from(document.querySelectorAll('.otp-input'));

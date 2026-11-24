@@ -54,6 +54,7 @@ condivise non vengono modificate retroattivamente.
 
 **Quiz anonimi**
 
+- `GET /q/{code}` risolve un link breve con redirect HTTP 302 al percorso originale, senza cache; codici sconosciuti restituiscono HTTP 404. La destinazione mantiene le proprie regole di accesso.
 - `GET /play/quizzes/{id}` player anonimo per un quiz con `publicAccess=true`, non archiviato e appartenente a un insegnante abilitato; altrimenti HTTP 404.
 - `GET /play/quizzes/{quizId}/images/{imageId}` immagine locale solo se referenziata da quel quiz anonimo; altrimenti HTTP 404.
 - `GET /teacher/quiz/{id}/public` configurazione del link (proprietario).

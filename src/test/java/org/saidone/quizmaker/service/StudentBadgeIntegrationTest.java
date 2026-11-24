@@ -81,6 +81,7 @@ class StudentBadgeIntegrationTest {
     @Autowired TeacherLifecycleService teacherLifecycleService;
     @Autowired QuizService quizService;
     @Autowired EntityManager entityManager;
+    @Autowired ShortLinkService shortLinkService;
     @Autowired ObjectMapper objectMapper;
     MockMvc mvc;
     Teacher teacher;
@@ -320,6 +321,55 @@ class StudentBadgeIntegrationTest {
     }
 
     @Test
+    void studentLoginRabbitOffersPublicQrCodeWithTheApplicationUrl() throws Exception {
+        mvc.perform(get("/student/login").with(anonymous()))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("id=\"login-qr-trigger\"")))
+                .andExpect(content().string(containsString("id=\"login-qr-panel\"")));
+        val result = mvc.perform(get("/school/student/login-qr").contextPath("/school").with(anonymous()))
+                .andExpect(status().isOk()).andExpect(content().contentType("image/png"))
+                .andExpect(header().string("Cache-Control", "no-store")).andReturn();
+        val image = ImageIO.read(new ByteArrayInputStream(result.getResponse().getContentAsByteArray()));
+        val pixels = image.getRGB(0, 0, image.getWidth(), image.getHeight(), null, 0, image.getWidth());
+        val source = new RGBLuminanceSource(image.getWidth(), image.getHeight(), pixels);
+        assertThat(new QRCodeReader().decode(new BinaryBitmap(new HybridBinarizer(source))).getText())
+                .isEqualTo("http://localhost/school/");
+    }
+
+    @Test
+    void shortLinksAreStableAndPreservePublicQuizAccessRules() throws Exception {
+        quiz.setPublicAccess(true);
+        quizzes.saveAndFlush(quiz);
+        val target = "/play/quizzes/" + quiz.getId();
+        val code = shortLinkService.getOrCreate(target);
+        assertThat(code).matches("[a-z]{8}");
+        entityManager.flush();
+        entityManager.clear();
+        assertThat(shortLinkService.getOrCreate(target)).isEqualTo(code);
+        assertThat(shortLinkService.resolve(code)).contains(target);
+        mvc.perform(get("/q/{code}", code).with(anonymous()))
+                .andExpect(status().isFound()).andExpect(redirectedUrl("http://localhost" + target))
+                .andExpect(header().string("Cache-Control", "no-store"))
+                .andExpect(header().string("X-Robots-Tag", "noindex, nofollow"));
+        mvc.perform(get(target).with(anonymous())).andExpect(status().isOk());
+        mvc.perform(get("/teacher/quiz/{id}/public", quiz.getId()).with(user(teacher.getUsername()).roles("TEACHER")))
+                .andExpect(status().isOk()).andExpect(content().string(containsString("http://localhost/q/" + code)));
+        val stored = quizzes.findById(quiz.getId()).orElseThrow();
+        stored.setPublicAccess(false);
+        quizzes.saveAndFlush(stored);
+        mvc.perform(get(target).with(anonymous())).andExpect(status().isNotFound());
+        assertThat(shortLinkService.getOrCreate(target)).isEqualTo(code);
+        stored.setPublicAccess(true);
+        quizzes.saveAndFlush(stored);
+        mvc.perform(get(target).with(anonymous())).andExpect(status().isOk());
+        stored.setArchived(true);
+        quizzes.saveAndFlush(stored);
+        mvc.perform(get(target).with(anonymous())).andExpect(status().isNotFound());
+        mvc.perform(get("/q/unknowncodeab").with(anonymous())).andExpect(status().isNotFound());
+        mvc.perform(get("/q/bad-code").with(anonymous())).andExpect(status().isNotFound());
+    }
+
+    @Test
     void qrCodeContainsThePublicLinkAndIsRestrictedToTheOwner() throws Exception {
         quiz.setPublicAccess(true);
         quizzes.saveAndFlush(quiz);
@@ -331,7 +381,7 @@ class StudentBadgeIntegrationTest {
         val source = new RGBLuminanceSource(image.getWidth(), image.getHeight(), pixels);
         val bitmap = new BinaryBitmap(new HybridBinarizer(source));
         assertThat(new QRCodeReader().decode(bitmap).getText())
-                .isEqualTo(String.format("http://localhost/play/quizzes/%s", quiz.getId()));
+                .isEqualTo("http://localhost/q/" + shortLinkService.getOrCreate("/play/quizzes/" + quiz.getId()));
         mvc.perform(get("/teacher/quiz/{id}/public-qr", quiz.getId()).with(anonymous()))
                 .andExpect(status().is3xxRedirection());
     }

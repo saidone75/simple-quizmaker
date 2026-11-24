@@ -72,7 +72,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/robots.txt", "/sitemap.xml", "/llms.txt").permitAll()
                         .requestMatchers("/h2-console/**").permitAll()
                         .requestMatchers("/teacher/login", "/teacher/register", "/", "/student/login", "/discover").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/play/quizzes/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/play/quizzes/**", "/q/*", "/student/login-qr").permitAll()
                         .requestMatchers(HttpMethod.POST, "/student/logout").permitAll()
                         .requestMatchers("/student/badges").hasRole("STUDENT")
                         .requestMatchers(HttpMethod.GET, "/api/quizzes/images/**").authenticated()

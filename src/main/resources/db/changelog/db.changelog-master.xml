@@ -47,4 +47,5 @@
     <include file="014-teacher-public-quizzes-preference.xml" relativeToChangelogFile="true"/>
 
     <include file="015-public-preferences-backfill.xml" relativeToChangelogFile="true"/>
+    <include file="016-short-links.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>
