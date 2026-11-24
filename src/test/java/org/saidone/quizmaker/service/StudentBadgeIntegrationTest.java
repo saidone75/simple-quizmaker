@@ -321,6 +321,22 @@ class StudentBadgeIntegrationTest {
     }
 
     @Test
+    void studentLoginRabbitOffersPublicQrCodeWithTheApplicationUrl() throws Exception {
+        mvc.perform(get("/student/login").with(anonymous()))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("id=\"login-qr-trigger\"")))
+                .andExpect(content().string(containsString("id=\"login-qr-panel\"")));
+        val result = mvc.perform(get("/school/student/login-qr").contextPath("/school").with(anonymous()))
+                .andExpect(status().isOk()).andExpect(content().contentType("image/png"))
+                .andExpect(header().string("Cache-Control", "no-store")).andReturn();
+        val image = ImageIO.read(new ByteArrayInputStream(result.getResponse().getContentAsByteArray()));
+        val pixels = image.getRGB(0, 0, image.getWidth(), image.getHeight(), null, 0, image.getWidth());
+        val source = new RGBLuminanceSource(image.getWidth(), image.getHeight(), pixels);
+        assertThat(new QRCodeReader().decode(new BinaryBitmap(new HybridBinarizer(source))).getText())
+                .isEqualTo("http://localhost/school/");
+    }
+
+    @Test
     void shortLinksAreStableAndPreservePublicQuizAccessRules() throws Exception {
         quiz.setPublicAccess(true);
         quizzes.saveAndFlush(quiz);

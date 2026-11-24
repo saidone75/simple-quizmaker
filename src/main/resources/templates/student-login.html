@@ -75,9 +75,19 @@
     <div class="quiz-card" style="max-width:420px;width:92%;text-align:center;">
         <h1 class="login-title" style="margin-bottom:0.5rem;">Alice's Simple Quiz&nbsp;Maker</h1>
         <p class="login-sub">Quiz scolastici per imparare divertendosi</p>
-        <div class="error-emoji">🐰</div>
+        <button type="button" class="error-emoji login-qr-trigger" id="login-qr-trigger"
+                aria-label="Mostra il QR code per accedere al sito" title="Mostra QR code"
+                aria-expanded="false" aria-controls="login-qr-panel">🐰</button>
         <h2>Accesso studenti</h2>
         <p>Inserisci la parola chiave di 5 caratteri assegnata dalla maestra.</p>
+        <div id="login-qr-panel" class="login-qr-panel" hidden>
+            <button type="button" id="login-qr-close" class="login-qr-image-button" aria-label="Nascondi QR code"
+                    title="Clicca per richiudere">
+                <img id="login-qr-image" th:data-src="@{/student/login-qr}" width="256" height="256"
+                     alt="QR code con il link alla pagina di accesso studenti" class="login-qr-image">
+            </button>
+            <p id="login-qr-error" class="login-qr-error" role="alert" hidden>Impossibile caricare il QR code. Clicca sul coniglio per richiudere e riprova.</p>
+        </div>
         <form id="student-login-form" th:action="@{/student/login}" method="post"
               style="display:grid;gap:12px;margin-top:14px;">
             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
@@ -100,6 +110,8 @@
         </p>
     </div>
 </div>
+
+
 
 <script th:src="@{/js/student-login.js}"></script>
 

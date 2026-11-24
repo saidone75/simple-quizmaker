@@ -27,6 +27,11 @@ import lombok.val;
 import org.saidone.quizmaker.config.RequestFingerprint;
 import org.saidone.quizmaker.service.BruteForceProtectionService;
 import org.saidone.quizmaker.service.QuizService;
+import org.saidone.quizmaker.service.QuizQrCodeService;
+import org.springframework.http.CacheControl;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.saidone.quizmaker.service.QuizSubmissionService;
 import org.saidone.quizmaker.service.StudentSessionService;
 import org.saidone.quizmaker.service.StudentAuthenticationService;
@@ -37,6 +42,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.Locale;
+import java.io.IOException;
 
 @Controller
 @RequiredArgsConstructor
@@ -48,6 +54,7 @@ public class StudentWebController {
     private final StudentAuthenticationService studentAuthenticationService;
     private final BruteForceProtectionService bruteForceProtectionService;
     private final ObjectMapper objectMapper;
+    private final QuizQrCodeService qrCodeService;
 
     @GetMapping("/")
     public String studentPage(Model model) {
@@ -82,6 +89,13 @@ public class StudentWebController {
     @GetMapping("/student/login")
     public String studentLoginPage() {
         return "student-login";
+    }
+
+    @GetMapping("/student/login-qr")
+    public ResponseEntity<byte[]> loginQrCode() throws IOException {
+        val url = ServletUriComponentsBuilder.fromCurrentContextPath().path("/").build().toUriString();
+        return ResponseEntity.ok().cacheControl(CacheControl.noStore()).contentType(MediaType.IMAGE_PNG)
+                .body(qrCodeService.png(url));
     }
 
     @PostMapping("/student/login")

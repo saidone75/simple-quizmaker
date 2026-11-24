@@ -1872,3 +1872,29 @@ body[data-theme="dark"] #toast {
         scroll-behavior: auto !important;
     }
 }
+
+/* Student login QR code, opened by the rabbit button. */
+.login-qr-trigger {
+    display: block;
+    margin-inline: auto;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    font-family: inherit;
+    cursor: pointer;
+    appearance: none;
+    outline: none;
+    box-shadow: none;
+}
+.login-qr-trigger:focus-visible { transform: scale(1.1); }
+.login-qr-panel { margin-top: 16px; }
+.login-qr-image-button {
+    padding: 0;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+    max-width: 100%;
+}
+.login-qr-image-button:focus-visible { outline: 2px solid var(--green); outline-offset: 4px; }
+.login-qr-image { max-width: 100%; height: auto; border-radius: var(--radius-sm); }
+.login-qr-error { color: var(--red); font-weight: 700; }
