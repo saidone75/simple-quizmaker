@@ -13,6 +13,8 @@ in **Non rilasciato**.
 
 ### Aggiunto
 
+- URL brevi persistenti per i quiz anonimi, usati anche nei QR code. Servizio riutilizzabile per percorsi interni generici, con alfabeto e lunghezza configurabili (default: 8 lettere minuscole); mantenuti i link precedenti e le regole di accesso dei quiz.
+
 - Quiz anonimi aperti tramite link e QR code, attivabili separatamente dalla pubblicazione per la classe. Player senza login, punteggio calcolato solo nel browser e ripetizioni libere, senza salvataggio di risposte, risultati, badge o statistiche.
 
 ### Corretto
@@ -25,6 +27,7 @@ in **Non rilasciato**.
 
 ### Aggiornamento
 
+- Applicare la migrazione Liquibase `016-short-links`, che aggiunge la tabella dei codici brevi. I codici vengono creati al primo utilizzo della pagina di condivisione o del QR code.
 - Applicare la migrazione Liquibase `015-public-preferences-backfill`: corregge i valori nulli delle preferenze di accesso anonimo.
 - Applicare la migrazione Liquibase `014-teacher-public-quizzes-preference`: aggiunge la preferenza insegnante per i quiz anonimi.
 - Applicare la migrazione Liquibase `013-public-quizzes`: aggiunge l’accesso anonimo ai quiz.

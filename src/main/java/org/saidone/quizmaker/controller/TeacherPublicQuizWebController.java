@@ -25,6 +25,7 @@ import org.saidone.quizmaker.dto.QuizDto;
 import org.saidone.quizmaker.entity.Teacher;
 import org.saidone.quizmaker.service.QuizQrCodeService;
 import org.saidone.quizmaker.service.QuizService;
+import org.saidone.quizmaker.service.ShortLinkService;
 import org.saidone.quizmaker.service.TeacherAuthenticationService;
 import org.springframework.http.CacheControl;
 import org.springframework.http.HttpStatus;
@@ -46,6 +47,7 @@ public class TeacherPublicQuizWebController {
     private final QuizService quizService;
     private final TeacherAuthenticationService teacherAuthenticationService;
     private final QuizQrCodeService qrCodeService;
+    private final ShortLinkService shortLinkService;
 
     @GetMapping("/teacher/quiz/{id}/public")
     public String settings(@PathVariable UUID id, Model model) {
@@ -88,7 +90,8 @@ public class TeacherPublicQuizWebController {
     }
 
     private String publicUrl(UUID id) {
-        return ServletUriComponentsBuilder.fromCurrentContextPath().path("/play/quizzes/{id}")
-                .buildAndExpand(id).toUriString();
+        val code = shortLinkService.getOrCreate("/play/quizzes/" + id);
+        return ServletUriComponentsBuilder.fromCurrentContextPath().path("/q/{code}")
+                .buildAndExpand(code).toUriString();
     }
 }

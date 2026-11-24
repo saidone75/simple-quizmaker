@@ -259,6 +259,26 @@ Quando aggiorni lo schema del database, avvia con `LIQUIBASE_ENABLED=true`
 | `/teacher/system/teachers/approve-all`  | Amministratore                | Approva tutte le registrazioni pendenti (POST) |
 | `/teacher/about`                        | Amministratore                | Info build/runtime                             |
 
+### Link brevi dei quiz anonimi
+
+Il link da condividere e il QR code usano URL come `/q/kbmwzrpa`.
+Il codice è casuale, persistente e riutilizzato per lo stesso quiz. I link precedenti
+`/play/quizzes/{id}` continuano a funzionare. Disattivare l'accesso anonimo,
+archiviare il quiz o disabilitare l'insegnante impedisce l'accesso anche tramite link breve.
+
+Il servizio `ShortLinkService` associa codici a percorsi interni generici, senza dipendere
+dai quiz o dal dominio. Per riutilizzarlo in altre applicazioni Spring/JPA, trasferire anche
+`ShortLink`, `ShortLinkRepository`, `ShortLinkProperties` e la tabella della migrazione `016-short-links`.
+Il controller `ShortLinkWebController` espone la risoluzione tramite redirect temporaneo.
+Il servizio non offre un endpoint pubblico per creare link e non accetta URL esterni.
+
+Regole per i nuovi codici:
+
+- `SHORT_LINK_ALPHABET`: default `abcdefghijklmnopqrstuvwxyz`; da 2 a 62 lettere ASCII o cifre distinte.
+- `SHORT_LINK_LENGTH`: default `8`; da 8 a 64 caratteri. Per alfabeti piccoli, aumentare la lunghezza per rendere i codici più difficili da indovinare.
+- Le proprietà Spring equivalenti sono `app.short-links.alphabet` e `app.short-links.length`.
+- Cambiare le regole non modifica né invalida i codici già salvati.
+
 ### Documentazione API
 
 Consulta [API.md](API.md) per gli endpoint REST di quiz, badge, studenti e log.
